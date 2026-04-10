@@ -49,13 +49,7 @@ class StampverseStamp extends StatelessWidget {
           ),
           child: ClipPath(
             clipper: _StampClipper(shapeType: shapeType),
-            child: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                const ColoredBox(color: AppColors.white),
-                _StampImage(imageUrl: imageUrl, imageBytes: imageBytes),
-              ],
-            ),
+            child: _StampImage(imageUrl: imageUrl, imageBytes: imageBytes),
           ),
         ),
       ),

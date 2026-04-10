@@ -120,17 +120,12 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
         ImageGallerySaverPlus.saveFile(
           imageFile.path,
           name: fileName,
-          isReturnPathOfIOS: true,
+          // Keep iOS path-return disabled to avoid plugin callbacks hanging.
+          isReturnPathOfIOS: false,
         ),
       );
-    } on TimeoutException catch (error, stackTrace) {
-      developer.log(
-        'saveFile timed out: $error',
-        name: 'StampverseEditBoard',
-        error: error,
-        stackTrace: stackTrace,
-        level: 900,
-      );
+    } on TimeoutException {
+      // Ignore and continue fallback save strategy.
     }
 
     if (_isSavedSuccessfully(fileResult)) {
@@ -144,17 +139,12 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
           bytes,
           quality: 100,
           name: fileName,
-          isReturnImagePathOfIOS: true,
+          // Keep iOS path-return disabled to avoid plugin callbacks hanging.
+          isReturnImagePathOfIOS: false,
         ),
       );
-    } on TimeoutException catch (error, stackTrace) {
-      developer.log(
-        'saveImage timed out: $error',
-        name: 'StampverseEditBoard',
-        error: error,
-        stackTrace: stackTrace,
-        level: 900,
-      );
+    } on TimeoutException {
+      // Ignore and continue fallback save strategy.
     }
 
     return _isSavedSuccessfully(imageResult);

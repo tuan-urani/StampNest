@@ -129,17 +129,12 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
         ImageGallerySaverPlus.saveFile(
           imageFile.path,
           name: fileName,
-          isReturnPathOfIOS: true,
+          // Keep iOS path-return disabled to avoid plugin callbacks hanging.
+          isReturnPathOfIOS: false,
         ),
       );
-    } on TimeoutException catch (error, stackTrace) {
-      developer.log(
-        'saveFile timed out: $error',
-        name: 'StampverseDetails',
-        error: error,
-        stackTrace: stackTrace,
-        level: 900,
-      );
+    } on TimeoutException {
+      // Ignore and continue fallback save strategy.
     }
 
     if (_isSavedSuccessfully(fileResult)) {
@@ -153,17 +148,12 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
           bytes,
           quality: 100,
           name: fileName,
-          isReturnImagePathOfIOS: true,
+          // Keep iOS path-return disabled to avoid plugin callbacks hanging.
+          isReturnImagePathOfIOS: false,
         ),
       );
-    } on TimeoutException catch (error, stackTrace) {
-      developer.log(
-        'saveImage timed out: $error',
-        name: 'StampverseDetails',
-        error: error,
-        stackTrace: stackTrace,
-        level: 900,
-      );
+    } on TimeoutException {
+      // Ignore and continue fallback save strategy.
     }
 
     return _isSavedSuccessfully(imageResult);
@@ -341,55 +331,85 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
                   ),
                 ),
                 Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 120),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        StampverseStamp(
-                          imageUrl: widget.stamp.imageUrl,
-                          shapeType: widget.stamp.shapeType,
-                          width: 256,
-                        ),
-                        const SizedBox(height: 48),
-                        Text(
-                          widget.stamp.name,
-                          textAlign: TextAlign.center,
-                          style: StampverseTextStyles.heroTitle(
-                            color: AppColors.stampverseHeadingText,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          dateText,
-                          style: StampverseTextStyles.body(
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          children: <Widget>[
-                            Expanded(
-                              child: _DetailActionButton(
-                                icon: Icons.download_rounded,
-                                label: LocaleKey.stampverseDetailsDownload.tr,
-                                onTap: _downloadImage,
-                                isLoading: _isDownloading,
+                  child: LayoutBuilder(
+                    builder:
+                        (BuildContext context, BoxConstraints constraints) {
+                          final bool isCompactHeight =
+                              constraints.maxHeight < 560;
+                          final double stampWidth = (constraints.maxWidth - 48)
+                              .clamp(200.0, 256.0);
+
+                          final Widget content = Column(
+                            mainAxisAlignment: isCompactHeight
+                                ? MainAxisAlignment.start
+                                : MainAxisAlignment.center,
+                            children: <Widget>[
+                              if (isCompactHeight) const SizedBox(height: 8),
+                              StampverseStamp(
+                                imageUrl: widget.stamp.imageUrl,
+                                shapeType: widget.stamp.shapeType,
+                                width: stampWidth,
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: _DetailActionButton(
-                                icon: Icons.ios_share_rounded,
-                                label: LocaleKey.stampverseDetailsShare.tr,
-                                onTap: _shareImage,
-                                isLoading: _isSharing,
+                              const SizedBox(height: 40),
+                              Text(
+                                widget.stamp.name,
+                                textAlign: TextAlign.center,
+                                style: StampverseTextStyles.heroTitle(
+                                  color: AppColors.stampverseHeadingText,
+                                ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 6),
+                              Text(
+                                dateText,
+                                style: StampverseTextStyles.body(
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                          );
+
+                          if (isCompactHeight) {
+                            return SingleChildScrollView(
+                              padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: constraints.maxHeight - 12,
+                                ),
+                                child: content,
+                              ),
+                            );
+                          }
+
+                          return Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                            child: content,
+                          );
+                        },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                  child: Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: _DetailActionButton(
+                          icon: Icons.download_rounded,
+                          label: LocaleKey.stampverseDetailsDownload.tr,
+                          onTap: _downloadImage,
+                          isLoading: _isDownloading,
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _DetailActionButton(
+                          icon: Icons.ios_share_rounded,
+                          label: LocaleKey.stampverseDetailsShare.tr,
+                          onTap: _shareImage,
+                          isLoading: _isSharing,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],

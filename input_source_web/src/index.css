@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,200..900;1,200..900&family=Mynerve&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Mynerve", cursive;
+  --font-sans: "Crimson Pro", serif;
+}
+
+.mynerve-regular {
+  font-family: "Mynerve", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.crimson-pro-regular {
+  font-family: "Crimson Pro", serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+
+body {
+  @apply bg-[#000] text-slate-900 font-sans;
+}
+
+/* Custom styles for react-easy-crop: Light hole (100px) in a dark overlay */
+div.reactEasyCrop_CropArea.hide-crop-area {
+  width: 30% !important;
+  /* Controlled size (responsive) */
+  height: auto !important;
+  aspect-ratio: 3 / 4 !important;
+
+  /* Force centering */
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+
+  /* Visuals */
+  border: 1px dashed #fff !important;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6) !important;
+  /* The dark overlay */
+  outline: none !important;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

@@ -1,0 +1,7 @@
+{
+  "name": "Stampverse",
+  "description": "Lưu giữ kỷ niệm dưới dạng những con tem độc đáo. Chụp ảnh hoặc tải lên để tạo stamp của riêng bạn.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

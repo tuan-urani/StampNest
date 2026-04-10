@@ -1,0 +1,20 @@
+{
+  "app": {
+    "title": "Stampverse",
+    "headerTitle": "Stampverse",
+    "headerColor": "#f8f5ed",
+    "textColor": "black",
+    "leftButton": "back",
+    "statusBar": "normal",
+    "actionBarHidden": false,
+    "hideAndroidBottomNavigationBar": true,
+    "hideIOSSafeAreaBottom": true
+  },
+  "listCSS": [
+    "assets/index-B_f9O5fB.css"
+  ],
+  "listSyncJS": [
+    "assets/index-CfUWjWVl.js"
+  ],
+  "listAsyncJS": []
+}

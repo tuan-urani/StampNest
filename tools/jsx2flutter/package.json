@@ -1,0 +1,19 @@
+{
+  "name": "jsx2flutter",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@babel/parser": "^7.26.3",
+    "@babel/traverse": "^7.26.3",
+    "postcss": "^8.4.33",
+    "postcss-safe-parser": "^6.0.0",
+    "sass": "^1.83.0"
+  },
+  "scripts": {
+    "build:demo": "node jsx2flutter.mjs sample/index.jsx sample/index.module.scss ../../lib/src/ui/generated/generated_card.dart",
+    "convert": "node convert.mjs",
+    "convert:classic": "JSX2FLUTTER_MODE=classic node convert.mjs",
+    "convert:scaffold": "JSX2FLUTTER_MODE=scaffold node convert.mjs"
+  }
+}

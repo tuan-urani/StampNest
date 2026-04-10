@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stamp V2 Color System Preview</title>
+    <style>
+      :root {
+        --bg: #f4f5f7;
+        --card: #ffffff;
+        --text: #1f2937;
+        --muted: #6b7280;
+        --border: #e5e7eb;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: 'SF Pro Text', 'Segoe UI', Roboto, Arial, sans-serif;
+        background: linear-gradient(180deg, #f8fafc 0%, #f3f4f6 100%);
+        color: var(--text);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 24px 16px 40px;
+      }
+
+      .header {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 16px;
+      }
+
+      .title {
+        margin: 0 0 8px;
+        font-size: 24px;
+        line-height: 1.2;
+      }
+
+      .subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 10px;
+        margin: 14px 0 0;
+      }
+
+      .stat {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: #fafafa;
+        font-size: 13px;
+      }
+
+      .section {
+        margin-top: 14px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 14px;
+      }
+
+      .section h2 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 10px;
+      }
+
+      .swatch {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+      }
+
+      .color {
+        height: 60px;
+      }
+
+      .meta {
+        padding: 8px 10px;
+      }
+
+      .name {
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 3px;
+      }
+
+      .hex {
+        font-size: 12px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <section class="header">
+        <h1 class="title">Stamp V2 Color System Preview</h1>
+        <p class="subtitle">
+          Preview only (2026-04-10). Soft, gentle, cute direction. Not implemented in app theme yet.
+        </p>
+        <div class="stats">
+          <div class="stat">AppColors constants: <b>115</b></div>
+          <div class="stat">Legacy hex-named tokens: <b>81</b></div>
+          <div class="stat">Direct Colors.* outside AppColors: <b>5</b></div>
+          <div class="stat">Raw Color(0x...) outside AppColors: <b>4</b></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Brand (Proposed Standard)</h2>
+        <div class="grid">
+          <article class="swatch">
+            <div class="color" style="background:#84C93F"></div>
+            <div class="meta">
+              <div class="name">brand.primary</div>
+              <div class="hex">#84C93F</div>
+            </div>
+          </article>
+          <article class="swatch">
+            <div class="color" style="background:#7BCFB2"></div>
+            <div class="meta">
+              <div class="name">brand.primaryAlt</div>
+              <div class="hex">#7BCFB2</div>
+            </div>
+          </article>
+          <article class="swatch">
+            <div class="color" style="background:#D8EDC5"></div>
+            <div class="meta">
+              <div class="name">brand.secondary</div>
+              <div class="hex">#D8EDC5</div>
+            </div>
+          </article>
+          <article class="swatch">
+            <div class="color" style="background:#7E8FC7"></div>
+            <div class="meta">
+              <div class="name">brand.accent</div>
+              <div class="hex">#7E8FC7</div>
+            </div>
+          </article>
+          <article class="swatch">
+            <div class="color" style="background:#E8ECFA"></div>
+            <div class="meta">
+              <div class="name">brand.accentSoft</div>
+              <div class="hex">#E8ECFA</div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Neutral (Proposed Standard)</h2>
+        <div class="grid">
+          <article class="swatch"><div class="color" style="background:#FFFFFF"></div><div class="meta"><div class="name">neutral.0</div><div class="hex">#FFFFFF</div></div></article>
+          <article class="swatch"><div class="color" style="background:#FEFAF5"></div><div class="meta"><div class="name">neutral.50</div><div class="hex">#FEFAF5</div></div></article>
+          <article class="swatch"><div class="color" style="background:#F8F5ED"></div><div class="meta"><div class="name">neutral.100</div><div class="hex">#F8F5ED</div></div></article>
+          <article class="swatch"><div class="color" style="background:#C0C0C0"></div><div class="meta"><div class="name">neutral.300</div><div class="hex">#C0C0C0</div></div></article>
+          <article class="swatch"><div class="color" style="background:#757575"></div><div class="meta"><div class="name">neutral.500</div><div class="hex">#757575</div></div></article>
+          <article class="swatch"><div class="color" style="background:#4A4A48"></div><div class="meta"><div class="name">neutral.700</div><div class="hex">#4A4A48</div></div></article>
+          <article class="swatch"><div class="color" style="background:#000000"></div><div class="meta"><div class="name">neutral.900</div><div class="hex">#000000</div></div></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Surface / Border / Overlay (Proposed Standard)</h2>
+        <div class="grid">
+          <article class="swatch"><div class="color" style="background:#F8F5ED"></div><div class="meta"><div class="name">surface.page</div><div class="hex">#F8F5ED</div></div></article>
+          <article class="swatch"><div class="color" style="background:#FEFAF5"></div><div class="meta"><div class="name">surface.card</div><div class="hex">#FEFAF5</div></div></article>
+          <article class="swatch"><div class="color" style="background:#FFFFFF"></div><div class="meta"><div class="name">surface.base</div><div class="hex">#FFFFFF</div></div></article>
+          <article class="swatch"><div class="color" style="background:#F5F5F5"></div><div class="meta"><div class="name">surface.secondary</div><div class="hex">#F5F5F5</div></div></article>
+          <article class="swatch"><div class="color" style="background:#F1EEE7"></div><div class="meta"><div class="name">border.soft</div><div class="hex">#F1EEE7</div></div></article>
+          <article class="swatch"><div class="color" style="background:#E0E0E0"></div><div class="meta"><div class="name">border.default</div><div class="hex">#E0E0E0</div></div></article>
+          <article class="swatch"><div class="color" style="background:rgba(0,0,0,0.5)"></div><div class="meta"><div class="name">overlay.scrim</div><div class="hex">#80000000 (Flutter ARGB)</div></div></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Semantic (Proposed Standard)</h2>
+        <div class="grid">
+          <article class="swatch"><div class="color" style="background:#6FBE8B"></div><div class="meta"><div class="name">semantic.success</div><div class="hex">#6FBE8B</div></div></article>
+          <article class="swatch"><div class="color" style="background:#EAF7EF"></div><div class="meta"><div class="name">semantic.successSoft</div><div class="hex">#EAF7EF</div></div></article>
+          <article class="swatch"><div class="color" style="background:#E3B160"></div><div class="meta"><div class="name">semantic.warning</div><div class="hex">#E3B160</div></div></article>
+          <article class="swatch"><div class="color" style="background:#E98492"></div><div class="meta"><div class="name">semantic.error</div><div class="hex">#E98492</div></div></article>
+          <article class="swatch"><div class="color" style="background:#FDECEF"></div><div class="meta"><div class="name">semantic.errorSoft</div><div class="hex">#FDECEF</div></div></article>
+          <article class="swatch"><div class="color" style="background:#7FA4D8"></div><div class="meta"><div class="name">semantic.info</div><div class="hex">#7FA4D8</div></div></article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>State (Proposed Standard)</h2>
+        <div class="grid">
+          <article class="swatch"><div class="color" style="background:#7E8FC7"></div><div class="meta"><div class="name">state.focus</div><div class="hex">#7E8FC7</div></div></article>
+          <article class="swatch"><div class="color" style="background:#EEF3FF"></div><div class="meta"><div class="name">state.hover</div><div class="hex">#EEF3FF</div></div></article>
+          <article class="swatch"><div class="color" style="background:#DDECC7"></div><div class="meta"><div class="name">state.pressed</div><div class="hex">#DDECC7</div></div></article>
+          <article class="swatch"><div class="color" style="background:#ECE9E2"></div><div class="meta"><div class="name">state.disabledBg</div><div class="hex">#ECE9E2</div></div></article>
+          <article class="swatch"><div class="color" style="background:#B7B2A9"></div><div class="meta"><div class="name">state.disabledText</div><div class="hex">#B7B2A9</div></div></article>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

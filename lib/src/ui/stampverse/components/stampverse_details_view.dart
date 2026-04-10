@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
@@ -43,6 +44,8 @@ class StampverseDetailsView extends StatefulWidget {
 }
 
 class _StampverseDetailsViewState extends State<StampverseDetailsView> {
+  static const Duration _gallerySaveTimeout = Duration(seconds: 20);
+
   bool _isDownloading = false;
   bool _isSharing = false;
 
@@ -108,6 +111,64 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
     return false;
   }
 
+  Future<dynamic> _awaitGalleryResult(FutureOr<dynamic> operation) async {
+    if (operation is Future<dynamic>) {
+      return operation.timeout(_gallerySaveTimeout);
+    }
+    return operation;
+  }
+
+  Future<bool> _saveImageToGallery({
+    required Uint8List bytes,
+    required File imageFile,
+    required String fileName,
+  }) async {
+    dynamic fileResult;
+    try {
+      fileResult = await _awaitGalleryResult(
+        ImageGallerySaverPlus.saveFile(
+          imageFile.path,
+          name: fileName,
+          isReturnPathOfIOS: true,
+        ),
+      );
+    } on TimeoutException catch (error, stackTrace) {
+      developer.log(
+        'saveFile timed out: $error',
+        name: 'StampverseDetails',
+        error: error,
+        stackTrace: stackTrace,
+        level: 900,
+      );
+    }
+
+    if (_isSavedSuccessfully(fileResult)) {
+      return true;
+    }
+
+    dynamic imageResult;
+    try {
+      imageResult = await _awaitGalleryResult(
+        ImageGallerySaverPlus.saveImage(
+          bytes,
+          quality: 100,
+          name: fileName,
+          isReturnImagePathOfIOS: true,
+        ),
+      );
+    } on TimeoutException catch (error, stackTrace) {
+      developer.log(
+        'saveImage timed out: $error',
+        name: 'StampverseDetails',
+        error: error,
+        stackTrace: stackTrace,
+        level: 900,
+      );
+    }
+
+    return _isSavedSuccessfully(imageResult);
+  }
+
   void _showActionMessage(String message) {
     if (!mounted) return;
     final ScaffoldMessengerState? messenger = ScaffoldMessenger.maybeOf(
@@ -152,21 +213,11 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
       final File imageFile = File(savePath);
       await imageFile.writeAsBytes(bytes, flush: true);
 
-      final dynamic fileResult = await ImageGallerySaverPlus.saveFile(
-        imageFile.path,
-        name: fileName,
-        isReturnPathOfIOS: true,
+      final bool isSuccess = await _saveImageToGallery(
+        bytes: bytes,
+        imageFile: imageFile,
+        fileName: fileName,
       );
-      bool isSuccess = _isSavedSuccessfully(fileResult);
-      if (!isSuccess) {
-        final dynamic imageResult = await ImageGallerySaverPlus.saveImage(
-          bytes,
-          quality: 100,
-          name: fileName,
-          isReturnImagePathOfIOS: true,
-        );
-        isSuccess = _isSavedSuccessfully(imageResult);
-      }
       _showActionMessage(
         isSuccess
             ? LocaleKey.stampverseDetailsDownloadSuccess.tr

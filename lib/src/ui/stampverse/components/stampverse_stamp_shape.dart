@@ -23,8 +23,10 @@ Path buildStampScallopedPath(Rect rect) {
     notchRadiusScale: 0.042,
     minRadius: 4.0,
     maxRadius: 7.0,
-    horizontalDivisor: 36,
-    verticalDivisor: 36,
+    horizontalDivisor: 44,
+    verticalDivisor: 44,
+    notchSpacingFactor: 3.2,
+    minNotchCount: 6,
   );
 }
 
@@ -34,8 +36,10 @@ Path buildSquareScallopedPath(Rect rect) {
     notchRadiusScale: 0.046,
     minRadius: 4.2,
     maxRadius: 7.2,
-    horizontalDivisor: 32,
-    verticalDivisor: 32,
+    horizontalDivisor: 40,
+    verticalDivisor: 40,
+    notchSpacingFactor: 3.5,
+    minNotchCount: 6,
   );
 }
 
@@ -46,6 +50,8 @@ Path _buildRectScallopedPath(
   required double maxRadius,
   required double horizontalDivisor,
   required double verticalDivisor,
+  required double notchSpacingFactor,
+  required int minNotchCount,
 }) {
   final double minEdge = math.min(rect.width, rect.height);
   final double adaptiveMinRadius = (minEdge * 0.03)
@@ -55,17 +61,17 @@ Path _buildRectScallopedPath(
       .clamp(adaptiveMinRadius, maxRadius)
       .toDouble();
   final int topCount = math.max(
-    8,
+    minNotchCount,
     math.max(
       (rect.width / horizontalDivisor).round(),
-      (rect.width / (notchRadius * 2.4)).round(),
+      (rect.width / (notchRadius * notchSpacingFactor)).round(),
     ),
   );
   final int sideCount = math.max(
-    8,
+    minNotchCount,
     math.max(
       (rect.height / verticalDivisor).round(),
-      (rect.height / (notchRadius * 2.4)).round(),
+      (rect.height / (notchRadius * notchSpacingFactor)).round(),
     ),
   );
 

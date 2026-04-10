@@ -79,11 +79,14 @@ class StampverseBloc extends Cubit<StampverseState> {
   }
 
   void openHome({StampverseHomeTab? tab}) {
+    final StampverseHomeTab nextHomeTab = tab ?? state.homeTab;
     emit(
       state.copyWith(
         view: StampverseView.home,
-        homeTab: tab ?? state.homeTab,
+        homeTab: nextHomeTab,
+        lastMainHomeTab: _resolveLastMainTab(nextHomeTab),
         activeCollection: null,
+        selectedEditBoardIds: const <String>[],
         errorMessage: null,
       ),
     );
@@ -94,8 +97,10 @@ class StampverseBloc extends Cubit<StampverseState> {
     emit(
       state.copyWith(
         homeTab: tab,
+        lastMainHomeTab: _resolveLastMainTab(tab),
         view: StampverseView.home,
         activeCollection: null,
+        selectedEditBoardIds: const <String>[],
         errorMessage: null,
       ),
     );
@@ -110,7 +115,9 @@ class StampverseBloc extends Cubit<StampverseState> {
       state.copyWith(
         view: StampverseView.editCreate,
         homeTab: StampverseHomeTab.edit,
+        lastMainHomeTab: StampverseHomeTab.edit,
         activeCollection: null,
+        selectedEditBoardIds: const <String>[],
         errorMessage: null,
       ),
     );
@@ -119,9 +126,8 @@ class StampverseBloc extends Cubit<StampverseState> {
   void createEditBoardFromName(String rawName) {
     final String nowIso = DateTime.now().toIso8601String();
     final String trimmedName = rawName.trim();
-    final String boardName = trimmedName.isEmpty
-        ? 'Draft${state.editBoards.length + 1}'
-        : trimmedName;
+    if (trimmedName.isEmpty) return;
+    final String boardName = trimmedName;
     final StampEditBoard board = _createDefaultBoard(
       name: boardName,
       nowIso: nowIso,
@@ -136,7 +142,9 @@ class StampverseBloc extends Cubit<StampverseState> {
         activeEditBoardId: board.id,
         view: StampverseView.home,
         homeTab: StampverseHomeTab.edit,
+        lastMainHomeTab: StampverseHomeTab.edit,
         activeCollection: null,
+        selectedEditBoardIds: const <String>[],
       ),
     );
     unawaited(_repository.saveEditBoardsCache(updated));
@@ -153,7 +161,9 @@ class StampverseBloc extends Cubit<StampverseState> {
         activeEditBoardId: boardId,
         view: StampverseView.editBoard,
         homeTab: StampverseHomeTab.edit,
+        lastMainHomeTab: StampverseHomeTab.edit,
         activeCollection: null,
+        selectedEditBoardIds: const <String>[],
         errorMessage: null,
       ),
     );
@@ -165,6 +175,40 @@ class StampverseBloc extends Cubit<StampverseState> {
     );
     if (!exists) return;
     emit(state.copyWith(activeEditBoardId: boardId));
+  }
+
+  void startEditBoardSelection(String boardId) {
+    if (!_hasEditBoard(boardId)) return;
+    if (state.selectedEditBoardIds.contains(boardId)) return;
+
+    emit(
+      state.copyWith(
+        selectedEditBoardIds: <String>[boardId],
+        errorMessage: null,
+      ),
+    );
+  }
+
+  void toggleEditBoardSelection(String boardId) {
+    if (!_hasEditBoard(boardId)) return;
+
+    final Set<String> nextSelection = state.selectedEditBoardIds.toSet();
+    if (nextSelection.contains(boardId)) {
+      nextSelection.remove(boardId);
+    } else {
+      nextSelection.add(boardId);
+    }
+
+    emit(
+      state.copyWith(
+        selectedEditBoardIds: _sanitizeSelectedBoardIds(nextSelection.toList()),
+      ),
+    );
+  }
+
+  void clearEditBoardSelection() {
+    if (state.selectedEditBoardIds.isEmpty) return;
+    emit(state.copyWith(selectedEditBoardIds: const <String>[]));
   }
 
   void saveEditBoard(StampEditBoard board) {
@@ -188,7 +232,13 @@ class StampverseBloc extends Cubit<StampverseState> {
       return b.parsedUpdatedAt.compareTo(a.parsedUpdatedAt);
     });
 
-    emit(state.copyWith(editBoards: updated, activeEditBoardId: nextBoard.id));
+    emit(
+      state.copyWith(
+        editBoards: updated,
+        activeEditBoardId: nextBoard.id,
+        selectedEditBoardIds: const <String>[],
+      ),
+    );
     unawaited(_repository.saveEditBoardsCache(updated));
   }
 
@@ -362,6 +412,10 @@ class StampverseBloc extends Cubit<StampverseState> {
         return;
       case StampverseView.home:
       case StampverseView.login:
+        if (state.homeTab == StampverseHomeTab.settings) {
+          openHome(tab: state.lastMainHomeTab);
+          return;
+        }
         openHome(tab: state.homeTab);
         return;
     }
@@ -446,6 +500,7 @@ class StampverseBloc extends Cubit<StampverseState> {
         collections: optimisticCollections,
         view: StampverseView.home,
         homeTab: StampverseHomeTab.stamp,
+        lastMainHomeTab: StampverseHomeTab.stamp,
         currentCapture: null,
         currentCaptureShape: state.cameraShape,
         cameraDraftImage: null,
@@ -480,8 +535,36 @@ class StampverseBloc extends Cubit<StampverseState> {
         collections: collections,
         view: StampverseView.home,
         homeTab: StampverseHomeTab.collection,
+        lastMainHomeTab: StampverseHomeTab.collection,
       ),
     );
+  }
+
+  Future<void> deleteSelectedEditBoards() async {
+    final List<String> selectedIds = _sanitizeSelectedBoardIds(
+      state.selectedEditBoardIds,
+    );
+    if (selectedIds.isEmpty) return;
+
+    final Set<String> selectedSet = selectedIds.toSet();
+    final List<StampEditBoard> updatedBoards = state.editBoards
+        .where((StampEditBoard board) => !selectedSet.contains(board.id))
+        .toList(growable: false);
+    final String? nextActiveBoardId = _resolveNextActiveBoardId(
+      removedBoardIds: selectedSet,
+      updatedBoards: updatedBoards,
+    );
+
+    emit(
+      state.copyWith(
+        editBoards: updatedBoards,
+        activeEditBoardId: nextActiveBoardId,
+        selectedEditBoardIds: const <String>[],
+        errorMessage: null,
+      ),
+    );
+
+    await _repository.saveEditBoardsCache(updatedBoards);
   }
 
   Future<void> logout() async {
@@ -493,6 +576,7 @@ class StampverseBloc extends Cubit<StampverseState> {
         stamps: <StampDataModel>[],
         collections: <String>[],
         editBoards: <StampEditBoard>[],
+        selectedEditBoardIds: const <String>[],
         activeEditBoardId: null,
         selectedStampId: null,
         activeCollection: null,
@@ -503,10 +587,52 @@ class StampverseBloc extends Cubit<StampverseState> {
         isLiveCameraActive: false,
         view: StampverseView.home,
         homeTab: StampverseHomeTab.stamp,
+        lastMainHomeTab: StampverseHomeTab.stamp,
         showDeleteConfirm: false,
         errorMessage: null,
       ),
     );
+  }
+
+  StampverseHomeTab _resolveLastMainTab(StampverseHomeTab tab) {
+    if (_isMainHomeTab(tab)) return tab;
+    return state.lastMainHomeTab;
+  }
+
+  bool _isMainHomeTab(StampverseHomeTab tab) {
+    return tab == StampverseHomeTab.stamp ||
+        tab == StampverseHomeTab.collection ||
+        tab == StampverseHomeTab.memory ||
+        tab == StampverseHomeTab.edit;
+  }
+
+  bool _hasEditBoard(String boardId) {
+    return state.editBoards.any((StampEditBoard board) => board.id == boardId);
+  }
+
+  List<String> _sanitizeSelectedBoardIds(List<String> selectedIds) {
+    final Set<String> existingIds = state.editBoards
+        .map((StampEditBoard board) => board.id)
+        .toSet();
+    return selectedIds
+        .where((String id) => existingIds.contains(id))
+        .toSet()
+        .toList(growable: false);
+  }
+
+  String? _resolveNextActiveBoardId({
+    required Set<String> removedBoardIds,
+    required List<StampEditBoard> updatedBoards,
+  }) {
+    if (updatedBoards.isEmpty) return null;
+
+    final String? currentActiveId = state.activeEditBoardId;
+    if (currentActiveId != null &&
+        currentActiveId.isNotEmpty &&
+        !removedBoardIds.contains(currentActiveId)) {
+      return currentActiveId;
+    }
+    return updatedBoards.first.id;
   }
 
   StampEditBoard _createDefaultBoard({

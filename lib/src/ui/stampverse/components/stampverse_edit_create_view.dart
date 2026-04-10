@@ -73,7 +73,10 @@ class StampverseEditCreateView extends StatelessWidget {
                         maxLength: 40,
                         style: StampverseTextStyles.input(),
                         textInputAction: TextInputAction.done,
-                        onSubmitted: (_) => onSave(),
+                        onSubmitted: (_) {
+                          if (nameController.text.trim().isEmpty) return;
+                          onSave();
+                        },
                         decoration: InputDecoration(
                           hintText:
                               LocaleKey.stampverseEditCreateNamePlaceholder.tr,
@@ -92,25 +95,34 @@ class StampverseEditCreateView extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 28),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 46,
-                  child: Material(
-                    color: AppColors.colorF586AA6,
-                    borderRadius: BorderRadius.circular(16),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(16),
-                      onTap: onSave,
-                      child: Center(
-                        child: Text(
-                          LocaleKey.stampverseEditCreateSave.tr,
-                          style: StampverseTextStyles.button(
-                            color: AppColors.white,
+                child: ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: nameController,
+                  builder: (_, TextEditingValue value, _) {
+                    final bool canSave = value.text.trim().isNotEmpty;
+
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 46,
+                      child: Material(
+                        color: canSave
+                            ? AppColors.colorF586AA6
+                            : AppColors.colorF586AA6.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(16),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: canSave ? onSave : null,
+                          child: Center(
+                            child: Text(
+                              LocaleKey.stampverseEditCreateSave.tr,
+                              style: StampverseTextStyles.button(
+                                color: AppColors.white,
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
+                    );
+                  },
                 ),
               ),
             ],

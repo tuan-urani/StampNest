@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:stamp_camera/src/core/model/stamp_data_model.dart';
 import 'package:stamp_camera/src/core/model/stamp_edit_model.dart';
 import 'package:stamp_camera/src/locale/locale_key.dart';
+import 'package:stamp_camera/src/locale/translation_manager.dart';
 import 'package:stamp_camera/src/ui/stampverse/components/stampverse_album_view.dart';
 import 'package:stamp_camera/src/ui/stampverse/components/stampverse_camera_view.dart';
 import 'package:stamp_camera/src/ui/stampverse/components/stampverse_details_view.dart';
@@ -18,6 +19,7 @@ import 'package:stamp_camera/src/ui/stampverse/components/stampverse_save_view.d
 import 'package:stamp_camera/src/ui/stampverse/components/stampverse_text_styles.dart';
 import 'package:stamp_camera/src/ui/stampverse/interactor/stampverse_bloc.dart';
 import 'package:stamp_camera/src/ui/stampverse/interactor/stampverse_state.dart';
+import 'package:stamp_camera/src/ui/widgets/app_inapp_webview.dart';
 import 'package:stamp_camera/src/utils/app_colors.dart';
 
 class StampversePage extends StatefulWidget {
@@ -28,6 +30,14 @@ class StampversePage extends StatefulWidget {
 }
 
 class _StampversePageState extends State<StampversePage> {
+  // TODO(legal-links): Fill these URLs when legal pages are ready.
+  static const Map<String, String> _privacyPolicyUrlsByLanguage =
+      <String, String>{'vi': '', 'en': ''};
+  static const Map<String, String> _termsOfUseUrlsByLanguage = <String, String>{
+    'vi': '',
+    'en': '',
+  };
+
   late final StampverseBloc _bloc;
 
   late final TextEditingController _loginUsernameController;
@@ -97,7 +107,9 @@ class _StampversePageState extends State<StampversePage> {
               _shouldShowGlobalError(state.view) &&
               errorText != null &&
               errorText.isNotEmpty;
-          final bool canSystemPop = state.view == StampverseView.home;
+          final bool canSystemPop =
+              state.view == StampverseView.home &&
+              state.homeTab != StampverseHomeTab.settings;
 
           return PopScope(
             canPop: canSystemPop,
@@ -180,16 +192,27 @@ class _StampversePageState extends State<StampversePage> {
         return StampverseHomeView(
           stamps: state.stamps,
           tab: state.homeTab,
+          lastMainHomeTab: state.lastMainHomeTab,
           collections: _groupCollectionSummaries(state.stamps),
           editBoards: state.editBoards,
+          selectedEditBoardIds: state.selectedEditBoardIds,
           onTabChanged: _bloc.changeHomeTab,
           onOpenCollection: _bloc.openCollectionAlbum,
           onOpenCreateEditBoard: _bloc.openEditBoardCreate,
           onOpenEditBoard: _bloc.openEditBoard,
-          onAdd: _onTapAddFromHome,
+          onStartEditBoardSelection: _bloc.startEditBoardSelection,
+          onToggleEditBoardSelection: _bloc.toggleEditBoardSelection,
+          onClearEditBoardSelection: _bloc.clearEditBoardSelection,
+          onDeleteSelectedEditBoards: () {
+            _bloc.deleteSelectedEditBoards();
+          },
+          onAddFromCamera: _bloc.openCamera,
+          onAddFromFile: _pickImageFromGallery,
           onRefresh: _bloc.syncStamps,
           isRefreshing: state.isSyncing,
           onLogout: _bloc.logout,
+          onOpenPrivacyPolicy: _openPrivacyPolicy,
+          onOpenTermsOfUse: _openTermsOfUse,
           onSelectStamp: _bloc.selectStamp,
         );
       case StampverseView.editCreate:
@@ -206,16 +229,27 @@ class _StampversePageState extends State<StampversePage> {
           return StampverseHomeView(
             stamps: state.stamps,
             tab: StampverseHomeTab.edit,
+            lastMainHomeTab: state.lastMainHomeTab,
             collections: _groupCollectionSummaries(state.stamps),
             editBoards: state.editBoards,
+            selectedEditBoardIds: state.selectedEditBoardIds,
             onTabChanged: _bloc.changeHomeTab,
             onOpenCollection: _bloc.openCollectionAlbum,
             onOpenCreateEditBoard: _bloc.openEditBoardCreate,
             onOpenEditBoard: _bloc.openEditBoard,
-            onAdd: _onTapAddFromHome,
+            onStartEditBoardSelection: _bloc.startEditBoardSelection,
+            onToggleEditBoardSelection: _bloc.toggleEditBoardSelection,
+            onClearEditBoardSelection: _bloc.clearEditBoardSelection,
+            onDeleteSelectedEditBoards: () {
+              _bloc.deleteSelectedEditBoards();
+            },
+            onAddFromCamera: _bloc.openCamera,
+            onAddFromFile: _pickImageFromGallery,
             onRefresh: _bloc.syncStamps,
             isRefreshing: state.isSyncing,
             onLogout: _bloc.logout,
+            onOpenPrivacyPolicy: _openPrivacyPolicy,
+            onOpenTermsOfUse: _openTermsOfUse,
             onSelectStamp: _bloc.selectStamp,
           );
         }
@@ -375,126 +409,55 @@ class _StampversePageState extends State<StampversePage> {
         view == StampverseView.editBoard;
   }
 
-  Future<void> _onTapAddFromHome() async {
-    final _CreateStampSourceOption? source =
-        await showModalBottomSheet<_CreateStampSourceOption>(
-          context: context,
-          backgroundColor: AppColors.transparent,
-          builder: (BuildContext context) {
-            return const _CreateStampSourceSheet();
-          },
-        );
+  void _pickImageFromGallery() {
+    _bloc.pickImage(ImageSource.gallery);
+  }
 
-    if (!mounted || source == null) return;
+  void _openPrivacyPolicy() {
+    _openLegalDocument(
+      title: LocaleKey.stampverseHomeSettingsPrivacyPolicy.tr,
+      urlsByLanguage: _privacyPolicyUrlsByLanguage,
+    );
+  }
 
-    switch (source) {
-      case _CreateStampSourceOption.camera:
-        _bloc.openCamera();
-        return;
-      case _CreateStampSourceOption.file:
-        await _bloc.pickImage(ImageSource.gallery);
-        return;
+  void _openTermsOfUse() {
+    _openLegalDocument(
+      title: LocaleKey.stampverseHomeSettingsTermsOfUse.tr,
+      urlsByLanguage: _termsOfUseUrlsByLanguage,
+    );
+  }
+
+  void _openLegalDocument({
+    required String title,
+    required Map<String, String> urlsByLanguage,
+  }) {
+    final String url = _resolveLegalUrl(urlsByLanguage);
+    if (url.isEmpty) {
+      Get.rawSnackbar(
+        messageText: Text(
+          LocaleKey.stampverseHomeSettingsLegalLinkPending.tr,
+          style: StampverseTextStyles.caption(color: AppColors.white),
+        ),
+        backgroundColor: AppColors.stampverseHeadingText,
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        borderRadius: 12,
+        duration: const Duration(seconds: 2),
+      );
+      return;
     }
+
+    Get.to<void>(() => _StampverseLegalWebViewPage(title: title, url: url));
   }
-}
 
-enum _CreateStampSourceOption { camera, file }
-
-class _CreateStampSourceSheet extends StatelessWidget {
-  const _CreateStampSourceSheet();
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: AppColors.stampverseSurface,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.stampverseBorderSoft),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  LocaleKey.stampverseCameraTitle.tr,
-                  style: StampverseTextStyles.body(
-                    color: AppColors.stampversePrimaryText,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _CreateSourceTile(
-                  icon: Icons.camera_alt_rounded,
-                  label: LocaleKey.stampverseHomeAddSourceCamera.tr,
-                  onTap: () => Navigator.of(
-                    context,
-                  ).pop(_CreateStampSourceOption.camera),
-                ),
-                const SizedBox(height: 8),
-                _CreateSourceTile(
-                  icon: Icons.insert_drive_file_outlined,
-                  label: LocaleKey.stampverseHomeAddSourceFile.tr,
-                  onTap: () =>
-                      Navigator.of(context).pop(_CreateStampSourceOption.file),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CreateSourceTile extends StatelessWidget {
-  const _CreateSourceTile({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: Ink(
-          decoration: BoxDecoration(
-            color: AppColors.white.withValues(alpha: 0.72),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: AppColors.stampverseBorderSoft),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            child: Row(
-              children: <Widget>[
-                Icon(icon, size: 20, color: AppColors.stampversePrimaryText),
-                const SizedBox(width: 10),
-                Text(
-                  label,
-                  style: StampverseTextStyles.body(
-                    color: AppColors.stampversePrimaryText,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+  String _resolveLegalUrl(Map<String, String> urlsByLanguage) {
+    final String languageCode =
+        Get.locale?.languageCode ??
+        TranslationManager.defaultLocale.languageCode;
+    return (urlsByLanguage[languageCode] ??
+            urlsByLanguage[TranslationManager.fallbackLocale.languageCode] ??
+            '')
+        .trim();
   }
 }
 
@@ -544,6 +507,33 @@ class _ErrorBanner extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _StampverseLegalWebViewPage extends StatelessWidget {
+  const _StampverseLegalWebViewPage({required this.title, required this.url});
+
+  final String title;
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.stampverseBackground,
+      appBar: AppBar(
+        backgroundColor: AppColors.stampverseBackground,
+        foregroundColor: AppColors.stampverseHeadingText,
+        elevation: 0,
+        title: Text(
+          title,
+          style: StampverseTextStyles.body(
+            color: AppColors.stampverseHeadingText,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ),
+      body: SafeArea(child: AppInAppWebView(url: url)),
     );
   }
 }

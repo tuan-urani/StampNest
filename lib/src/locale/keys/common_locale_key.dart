@@ -9,6 +9,7 @@ class CommonLocaleKey {
   static const String pleaseWait = 'please_wait';
   static const String ready = 'ready';
   static const String continueAction = 'continue';
+  static const String appName = 'app_name';
   static const String splashTagline = 'splash_tagline';
   static const String ok = 'ok';
   static const String cancel = 'cancel';

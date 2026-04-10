@@ -9,6 +9,7 @@ final Map<String, String> commonVi = <String, String>{
   CommonLocaleKey.pleaseWait: 'Vui lòng chờ trong giây lát',
   CommonLocaleKey.ready: 'Mọi thứ đã sẵn sàng',
   CommonLocaleKey.continueAction: 'Tiếp tục',
+  CommonLocaleKey.appName: 'STAMPNEST',
   CommonLocaleKey.splashTagline: 'Lưu giữ từng khoảnh khắc bằng con dấu riêng',
   CommonLocaleKey.ok: 'OK',
   CommonLocaleKey.cancel: 'Huỷ',

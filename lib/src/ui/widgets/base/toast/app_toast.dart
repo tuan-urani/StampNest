@@ -44,7 +44,7 @@ SnackbarController? showToast(
 SnackbarController? showConnectWifi(
   String? message, {
   required bool isConnect,
-  Color backgroundColor = Colors.green,
+  Color backgroundColor = AppColors.success,
 }) {
   if (message == null || message.isEmpty) return null;
   return Get.rawSnackbar(
@@ -57,7 +57,7 @@ SnackbarController? showConnectWifi(
     animationDuration: const Duration(seconds: 2),
     icon: Icon(
       Icons.wifi,
-      color: isConnect ? Colors.green : AppColors.black.withOpacityX(0.87),
+      color: isConnect ? AppColors.success : AppColors.black.withOpacityX(0.87),
     ),
     isDismissible: false,
   );

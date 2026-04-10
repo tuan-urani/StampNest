@@ -839,6 +839,8 @@ class _CutStampAnimationOverlay extends StatelessWidget {
           final double bottomWidth = aperture.width * 0.92 * bottomCut;
           final double rightWidth = aperture.width * 0.34;
           final double rightHeight = aperture.height * 0.88 * rightCut;
+          final bool showCutMask =
+              sourceMatte > 0 || bottomWidth > 0 || rightHeight > 0;
 
           final double pieceWidth = aperture.width * 0.92;
           final double pieceHeight = pieceWidth / shapeType.aspectRatio;
@@ -865,36 +867,45 @@ class _CutStampAnimationOverlay extends StatelessWidget {
                   ),
                 ),
               ),
-              if (sourceMatte > 0)
+              if (showCutMask)
                 Positioned(
                   left: aperture.left,
                   top: aperture.top,
                   width: aperture.width,
                   height: aperture.height,
-                  child: ColoredBox(
-                    color: AppColors.black.withValues(
-                      alpha: sourceMatte * 0.92,
+                  child: ClipPath(
+                    clipper: _RelativeStampPathClipper(shapeType: shapeType),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: <Widget>[
+                        if (sourceMatte > 0)
+                          ColoredBox(
+                            color: AppColors.black.withValues(
+                              alpha: sourceMatte * 0.92,
+                            ),
+                          ),
+                        if (bottomWidth > 0)
+                          Positioned(
+                            left: 0,
+                            bottom: 0,
+                            width: bottomWidth,
+                            height: bottomHeight,
+                            child: ColoredBox(
+                              color: AppColors.black.withValues(alpha: 0.92),
+                            ),
+                          ),
+                        if (rightHeight > 0)
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            width: rightWidth,
+                            height: rightHeight,
+                            child: ColoredBox(
+                              color: AppColors.black.withValues(alpha: 0.92),
+                            ),
+                          ),
+                      ],
                     ),
-                  ),
-                ),
-              if (bottomWidth > 0)
-                Positioned(
-                  left: aperture.left,
-                  top: aperture.top + aperture.height - bottomHeight,
-                  width: bottomWidth,
-                  height: bottomHeight,
-                  child: ColoredBox(
-                    color: AppColors.black.withValues(alpha: 0.92),
-                  ),
-                ),
-              if (rightHeight > 0)
-                Positioned(
-                  left: aperture.left + aperture.width - rightWidth,
-                  top: aperture.top + aperture.height - rightHeight,
-                  width: rightWidth,
-                  height: rightHeight,
-                  child: ColoredBox(
-                    color: AppColors.black.withValues(alpha: 0.92),
                   ),
                 ),
               Positioned(
@@ -928,6 +939,22 @@ class _CutStampAnimationOverlay extends StatelessWidget {
   double _interval(double t, double begin, double end, Curve curve) {
     final double normalized = ((t - begin) / (end - begin)).clamp(0, 1);
     return curve.transform(normalized);
+  }
+}
+
+class _RelativeStampPathClipper extends CustomClipper<Path> {
+  const _RelativeStampPathClipper({required this.shapeType});
+
+  final StampShapeType shapeType;
+
+  @override
+  Path getClip(Size size) {
+    return buildStampShapePath(rect: Offset.zero & size, shapeType: shapeType);
+  }
+
+  @override
+  bool shouldReclip(covariant _RelativeStampPathClipper oldClipper) {
+    return oldClipper.shapeType != shapeType;
   }
 }
 

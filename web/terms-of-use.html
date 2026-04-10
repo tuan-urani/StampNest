@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StampNest - Terms of Use</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f7f7f7;
+        color: #1f1f1f;
+      }
+
+      main {
+        max-width: 800px;
+        margin: 24px auto;
+        background: #fff;
+        border: 1px solid #e5e5e5;
+        border-radius: 12px;
+        padding: 20px;
+      }
+
+      .lang-switch {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      button {
+        border: 1px solid #cfcfcf;
+        background: #fff;
+        padding: 8px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 700;
+      }
+
+      button.active {
+        background: #111;
+        color: #fff;
+      }
+
+      .lang {
+        display: none;
+      }
+
+      .lang.active {
+        display: block;
+      }
+
+      h1 {
+        margin-top: 0;
+      }
+
+      h2 {
+        margin-top: 20px;
+      }
+
+      p,
+      li {
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="lang-switch">
+        <button type="button" class="active" data-lang="vi">VI</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+
+      <section class="lang active" data-content="vi">
+        <h1>StampNest - Điều khoản sử dụng</h1>
+        <p><strong>Cập nhật lần cuối:</strong> 10/04/2026</p>
+        <p>Khi cài đặt hoặc sử dụng StampNest, bạn đồng ý với các điều khoản sau.</p>
+
+        <h2>1. Cấp phép sử dụng</h2>
+        <p>
+          Ứng dụng được cung cấp cho mục đích sử dụng cá nhân. Bạn không được sao chép hoặc
+          phân phối lại ứng dụng trái phép.
+        </p>
+
+        <h2>2. Hành vi sử dụng</h2>
+        <ul>
+          <li>Không can thiệp trái phép vào ứng dụng hoặc hệ thống liên quan.</li>
+          <li>Không sử dụng ứng dụng cho mục đích vi phạm pháp luật.</li>
+        </ul>
+
+        <h2>3. Trách nhiệm</h2>
+        <p>
+          Ứng dụng được cung cấp theo hiện trạng. Chúng tôi không chịu trách nhiệm với thiệt hại
+          gián tiếp phát sinh từ việc sử dụng ứng dụng.
+        </p>
+
+        <h2>4. Cập nhật điều khoản</h2>
+        <p>
+          Điều khoản có thể được cập nhật theo thời gian và có hiệu lực khi được công bố tại trang này.
+        </p>
+
+        <h2>5. Liên hệ</h2>
+        <p>Vui lòng liên hệ: support@tileweave.app</p>
+      </section>
+
+      <section class="lang" data-content="en">
+        <h1>StampNest - Terms of Use</h1>
+        <p><strong>Last updated:</strong> April 10, 2026</p>
+        <p>By installing or using StampNest, you agree to the following terms.</p>
+
+        <h2>1. License</h2>
+        <p>
+          The app is provided for personal use. You may not copy or redistribute the app unlawfully.
+        </p>
+
+        <h2>2. Acceptable Use</h2>
+        <ul>
+          <li>Do not attempt unauthorized interference with the app or related systems.</li>
+          <li>Do not use the app for unlawful purposes.</li>
+        </ul>
+
+        <h2>3. Liability</h2>
+        <p>
+          The app is provided "as is". We are not liable for indirect damages arising from use of the app.
+        </p>
+
+        <h2>4. Updates to Terms</h2>
+        <p>
+          These terms may be updated over time and become effective when published on this page.
+        </p>
+
+        <h2>5. Contact</h2>
+        <p>Please contact: support@tileweave.app</p>
+      </section>
+    </main>
+
+    <script>
+      const buttons = document.querySelectorAll('[data-lang]');
+      const blocks = document.querySelectorAll('[data-content]');
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const lang = button.getAttribute('data-lang');
+
+          buttons.forEach((item) => item.classList.remove('active'));
+          button.classList.add('active');
+
+          blocks.forEach((block) => {
+            block.classList.toggle('active', block.getAttribute('data-content') === lang);
+          });
+
+          document.documentElement.lang = lang;
+        });
+      });
+    </script>
+  </body>
+</html>

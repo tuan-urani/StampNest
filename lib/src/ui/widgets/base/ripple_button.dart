@@ -44,7 +44,7 @@ class RippleButton extends StatefulWidget {
     this.colorTitle,
     this.boxShadow,
     this.width,
-    this.disabledColor = Colors.white54,
+    this.disabledColor = AppColors.stateDisabledText,
     this.margin,
     this.thickness = 1,
     this.fontSizeTitle = 16,

@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:stamp_camera/src/extensions/double_extensions.dart';
 import 'package:stamp_camera/src/extensions/string_extensions.dart';
 import 'package:stamp_camera/src/ui/widgets/app_circular_progress.dart';
+import 'package:stamp_camera/src/utils/app_colors.dart';
 
 class AppImage extends StatelessWidget {
   const AppImage({
@@ -108,7 +109,7 @@ class AppImage extends StatelessWidget {
           width: widthImage(),
           height: heightImage(),
           decoration: BoxDecoration(
-            color: Colors.white.withAlpha(((1 - opacity) * 255).round()),
+            color: AppColors.white.withAlpha(((1 - opacity) * 255).round()),
             borderRadius: BorderRadius.circular(radius ?? 0),
           ),
         ),

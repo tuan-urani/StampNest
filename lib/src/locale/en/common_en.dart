@@ -9,6 +9,7 @@ final Map<String, String> commonEn = <String, String>{
   CommonLocaleKey.pleaseWait: 'Please wait a moment',
   CommonLocaleKey.ready: 'Everything is ready',
   CommonLocaleKey.continueAction: 'Continue',
+  CommonLocaleKey.appName: 'STAMPNEST',
   CommonLocaleKey.splashTagline: 'Collect every moment, one stamp at a time',
   CommonLocaleKey.ok: 'OK',
   CommonLocaleKey.cancel: 'Cancel',

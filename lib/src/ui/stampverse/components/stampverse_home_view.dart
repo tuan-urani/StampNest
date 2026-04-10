@@ -3,7 +3,6 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
@@ -12,11 +11,13 @@ import 'package:stamp_camera/src/core/model/stamp_data_model.dart';
 import 'package:stamp_camera/src/core/model/stamp_edit_model.dart';
 import 'package:stamp_camera/src/core/model/stamp_shape_type.dart';
 import 'package:stamp_camera/src/locale/locale_key.dart';
+import 'package:stamp_camera/src/locale/translation_manager.dart';
+import 'package:stamp_camera/src/ui/stampverse/components/stampverse_add_stamp_fab.dart';
 import 'package:stamp_camera/src/ui/stampverse/components/stampverse_stamp.dart';
 import 'package:stamp_camera/src/ui/stampverse/components/stampverse_text_styles.dart';
 import 'package:stamp_camera/src/ui/stampverse/interactor/stampverse_state.dart';
-import 'package:stamp_camera/src/utils/app_assets.dart';
 import 'package:stamp_camera/src/utils/app_colors.dart';
+import 'package:stamp_camera/src/utils/app_shared.dart';
 
 class StampverseCollectionSummary {
   const StampverseCollectionSummary({required this.name, required this.stamps});
@@ -40,36 +41,60 @@ class StampverseHomeView extends StatelessWidget {
   const StampverseHomeView({
     super.key,
     required this.tab,
+    required this.lastMainHomeTab,
     required this.stamps,
     required this.collections,
     required this.editBoards,
+    required this.selectedEditBoardIds,
     required this.onTabChanged,
     required this.onOpenCollection,
     required this.onOpenCreateEditBoard,
     required this.onOpenEditBoard,
-    required this.onAdd,
+    required this.onStartEditBoardSelection,
+    required this.onToggleEditBoardSelection,
+    required this.onClearEditBoardSelection,
+    required this.onDeleteSelectedEditBoards,
+    required this.onAddFromCamera,
+    required this.onAddFromFile,
     required this.onSelectStamp,
     required this.onRefresh,
     required this.onLogout,
+    required this.onOpenPrivacyPolicy,
+    required this.onOpenTermsOfUse,
     this.isRefreshing = false,
   });
 
   final StampverseHomeTab tab;
+  final StampverseHomeTab lastMainHomeTab;
   final List<StampDataModel> stamps;
   final List<StampverseCollectionSummary> collections;
   final List<StampEditBoard> editBoards;
+  final List<String> selectedEditBoardIds;
   final ValueChanged<StampverseHomeTab> onTabChanged;
   final ValueChanged<String> onOpenCollection;
   final VoidCallback onOpenCreateEditBoard;
   final ValueChanged<String> onOpenEditBoard;
-  final VoidCallback onAdd;
+  final ValueChanged<String> onStartEditBoardSelection;
+  final ValueChanged<String> onToggleEditBoardSelection;
+  final VoidCallback onClearEditBoardSelection;
+  final VoidCallback onDeleteSelectedEditBoards;
+  final VoidCallback onAddFromCamera;
+  final VoidCallback onAddFromFile;
   final ValueChanged<String> onSelectStamp;
   final VoidCallback onRefresh;
   final VoidCallback onLogout;
+  final VoidCallback onOpenPrivacyPolicy;
+  final VoidCallback onOpenTermsOfUse;
   final bool isRefreshing;
 
   @override
   Widget build(BuildContext context) {
+    final StampverseHomeTab settingsBackTab = _resolveLastMainTab();
+    final StampverseHomeTab bottomBarActiveTab =
+        tab == StampverseHomeTab.settings ? settingsBackTab : tab;
+    final bool isEditSelectionMode =
+        tab == StampverseHomeTab.edit && selectedEditBoardIds.isNotEmpty;
+
     return ColoredBox(
       color: AppColors.stampverseBackground,
       child: SafeArea(
@@ -81,6 +106,18 @@ class StampverseHomeView extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(24, 22, 24, 14),
                   child: Row(
                     children: <Widget>[
+                      if (tab == StampverseHomeTab.settings ||
+                          isEditSelectionMode) ...<Widget>[
+                        _TopRoundActionButton(
+                          icon: tab == StampverseHomeTab.settings
+                              ? Icons.arrow_back_rounded
+                              : Icons.close_rounded,
+                          onTap: tab == StampverseHomeTab.settings
+                              ? () => onTabChanged(settingsBackTab)
+                              : onClearEditBoardSelection,
+                        ),
+                        const SizedBox(width: 12),
+                      ],
                       Expanded(
                         child: Text(
                           _titleOfTab(tab),
@@ -89,22 +126,17 @@ class StampverseHomeView extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (_isMainHomeTab(tab))
+                      if (isEditSelectionMode)
+                        _TopRoundActionButton(
+                          icon: Icons.delete_outline_rounded,
+                          iconColor: AppColors.stampverseDanger,
+                          onTap: onDeleteSelectedEditBoards,
+                        )
+                      else if (_isMainHomeTab(tab))
                         _TopRoundActionButton(
                           icon: Icons.settings_rounded,
                           onTap: () => onTabChanged(StampverseHomeTab.settings),
                         ),
-                      if (tab == StampverseHomeTab.settings) ...<Widget>[
-                        _TopRoundActionButton(
-                          icon: Icons.refresh_rounded,
-                          onTap: onRefresh,
-                        ),
-                        const SizedBox(width: 10),
-                        _TopRoundActionButton(
-                          icon: Icons.logout_rounded,
-                          onTap: onLogout,
-                        ),
-                      ],
                     ],
                   ),
                 ),
@@ -123,13 +155,20 @@ class StampverseHomeView extends StatelessWidget {
               left: 16,
               right: 16,
               bottom: 16,
-              child: _HomeBottomTabBar(activeTab: tab, onChanged: onTabChanged),
+              child: _HomeBottomTabBar(
+                activeTab: bottomBarActiveTab,
+                onChanged: onTabChanged,
+              ),
             ),
-            if (tab != StampverseHomeTab.edit)
+            if (tab != StampverseHomeTab.edit &&
+                tab != StampverseHomeTab.settings)
               Positioned(
                 right: 26,
                 bottom: 114,
-                child: _AddStampButton(onTap: onAdd),
+                child: StampverseAddStampFab(
+                  onOpenCamera: onAddFromCamera,
+                  onOpenGallery: onAddFromFile,
+                ),
               ),
           ],
         ),
@@ -167,8 +206,11 @@ class StampverseHomeView extends StatelessWidget {
       case StampverseHomeTab.edit:
         return _EditBoardsTab(
           boards: editBoards,
+          selectedBoardIds: selectedEditBoardIds,
           onCreateBoard: onOpenCreateEditBoard,
           onOpenBoard: onOpenEditBoard,
+          onStartSelection: onStartEditBoardSelection,
+          onToggleSelection: onToggleEditBoardSelection,
         );
       case StampverseHomeTab.settings:
         return _SettingsTab(
@@ -177,6 +219,8 @@ class StampverseHomeView extends StatelessWidget {
           isRefreshing: isRefreshing,
           onRefresh: onRefresh,
           onResetLocal: onLogout,
+          onOpenPrivacyPolicy: onOpenPrivacyPolicy,
+          onOpenTermsOfUse: onOpenTermsOfUse,
         );
     }
   }
@@ -191,6 +235,13 @@ class StampverseHomeView extends StatelessWidget {
       case StampverseHomeTab.settings:
         return false;
     }
+  }
+
+  StampverseHomeTab _resolveLastMainTab() {
+    if (_isMainHomeTab(lastMainHomeTab)) {
+      return lastMainHomeTab;
+    }
+    return StampverseHomeTab.stamp;
   }
 }
 
@@ -259,10 +310,12 @@ class _StampTab extends StatelessWidget {
                             onTap: () => onSelectStamp(item.id),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            DateFormat('HH:mm').format(openedAt),
-                            style: StampverseTextStyles.caption(
-                              color: AppColors.stampverseMutedText,
+                          Center(
+                            child: Text(
+                              DateFormat('HH:mm').format(openedAt),
+                              style: StampverseTextStyles.caption(
+                                color: AppColors.stampverseMutedText,
+                              ),
                             ),
                           ),
                         ],
@@ -489,13 +542,19 @@ class _CollectionTab extends StatelessWidget {
 class _EditBoardsTab extends StatelessWidget {
   const _EditBoardsTab({
     required this.boards,
+    required this.selectedBoardIds,
     required this.onCreateBoard,
     required this.onOpenBoard,
+    required this.onStartSelection,
+    required this.onToggleSelection,
   });
 
   final List<StampEditBoard> boards;
+  final List<String> selectedBoardIds;
   final VoidCallback onCreateBoard;
   final ValueChanged<String> onOpenBoard;
+  final ValueChanged<String> onStartSelection;
+  final ValueChanged<String> onToggleSelection;
 
   @override
   Widget build(BuildContext context) {
@@ -509,24 +568,29 @@ class _EditBoardsTab extends StatelessWidget {
       );
     }
 
+    final Set<String> selectedSet = selectedBoardIds.toSet();
+    final bool isSelectionMode = selectedSet.isNotEmpty;
+
     return ListView(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 160),
       children: <Widget>[
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(
-            onPressed: onCreateBoard,
-            child: Text(
-              LocaleKey.stampverseHomeEditCreateBoard.tr,
-              style: StampverseTextStyles.caption(
-                color: AppColors.colorF586AA6,
-                fontWeight: FontWeight.w700,
+        if (!isSelectionMode)
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: onCreateBoard,
+              child: Text(
+                LocaleKey.stampverseHomeEditCreateBoard.tr,
+                style: StampverseTextStyles.caption(
+                  color: AppColors.colorF586AA6,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 6),
+        SizedBox(height: isSelectionMode ? 0 : 6),
         ...boards.map((StampEditBoard board) {
+          final bool isSelected = selectedSet.contains(board.id);
           final StampEditLayer? previewLayer = board.layers.isEmpty
               ? null
               : board.layers.last;
@@ -537,15 +601,34 @@ class _EditBoardsTab extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(bottom: 14),
             child: Material(
-              color: AppColors.white.withValues(alpha: 0.82),
+              color: isSelected
+                  ? AppColors.colorF586AA6.withValues(alpha: 0.15)
+                  : AppColors.white.withValues(alpha: 0.82),
               borderRadius: BorderRadius.circular(16),
               child: InkWell(
                 borderRadius: BorderRadius.circular(16),
-                onTap: () => onOpenBoard(board.id),
+                onTap: () {
+                  if (isSelectionMode) {
+                    onToggleSelection(board.id);
+                    return;
+                  }
+                  onOpenBoard(board.id);
+                },
+                onLongPress: () {
+                  if (isSelectionMode) {
+                    onToggleSelection(board.id);
+                    return;
+                  }
+                  onStartSelection(board.id);
+                },
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.stampverseBorderSoft),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.colorF586AA6
+                          : AppColors.stampverseBorderSoft,
+                    ),
                     boxShadow: const <BoxShadow>[
                       BoxShadow(
                         color: AppColors.stampverseShadowCard,
@@ -618,10 +701,19 @@ class _EditBoardsTab extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const Icon(
-                          Icons.chevron_right_rounded,
-                          color: AppColors.stampverseMutedText,
-                        ),
+                        isSelectionMode
+                            ? Icon(
+                                isSelected
+                                    ? Icons.check_circle_rounded
+                                    : Icons.radio_button_unchecked_rounded,
+                                color: isSelected
+                                    ? AppColors.colorF586AA6
+                                    : AppColors.stampverseMutedText,
+                              )
+                            : const Icon(
+                                Icons.chevron_right_rounded,
+                                color: AppColors.stampverseMutedText,
+                              ),
                       ],
                     ),
                   ),
@@ -1000,12 +1092,34 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: AppColors.stampverseSurface,
-          title: Text(
-            LocaleKey.stampverseEditTrashDeleteTitle.tr,
-            style: StampverseTextStyles.body(
-              color: AppColors.stampverseHeadingText,
-              fontWeight: FontWeight.w700,
-            ),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.stampverseDanger.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.all(6),
+                  child: Icon(
+                    Icons.delete_outline_rounded,
+                    size: 18,
+                    color: AppColors.stampverseDanger,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  LocaleKey.stampverseEditTrashDeleteTitle.tr,
+                  style: StampverseTextStyles.body(
+                    color: AppColors.stampverseHeadingText,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
           ),
           content: Text(
             LocaleKey.stampverseEditTrashDeleteBody.tr,
@@ -1138,123 +1252,129 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                 })
                 .toList(growable: false);
 
-            return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                child: Column(
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: _EditFilterChip(
-                            label:
-                                LocaleKey.stampverseHomeEditSourceCollection.tr,
-                            selected: source == _ImportStampSource.collection,
-                            onTap: () {
-                              setStateSheet(() {
-                                source = _ImportStampSource.collection;
-                                selectedCollection = collectionNames.isNotEmpty
-                                    ? collectionNames.first
-                                    : null;
-                              });
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _EditFilterChip(
-                            label: LocaleKey.stampverseHomeEditSourceDaily.tr,
-                            selected: source == _ImportStampSource.daily,
-                            onTap: () {
-                              setStateSheet(() {
-                                source = _ImportStampSource.daily;
-                                selectedDay = dayValues.isNotEmpty
-                                    ? dayValues.first
-                                    : null;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        source == _ImportStampSource.collection
-                            ? LocaleKey.stampverseHomeEditFilterCollection.tr
-                            : LocaleKey.stampverseHomeEditFilterDaily.tr,
-                        style: StampverseTextStyles.caption(
-                          color: AppColors.stampverseMutedText,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    SizedBox(
-                      height: 36,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: source == _ImportStampSource.collection
-                            ? collectionNames.length
-                            : dayValues.length,
-                        separatorBuilder: (_, _) => const SizedBox(width: 8),
-                        itemBuilder: (_, int index) {
-                          final String label =
-                              source == _ImportStampSource.collection
-                              ? collectionNames[index]
-                              : dayValues[index];
-                          final bool selected =
-                              source == _ImportStampSource.collection
-                              ? selectedCollection == label
-                              : selectedDay == label;
-                          return _EditFilterChip(
-                            label: label,
-                            selected: selected,
-                            onTap: () {
-                              setStateSheet(() {
-                                if (source == _ImportStampSource.collection) {
-                                  selectedCollection = label;
-                                } else {
-                                  selectedDay = label;
-                                }
-                              });
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: filtered.isEmpty
-                          ? Center(
-                              child: Text(
-                                LocaleKey.stampverseHomeEditImportEmpty.tr,
-                                textAlign: TextAlign.center,
-                                style: StampverseTextStyles.body(),
-                              ),
-                            )
-                          : GridView.builder(
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 3,
-                                    crossAxisSpacing: 12,
-                                    mainAxisSpacing: 12,
-                                    childAspectRatio: 3 / 4,
-                                  ),
-                              itemCount: filtered.length,
-                              itemBuilder: (_, int index) {
-                                final StampDataModel stamp = filtered[index];
-                                return GestureDetector(
-                                  onTap: () => Navigator.of(context).pop(stamp),
-                                  child: StampverseStamp(
-                                    imageUrl: stamp.imageUrl,
-                                    shapeType: stamp.shapeType,
-                                  ),
-                                );
+            return FractionallySizedBox(
+              heightFactor: 0.75,
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  child: Column(
+                    children: <Widget>[
+                      Row(
+                        children: <Widget>[
+                          Expanded(
+                            child: _EditFilterChip(
+                              label: LocaleKey
+                                  .stampverseHomeEditSourceCollection
+                                  .tr,
+                              selected: source == _ImportStampSource.collection,
+                              onTap: () {
+                                setStateSheet(() {
+                                  source = _ImportStampSource.collection;
+                                  selectedCollection =
+                                      collectionNames.isNotEmpty
+                                      ? collectionNames.first
+                                      : null;
+                                });
                               },
                             ),
-                    ),
-                  ],
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _EditFilterChip(
+                              label: LocaleKey.stampverseHomeEditSourceDaily.tr,
+                              selected: source == _ImportStampSource.daily,
+                              onTap: () {
+                                setStateSheet(() {
+                                  source = _ImportStampSource.daily;
+                                  selectedDay = dayValues.isNotEmpty
+                                      ? dayValues.first
+                                      : null;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          source == _ImportStampSource.collection
+                              ? LocaleKey.stampverseHomeEditFilterCollection.tr
+                              : LocaleKey.stampverseHomeEditFilterDaily.tr,
+                          style: StampverseTextStyles.caption(
+                            color: AppColors.stampverseMutedText,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        height: 36,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: source == _ImportStampSource.collection
+                              ? collectionNames.length
+                              : dayValues.length,
+                          separatorBuilder: (_, _) => const SizedBox(width: 8),
+                          itemBuilder: (_, int index) {
+                            final String label =
+                                source == _ImportStampSource.collection
+                                ? collectionNames[index]
+                                : dayValues[index];
+                            final bool selected =
+                                source == _ImportStampSource.collection
+                                ? selectedCollection == label
+                                : selectedDay == label;
+                            return _EditFilterChip(
+                              label: label,
+                              selected: selected,
+                              onTap: () {
+                                setStateSheet(() {
+                                  if (source == _ImportStampSource.collection) {
+                                    selectedCollection = label;
+                                  } else {
+                                    selectedDay = label;
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Expanded(
+                        child: filtered.isEmpty
+                            ? Center(
+                                child: Text(
+                                  LocaleKey.stampverseHomeEditImportEmpty.tr,
+                                  textAlign: TextAlign.center,
+                                  style: StampverseTextStyles.body(),
+                                ),
+                              )
+                            : GridView.builder(
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: 3,
+                                      crossAxisSpacing: 12,
+                                      mainAxisSpacing: 12,
+                                      childAspectRatio: 3 / 4,
+                                    ),
+                                itemCount: filtered.length,
+                                itemBuilder: (_, int index) {
+                                  final StampDataModel stamp = filtered[index];
+                                  return GestureDetector(
+                                    onTap: () =>
+                                        Navigator.of(context).pop(stamp),
+                                    child: StampverseStamp(
+                                      imageUrl: stamp.imageUrl,
+                                      shapeType: stamp.shapeType,
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -2021,6 +2141,8 @@ class _SettingsTab extends StatelessWidget {
     required this.collectionsCount,
     required this.onRefresh,
     required this.onResetLocal,
+    required this.onOpenPrivacyPolicy,
+    required this.onOpenTermsOfUse,
     this.isRefreshing = false,
   });
 
@@ -2029,16 +2151,49 @@ class _SettingsTab extends StatelessWidget {
   final bool isRefreshing;
   final VoidCallback onRefresh;
   final VoidCallback onResetLocal;
+  final VoidCallback onOpenPrivacyPolicy;
+  final VoidCallback onOpenTermsOfUse;
+
+  static const List<_SettingsLanguageOption> _languageOptions =
+      <_SettingsLanguageOption>[
+        _SettingsLanguageOption(
+          languageCode: 'vi',
+          labelKey: LocaleKey.stampverseHomeSettingsLanguageVietnamese,
+        ),
+        _SettingsLanguageOption(
+          languageCode: 'en',
+          labelKey: LocaleKey.stampverseHomeSettingsLanguageEnglish,
+        ),
+        _SettingsLanguageOption(
+          languageCode: 'ja',
+          labelKey: LocaleKey.stampverseHomeSettingsLanguageJapanese,
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
+    final String selectedLanguageCode = _resolveSelectedLanguageCode();
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 160),
       child: Column(
         children: <Widget>[
-          _SettingsInfoCard(
-            title: LocaleKey.stampverseHomeSettingsLocalTitle.tr,
-            description: LocaleKey.stampverseHomeSettingsLocalDescription.tr,
+          _SettingsLanguageCard(
+            label: LocaleKey.stampverseHomeSettingsLanguage.tr,
+            selectedLanguageCode: selectedLanguageCode,
+            options: _languageOptions,
+            onChanged: _onLanguageChanged,
+          ),
+          const SizedBox(height: 12),
+          _SettingsMenuButton(
+            icon: Icons.privacy_tip_outlined,
+            label: LocaleKey.stampverseHomeSettingsPrivacyPolicy.tr,
+            onTap: onOpenPrivacyPolicy,
+          ),
+          const SizedBox(height: 10),
+          _SettingsMenuButton(
+            icon: Icons.description_outlined,
+            label: LocaleKey.stampverseHomeSettingsTermsOfUse.tr,
+            onTap: onOpenTermsOfUse,
           ),
           const SizedBox(height: 12),
           _StatsCard(
@@ -2060,6 +2215,165 @@ class _SettingsTab extends StatelessWidget {
             danger: true,
           ),
         ],
+      ),
+    );
+  }
+
+  String _resolveSelectedLanguageCode() {
+    final String currentLanguageCode =
+        Get.locale?.languageCode ??
+        TranslationManager.defaultLocale.languageCode;
+    for (final _SettingsLanguageOption option in _languageOptions) {
+      if (option.languageCode == currentLanguageCode) {
+        return currentLanguageCode;
+      }
+    }
+    return TranslationManager.defaultLocale.languageCode;
+  }
+
+  Future<void> _onLanguageChanged(String? languageCode) async {
+    if (languageCode == null || languageCode.isEmpty) return;
+    final Locale targetLocale =
+        TranslationManager.resolveLocaleFromLanguageCode(languageCode);
+
+    await Get.find<AppShared>().setLanguageCode(languageCode);
+    await Get.updateLocale(targetLocale);
+  }
+}
+
+class _SettingsLanguageOption {
+  const _SettingsLanguageOption({
+    required this.languageCode,
+    required this.labelKey,
+  });
+
+  final String languageCode;
+  final String labelKey;
+}
+
+class _SettingsLanguageCard extends StatelessWidget {
+  const _SettingsLanguageCard({
+    required this.label,
+    required this.selectedLanguageCode,
+    required this.options,
+    required this.onChanged,
+  });
+
+  final String label;
+  final String selectedLanguageCode;
+  final List<_SettingsLanguageOption> options;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 52,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.stampverseBorderSoft),
+      ),
+      child: Row(
+        children: <Widget>[
+          const Icon(
+            Icons.language_rounded,
+            size: 18,
+            color: AppColors.stampversePrimaryText,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              label,
+              style: StampverseTextStyles.body(
+                color: AppColors.stampversePrimaryText,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: selectedLanguageCode,
+              borderRadius: BorderRadius.circular(12),
+              dropdownColor: AppColors.white,
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: AppColors.stampverseMutedText,
+              ),
+              style: StampverseTextStyles.caption(
+                color: AppColors.stampverseHeadingText,
+                fontWeight: FontWeight.w700,
+              ),
+              items: options
+                  .map(
+                    (_SettingsLanguageOption option) =>
+                        DropdownMenuItem<String>(
+                          value: option.languageCode,
+                          child: Text(option.labelKey.tr),
+                        ),
+                  )
+                  .toList(growable: false),
+              onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsMenuButton extends StatelessWidget {
+  const _SettingsMenuButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 52,
+      child: Material(
+        color: AppColors.white.withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: AppColors.stampverseBorderSoft),
+            ),
+            child: Row(
+              children: <Widget>[
+                const SizedBox(width: 14),
+                Icon(icon, size: 18, color: AppColors.stampversePrimaryText),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: StampverseTextStyles.body(
+                      color: AppColors.stampversePrimaryText,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right_rounded,
+                  size: 20,
+                  color: AppColors.stampverseMutedText,
+                ),
+                const SizedBox(width: 12),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -2105,17 +2419,17 @@ class _HomeBottomTabBar extends StatelessWidget {
               onChanged: onChanged,
             ),
             _HomeTabButton(
-              tab: StampverseHomeTab.memory,
-              activeTab: activeTab,
-              icon: Icons.history_rounded,
-              label: LocaleKey.stampverseHomeTabMemory.tr,
-              onChanged: onChanged,
-            ),
-            _HomeTabButton(
               tab: StampverseHomeTab.edit,
               activeTab: activeTab,
               icon: Icons.edit_rounded,
               label: LocaleKey.stampverseHomeTabEdit.tr,
+              onChanged: onChanged,
+            ),
+            _HomeTabButton(
+              tab: StampverseHomeTab.memory,
+              activeTab: activeTab,
+              icon: Icons.history_rounded,
+              label: LocaleKey.stampverseHomeTabMemory.tr,
               onChanged: onChanged,
             ),
           ],
@@ -2152,6 +2466,10 @@ class _HomeTabButton extends StatelessWidget {
         color: AppColors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
+          splashColor: AppColors.transparent,
+          highlightColor: AppColors.transparent,
+          focusColor: AppColors.transparent,
+          hoverColor: AppColors.transparent,
           onTap: () => onChanged(tab),
           child: Ink(
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -2183,10 +2501,15 @@ class _HomeTabButton extends StatelessWidget {
 }
 
 class _TopRoundActionButton extends StatelessWidget {
-  const _TopRoundActionButton({required this.icon, required this.onTap});
+  const _TopRoundActionButton({
+    required this.icon,
+    required this.onTap,
+    this.iconColor = AppColors.stampversePrimaryText,
+  });
 
   final IconData icon;
   final VoidCallback onTap;
+  final Color iconColor;
 
   @override
   Widget build(BuildContext context) {
@@ -2199,46 +2522,7 @@ class _TopRoundActionButton extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: onTap,
-          child: Icon(icon, size: 20, color: AppColors.stampversePrimaryText),
-        ),
-      ),
-    );
-  }
-}
-
-class _AddStampButton extends StatelessWidget {
-  const _AddStampButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 70,
-        height: 70,
-        decoration: const BoxDecoration(
-          color: AppColors.colorF586AA6,
-          shape: BoxShape.circle,
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: AppColors.stampverseShadowStrong,
-              blurRadius: 12,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Center(
-          child: SvgPicture.asset(
-            AppAssets.iconsCameraSvg,
-            width: 24,
-            height: 24,
-            colorFilter: const ColorFilter.mode(
-              AppColors.white,
-              BlendMode.srcIn,
-            ),
-          ),
+          child: Icon(icon, size: 20, color: iconColor),
         ),
       ),
     );
@@ -2326,40 +2610,6 @@ class _EmptyTab extends StatelessWidget {
             ],
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _SettingsInfoCard extends StatelessWidget {
-  const _SettingsInfoCard({required this.title, required this.description});
-
-  final String title;
-  final String description;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white.withValues(alpha: 0.8),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.stampverseBorderSoft),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            title,
-            style: StampverseTextStyles.body(
-              color: AppColors.stampverseHeadingText,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(description, style: StampverseTextStyles.caption()),
-        ],
       ),
     );
   }

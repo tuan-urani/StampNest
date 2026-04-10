@@ -142,12 +142,38 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: AppColors.stampverseSurface,
-          title: Text(
-            LocaleKey.stampverseSaveCollectionCreateTitle.tr,
-            style: AppStyles.bodyLarge(
-              color: AppColors.stampverseHeadingText,
-              fontWeight: FontWeight.w700,
-            ),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 26,
+            vertical: 24,
+          ),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppColors.colorF586AA6.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.all(6),
+                  child: Icon(
+                    Icons.collections_bookmark_rounded,
+                    size: 18,
+                    color: AppColors.colorF586AA6,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  LocaleKey.stampverseSaveCollectionCreateTitle.tr,
+                  style: AppStyles.bodyLarge(
+                    color: AppColors.stampverseHeadingText,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
           ),
           content: TextField(
             controller: controller,
@@ -518,28 +544,15 @@ class _CollectionInputField extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: Text(
-                LocaleKey.stampverseSaveCollectionQuickPick.tr,
-                style: AppStyles.bodySmall(
-                  color: AppColors.stampverseMutedText,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            LocaleKey.stampverseSaveCollectionQuickPick.tr,
+            style: AppStyles.bodySmall(
+              color: AppColors.stampverseMutedText,
+              fontWeight: FontWeight.w600,
             ),
-            GestureDetector(
-              onTap: onCreateCollection,
-              child: Text(
-                LocaleKey.stampverseSaveCollectionCreateAction.tr,
-                style: AppStyles.bodySmall(
-                  color: AppColors.colorF586AA6,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
         const SizedBox(height: 8),
         if (options.isNotEmpty)

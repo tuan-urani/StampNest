@@ -22,9 +22,11 @@ class StampverseState extends Equatable {
   const StampverseState({
     required this.view,
     required this.homeTab,
+    required this.lastMainHomeTab,
     required this.stamps,
     required this.collections,
     required this.editBoards,
+    this.selectedEditBoardIds = const <String>[],
     this.authToken,
     this.user,
     this.currentCapture,
@@ -44,12 +46,13 @@ class StampverseState extends Equatable {
     this.showDeleteConfirm = false,
     this.registerSuccess = false,
     this.isInitialized = false,
-  });
+  }) : assert(lastMainHomeTab != StampverseHomeTab.settings);
 
   factory StampverseState.initial() {
     return const StampverseState(
       view: StampverseView.home,
       homeTab: StampverseHomeTab.stamp,
+      lastMainHomeTab: StampverseHomeTab.stamp,
       stamps: <StampDataModel>[],
       collections: <String>[],
       editBoards: <StampEditBoard>[],
@@ -58,9 +61,11 @@ class StampverseState extends Equatable {
 
   final StampverseView view;
   final StampverseHomeTab homeTab;
+  final StampverseHomeTab lastMainHomeTab;
   final List<StampDataModel> stamps;
   final List<String> collections;
   final List<StampEditBoard> editBoards;
+  final List<String> selectedEditBoardIds;
   final String? authToken;
   final Map<String, dynamic>? user;
   final String? currentCapture;
@@ -86,12 +91,16 @@ class StampverseState extends Equatable {
     return token != null && token.isNotEmpty;
   }
 
+  bool get isSelectingEditBoards => selectedEditBoardIds.isNotEmpty;
+
   StampverseState copyWith({
     StampverseView? view,
     StampverseHomeTab? homeTab,
+    StampverseHomeTab? lastMainHomeTab,
     List<StampDataModel>? stamps,
     List<String>? collections,
     List<StampEditBoard>? editBoards,
+    List<String>? selectedEditBoardIds,
     Object? authToken = _sentinel,
     Object? user = _sentinel,
     Object? currentCapture = _sentinel,
@@ -115,9 +124,11 @@ class StampverseState extends Equatable {
     return StampverseState(
       view: view ?? this.view,
       homeTab: homeTab ?? this.homeTab,
+      lastMainHomeTab: lastMainHomeTab ?? this.lastMainHomeTab,
       stamps: stamps ?? this.stamps,
       collections: collections ?? this.collections,
       editBoards: editBoards ?? this.editBoards,
+      selectedEditBoardIds: selectedEditBoardIds ?? this.selectedEditBoardIds,
       authToken: authToken == _sentinel ? this.authToken : authToken as String?,
       user: user == _sentinel ? this.user : user as Map<String, dynamic>?,
       currentCapture: currentCapture == _sentinel
@@ -156,9 +167,11 @@ class StampverseState extends Equatable {
   List<Object?> get props => <Object?>[
     view,
     homeTab,
+    lastMainHomeTab,
     stamps,
     collections,
     editBoards,
+    selectedEditBoardIds,
     authToken,
     user,
     currentCapture,

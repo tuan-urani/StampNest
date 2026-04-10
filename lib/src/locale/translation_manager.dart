@@ -21,4 +21,18 @@ class TranslationManager extends Translations {
     'en_US': enUs,
     'ja_JP': jaJp,
   };
+
+  static Locale resolveLocaleFromLanguageCode(String? languageCode) {
+    if (languageCode == null || languageCode.isEmpty) {
+      return defaultLocale;
+    }
+
+    for (final Locale locale in appLocales) {
+      if (locale.languageCode == languageCode) {
+        return locale;
+      }
+    }
+
+    return defaultLocale;
+  }
 }

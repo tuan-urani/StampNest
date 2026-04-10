@@ -3,10 +3,53 @@ import '../extensions/color_extension.dart';
 
 class AppColors {
   // ===========================================================================
-  // PRIMARY
+  // STANDARDIZED TOKEN SET (SINGLE THEME - SOFT/CUTE)
   // ===========================================================================
-  static const Color primary = Color(0xFF84C93F);
-  static const Color primaryLight = Color(0xFF5CC7A0);
+  // Brand
+  static const Color brandPrimary = Color(0xFF84C93F);
+  static const Color brandPrimaryAlt = Color(0xFF7BCFB2);
+  static const Color brandSecondary = Color(0xFFD8EDC5);
+  static const Color brandAccent = Color(0xFF7E8FC7);
+  static const Color brandAccentSoft = Color(0xFFE8ECFA);
+
+  // Neutral
+  static const Color neutral0 = Color(0xFFFFFFFF);
+  static const Color neutral50 = Color(0xFFFEFAF5);
+  static const Color neutral100 = Color(0xFFF8F5ED);
+  static const Color neutral300 = Color(0xFFC0C0C0);
+  static const Color neutral500 = Color(0xFF757575);
+  static const Color neutral700 = Color(0xFF4A4A48);
+  static const Color neutral900 = Color(0xFF000000);
+
+  // Surface / Border / Overlay
+  static const Color surfacePage = Color(0xFFF8F5ED);
+  static const Color surfaceCard = Color(0xFFFEFAF5);
+  static const Color surfaceBase = Color(0xFFFFFFFF);
+  static const Color surfaceSecondary = Color(0xFFF5F5F5);
+  static const Color borderSoft = Color(0xFFF1EEE7);
+  static const Color borderDefault = Color(0xFFE0E0E0);
+  static const Color overlayScrim = Color(0x80000000);
+
+  // Semantic
+  static const Color semanticSuccess = Color(0xFF6FBE8B);
+  static const Color semanticSuccessSoft = Color(0xFFEAF7EF);
+  static const Color semanticWarning = Color(0xFFE3B160);
+  static const Color semanticError = Color(0xFFE98492);
+  static const Color semanticErrorSoft = Color(0xFFFDECEF);
+  static const Color semanticInfo = Color(0xFF7FA4D8);
+
+  // State
+  static const Color stateFocus = Color(0xFF7E8FC7);
+  static const Color stateHover = Color(0xFFEEF3FF);
+  static const Color statePressed = Color(0xFFDDECC7);
+  static const Color stateDisabledBackground = Color(0xFFECE9E2);
+  static const Color stateDisabledText = Color(0xFFB7B2A9);
+
+  // ===========================================================================
+  // PRIMARY (LEGACY - ALIASES)
+  // ===========================================================================
+  static const Color primary = brandPrimary;
+  static const Color primaryLight = brandPrimaryAlt;
 
   /// Alpha variants
   static const Color primaryAlpha10 = Color(0x1A84C93F);
@@ -16,50 +59,50 @@ class AppColors {
   static const Color color1A84C93F = primaryAlpha10;
 
   // ===========================================================================
-  // SECONDARY
+  // SECONDARY (LEGACY - ALIASES)
   // ===========================================================================
-  static const Color secondary1 = Color(0xFFCAE7B4);
-  static const Color secondary2 = Color(0xFFE6F4EC);
+  static const Color secondary1 = brandSecondary;
+  static const Color secondary2 = semanticSuccessSoft;
 
   // ===========================================================================
-  // NEUTRAL / BLACK
+  // NEUTRAL / BLACK (LEGACY - ALIASES)
   // ===========================================================================
-  static const Color black = Color(0xFF000000);
+  static const Color black = neutral900;
 
   // ===========================================================================
-  // NEUTRAL / WHITE
+  // NEUTRAL / WHITE (LEGACY - ALIASES)
   // ===========================================================================
-  static const Color white = Color(0xFFFFFFFF);
+  static const Color white = neutral0;
   static const Color transparent = Color(0x00000000);
 
   // ===========================================================================
-  // STATUS
+  // STATUS (LEGACY - ALIASES)
   // ===========================================================================
-  static const Color success = Color(0xFF4CAF50);
-  static const Color warning = Color(0xFFFFC107);
-  static const Color error = Color(0xFFF44336);
-  static const Color info = Color(0xFF2196F3);
+  static const Color success = semanticSuccess;
+  static const Color warning = semanticWarning;
+  static const Color error = semanticError;
+  static const Color info = semanticInfo;
 
   // ===========================================================================
-  // TEXT
+  // TEXT (LEGACY - ALIASES)
   // ===========================================================================
-  static const Color textPrimary = Color(0xFF212121);
-  static const Color textDisabled = Color(0xFFC0C0C0);
+  static const Color textPrimary = neutral700;
+  static const Color textDisabled = stateDisabledText;
   static const Color textInverse = white;
 
   // ===========================================================================
-  // STAMPVERSE
+  // STAMPVERSE (LEGACY - ALIASES)
   // ===========================================================================
-  static const Color stampverseBackground = Color(0xFFF8F5ED);
-  static const Color stampverseSurface = Color(0xFFFEFAF5);
-  static const Color stampversePrimaryText = Color(0xFF757575);
-  static const Color stampverseHeadingText = Color(0xFF4A4A48);
+  static const Color stampverseBackground = surfacePage;
+  static const Color stampverseSurface = surfaceCard;
+  static const Color stampversePrimaryText = neutral500;
+  static const Color stampverseHeadingText = neutral700;
   static const Color stampverseMutedText = Color(0xFFA0A09C);
-  static const Color stampverseBorderSoft = Color(0xFFF1EEE7);
-  static const Color stampverseDanger = Color(0xFFEF4444);
-  static const Color stampverseDangerSoft = Color(0xFFFEF2F2);
-  static const Color stampverseSuccess = Color(0xFF22C55E);
-  static const Color stampverseSuccessSoft = Color(0xFFEAF9E6);
+  static const Color stampverseBorderSoft = borderSoft;
+  static const Color stampverseDanger = semanticError;
+  static const Color stampverseDangerSoft = semanticErrorSoft;
+  static const Color stampverseSuccess = semanticSuccess;
+  static const Color stampverseSuccessSoft = semanticSuccessSoft;
   static const Color stampverseShadowSoft = Color(0x12000000);
   static const Color stampverseShadowMedium = Color(0x14000000);
   static const Color stampverseShadowStrong = Color(0x1A000000);
@@ -67,15 +110,15 @@ class AppColors {
   static const Color stampverseShadowStamp = Color(0x1F000000);
 
   static const greyF3 = Color(0xFFF3F3F3);
-  static const color2D7DD2 = Color(0xFF2D7DD2);
+  static const color2D7DD2 = semanticInfo;
   static const color1D2410 = Color(0xFF1D2410);
   static const color484848 = Color(0xFF484848);
   static const color1C274C = Color(0xFF1C274C);
   static const colorFFF4F2 = Color(0xFFFFF4F2);
   static const colorF5F7FA = Color(0xFFF5F7FA);
   static const colorE6F7ED = Color(0xFFE6F7ED);
-  static const color667394 = Color(0xFF667394);
-  static const colorFF9800 = Color(0xFFFF9800);
+  static const color667394 = stateFocus;
+  static const colorFF9800 = semanticWarning;
   static const colorB8BCC6 = Color(0xFFB8BCC6);
   static const colorF2F4F7 = Color(0xFFF2F4F7);
   static const colorF9FAFB = Color(0xFFF9FAFB);
@@ -102,24 +145,24 @@ class AppColors {
   static const colorF39702 = Color(0xFFF39702);
   static const colorFB1B8D1 = Color(0xFFB1B8D1);
   static const colorF64748B = Color(0xFF64748B);
-  static const colorFEF4056 = Color(0xFFEF4056);
-  static const colorF586AA6 = Color(0xFF586AA6);
+  static const colorFEF4056 = semanticError;
+  static const colorF586AA6 = brandAccent;
   static const colorFDEF1BC = Color(0xFFDEF1BC);
   static const color101828 = Color(0xFF101828);
   static const colorFFE53E = Color(0xFFFFE53E);
   static const colorEEEAE8 = Color(0xFFEEEAE8);
-  static const colorEF4056 = Color(0xFFEF4056);
-  static const color1AEF4056 = Color(0x1AEF4056);
+  static const colorEF4056 = semanticError;
+  static const color1AEF4056 = Color(0x1AE98492);
   static const colorFF5B42 = Color(0xFFFF5B42);
   static const color33FF5B42 = Color(0x33FF5B42);
-  static const color0095FF = Color(0xFF0095FF);
-  static const color1A0095FF = Color(0x1A0095FF);
-  static const color88CF66 = Color(0xFF88CF66);
-  static const color1A88CF66 = Color(0x1A88CF66);
-  static const color1A2D7DD2 = Color(0x1A2D7DD2);
+  static const color0095FF = semanticInfo;
+  static const color1A0095FF = Color(0x1A7FA4D8);
+  static const color88CF66 = semanticSuccess;
+  static const color1A88CF66 = Color(0x1A6FBE8B);
+  static const color1A2D7DD2 = Color(0x1A7E8FC7);
   static const colorFEFEFE = Color(0xFFFEFEFE);
   static const colorDCDFEB = Color(0xFFDCDFEB);
-  static const color80586AA6 = Color(0x80586AA6);
+  static const color80586AA6 = brandAccentSoft;
   static const colorF59AEF9 = Color(0xFF59AEF9);
   static const colorFE4F3FF = Color(0xFFE4F3FF);
   static const colorF6B7280 = Color(0xFF6B7280);
@@ -131,7 +174,7 @@ class AppColors {
   static const colorF646C72 = Color(0xFF646C72);
   static const colorF3F7FC9 = Color(0xFF3F7FC9);
   static const colorFA1AEBE = Color(0xFFA1AEBE);
-  static const colorEAF9E6 = Color(0xFFEAF9E6);
+  static const colorEAF9E6 = semanticSuccessSoft;
   static const colorC8E6C9 = Color(0xFFC8E6C9);
   static const colorE3F2FD = Color(0xFFE3F2FD);
   static const colorFFF3E0 = Color(0xFFFFF3E0);
@@ -143,23 +186,23 @@ class AppColors {
   static const colorFDFFFD = Color(0xFFFDFFFD);
   static const colorEBEDF0 = Color(0xFFEBEDF0);
   static const colorF8FAFB = Color(0xFFF8FAFB);
-  static const colorFFEAEA = Color(0xFFFFEAEA);
+  static const colorFFEAEA = semanticErrorSoft;
   static const colorEAECF0 = Color(0xFFEAECF0);
   static const colorFFE2D0 = Color(0xFFFFE2D0);
 
   // ===========================================================================
   // BACKGROUND
   // ===========================================================================
-  static const Color background = white;
-  static const Color backgroundSecondary = Color(0xFFF5F5F5);
-  static const Color backgroundDisabled = Color(0xFFE5E5E5);
-  static const Color backgroundOverlay = Color(0x80000000);
+  static const Color background = surfaceBase;
+  static const Color backgroundSecondary = surfaceSecondary;
+  static const Color backgroundDisabled = stateDisabledBackground;
+  static const Color backgroundOverlay = overlayScrim;
 
   // ===========================================================================
   // BORDER
   // ===========================================================================
-  static const Color border = Color(0xFFE0E0E0);
-  static const Color borderLight = Color(0xFFEEEEEE);
+  static const Color border = borderDefault;
+  static const Color borderLight = borderSoft;
   static const Color borderDark = Color(0xFFBDBDBD);
 
   // ===========================================================================

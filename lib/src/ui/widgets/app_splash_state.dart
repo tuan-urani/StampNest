@@ -1,24 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:stamp_camera/src/extensions/int_extensions.dart';
 import 'package:stamp_camera/src/locale/locale_key.dart';
-import 'package:stamp_camera/src/ui/widgets/custom_circular_progress.dart';
 import 'package:stamp_camera/src/utils/app_assets.dart';
 import 'package:stamp_camera/src/utils/app_colors.dart';
 import 'package:stamp_camera/src/utils/app_styles.dart';
 
 class AppSplashState extends StatelessWidget {
-  const AppSplashState({
-    super.key,
-    this.title = 'STAMP CAMERA',
-    this.tagline,
-    this.showProgress = true,
-  });
+  const AppSplashState({super.key, this.title});
 
-  final String title;
-  final String? tagline;
-  final bool showProgress;
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
@@ -40,13 +31,9 @@ class AppSplashState extends StatelessWidget {
                   builder: (_, double value, Widget? child) {
                     return Transform.scale(scale: value, child: child);
                   },
-                  child: Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.white.withValues(alpha: 0.9),
-                      boxShadow: const <BoxShadow>[
+                  child: DecoratedBox(
+                    decoration: const BoxDecoration(
+                      boxShadow: <BoxShadow>[
                         BoxShadow(
                           color: AppColors.stampverseShadowStrong,
                           blurRadius: 20,
@@ -54,56 +41,27 @@ class AppSplashState extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Center(
-                      child: SvgPicture.asset(
-                        AppAssets.iconsCameraSvg,
-                        width: 52,
-                        height: 52,
-                        colorFilter: const ColorFilter.mode(
-                          AppColors.primary,
-                          BlendMode.srcIn,
-                        ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        AppAssets.iconsAppIconPng,
+                        width: 128,
+                        height: 128,
+                        fit: BoxFit.cover,
                       ),
                     ),
                   ),
                 ),
-                28.height,
+                24.height,
                 Text(
-                  title,
+                  title ?? LocaleKey.appName.tr,
                   textAlign: TextAlign.center,
                   style: AppStyles.h1(
                     color: AppColors.stampverseHeadingText,
                     fontWeight: FontWeight.w700,
                     height: 1.1,
-                  ).copyWith(letterSpacing: 1.4),
+                  ).copyWith(letterSpacing: 0.8),
                 ),
-                10.height,
-                Text(
-                  tagline ?? LocaleKey.splashTagline.tr,
-                  textAlign: TextAlign.center,
-                  style: AppStyles.bodyLarge(
-                    color: AppColors.stampversePrimaryText,
-                    fontWeight: FontWeight.w500,
-                    height: 1.35,
-                  ),
-                ),
-                34.height,
-                if (showProgress)
-                  const SizedBox(
-                    width: 34,
-                    height: 34,
-                    child: CustomCircularProgress(color: AppColors.primary),
-                  ),
-                if (showProgress) 14.height,
-                if (showProgress)
-                  Text(
-                    LocaleKey.loading.tr,
-                    style: AppStyles.bodyMedium(
-                      color: AppColors.stampversePrimaryText,
-                      fontWeight: FontWeight.w600,
-                      height: 1.2,
-                    ),
-                  ),
               ],
             ),
           ),

@@ -46,52 +46,12 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
   bool _isSharing = false;
 
   Future<void> _openRenameSheet() async {
-    final TextEditingController controller = TextEditingController(
-      text: widget.board.name,
-    );
-
     final String? nextName = await showDialog<String>(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.stampverseSurface,
-          title: Text(
-            LocaleKey.stampverseEditBoardRenameTitle.tr,
-            style: StampverseTextStyles.body(
-              color: AppColors.stampverseHeadingText,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          content: TextField(
-            controller: controller,
-            maxLength: 40,
-            style: StampverseTextStyles.input(),
-            textInputAction: TextInputAction.done,
-            onSubmitted: (String value) {
-              Navigator.of(context).pop(value.trim());
-            },
-            decoration: InputDecoration(
-              hintText: LocaleKey.stampverseEditCreateNamePlaceholder.tr,
-              hintStyle: StampverseTextStyles.body(),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(LocaleKey.cancel.tr),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(controller.text.trim());
-              },
-              child: Text(LocaleKey.stampverseEditBoardRenameSave.tr),
-            ),
-          ],
-        );
-      },
+      builder: (BuildContext context) =>
+          _RenameBoardDialog(initialName: widget.board.name),
     );
 
-    controller.dispose();
     if (!mounted) return;
 
     if (nextName == null || nextName.isEmpty || nextName == widget.board.name) {
@@ -364,6 +324,92 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _RenameBoardDialog extends StatefulWidget {
+  const _RenameBoardDialog({required this.initialName});
+
+  final String initialName;
+
+  @override
+  State<_RenameBoardDialog> createState() => _RenameBoardDialogState();
+}
+
+class _RenameBoardDialogState extends State<_RenameBoardDialog> {
+  late final TextEditingController _controller =
+      TextEditingController(text: widget.initialName)
+        ..selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: widget.initialName.length,
+        );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    Navigator.of(context).pop(_controller.text.trim());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.stampverseSurface,
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: AppColors.colorF586AA6.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Padding(
+              padding: EdgeInsets.all(6),
+              child: Icon(
+                Icons.edit_note_rounded,
+                size: 18,
+                color: AppColors.colorF586AA6,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              LocaleKey.stampverseEditBoardRenameTitle.tr,
+              style: StampverseTextStyles.body(
+                color: AppColors.stampverseHeadingText,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        maxLength: 40,
+        style: StampverseTextStyles.input(),
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => _submit(),
+        decoration: InputDecoration(
+          hintText: LocaleKey.stampverseEditCreateNamePlaceholder.tr,
+          hintStyle: StampverseTextStyles.body(),
+        ),
+      ),
+      actions: <Widget>[
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(LocaleKey.cancel.tr),
+        ),
+        TextButton(
+          onPressed: _submit,
+          child: Text(LocaleKey.stampverseEditBoardRenameSave.tr),
+        ),
+      ],
     );
   }
 }

@@ -29,15 +29,16 @@ Features:
 1. App starts and `StampverseBloc.initialize()` loads cached stamps + collection cache from local storage.
 2. App opens Home directly (local-first).
 3. Home has 5 tabs:
-   - `Tem`: split into `Gần đây mở` (recently opened) and `Yêu thích` sections.
+   - `Stamp`: split into `Gần đây mở` (recently opened) and `Yêu thích` sections.
    - `Bộ sưu tập`: grouped by collection; tapping a group opens album view for that collection.
+   - `Xưởng`: creative board editor with notebook-grid canvas.
+     - Users can create multiple boards.
+     - In board list mode, long-press enters multi-select; users can tap items to select/unselect and delete selected boards from the header delete action.
+     - Users can import stamps from `Bộ sưu tập` source or `Daily` source.
+     - Imported stamps can be dragged, scaled, rotated, layered, and removed.
    - `Kỷ niệm`: monthly calendar (`syncfusion_flutter_calendar`) where each day displays the first stamp of that day.
      - Tapping a day with stamps opens a detail list (bottom sheet) for all stamps in that date.
      - Tapping a day without stamps keeps calendar unchanged.
-   - `Chỉnh sửa`: creative board editor with notebook-grid canvas.
-     - Users can create multiple boards.
-     - Users can import stamps from `Bộ sưu tập` source or `Daily` source.
-     - Imported stamps can be dragged, scaled, rotated, layered, and removed.
    - `Cài đặt`: local storage status + refresh/reset actions.
 4. Tapping `+` opens source sheet: `Camera` or `File`.
 5. Camera/File both go through crop/shape step before save.

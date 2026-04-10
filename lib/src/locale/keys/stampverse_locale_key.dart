@@ -68,6 +68,20 @@ class StampverseLocaleKey {
       'stampverse_home_settings_total_stamps';
   static const String homeSettingsTotalCollections =
       'stampverse_home_settings_total_collections';
+  static const String homeSettingsLanguage =
+      'stampverse_home_settings_language';
+  static const String homeSettingsLanguageVietnamese =
+      'stampverse_home_settings_language_vietnamese';
+  static const String homeSettingsLanguageEnglish =
+      'stampverse_home_settings_language_english';
+  static const String homeSettingsLanguageJapanese =
+      'stampverse_home_settings_language_japanese';
+  static const String homeSettingsPrivacyPolicy =
+      'stampverse_home_settings_privacy_policy';
+  static const String homeSettingsTermsOfUse =
+      'stampverse_home_settings_terms_of_use';
+  static const String homeSettingsLegalLinkPending =
+      'stampverse_home_settings_legal_link_pending';
   static const String homeSettingsRefresh = 'stampverse_home_settings_refresh';
   static const String homeSettingsResetLocal =
       'stampverse_home_settings_reset_local';
@@ -85,6 +99,14 @@ class StampverseLocaleKey {
       'stampverse_home_edit_filter_collection';
   static const String homeEditFilterDaily = 'stampverse_home_edit_filter_daily';
   static const String homeEditImportEmpty = 'stampverse_home_edit_import_empty';
+  static const String homeEditDeleteBoardAction =
+      'stampverse_home_edit_delete_board_action';
+  static const String homeEditDeleteBoardTitle =
+      'stampverse_home_edit_delete_board_title';
+  static const String homeEditDeleteBoardBody =
+      'stampverse_home_edit_delete_board_body';
+  static const String homeEditDeleteBoardConfirm =
+      'stampverse_home_edit_delete_board_confirm';
   static const String editCreateTitle = 'stampverse_edit_create_title';
   static const String editCreateNameLabel = 'stampverse_edit_create_name_label';
   static const String editCreateNamePlaceholder =

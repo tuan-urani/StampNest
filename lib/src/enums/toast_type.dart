@@ -6,7 +6,7 @@ import '../locale/locale_key.dart';
 import '../utils/app_colors.dart';
 
 enum ToastType {
-  success(Colors.green),
+  success(AppColors.success),
   error(AppColors.error);
 
   final Color color;

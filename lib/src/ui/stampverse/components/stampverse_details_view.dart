@@ -43,7 +43,6 @@ class StampverseDetailsView extends StatefulWidget {
 }
 
 class _StampverseDetailsViewState extends State<StampverseDetailsView> {
-  bool _showMenu = false;
   bool _isDownloading = false;
   bool _isSharing = false;
 
@@ -136,7 +135,6 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
 
     setState(() {
       _isDownloading = true;
-      _showMenu = false;
     });
 
     try {
@@ -201,7 +199,6 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
 
     setState(() {
       _isSharing = true;
-      _showMenu = false;
     });
 
     try {
@@ -275,7 +272,6 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
                             : AppColors.stampversePrimaryText,
                         onTap: () {
                           final bool isRemoving = widget.stamp.isFavorite;
-                          setState(() => _showMenu = false);
                           widget.onToggleFavorite();
                           _showActionMessage(
                             isRemoving
@@ -285,53 +281,10 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
                         },
                       ),
                       const SizedBox(width: 10),
-                      Stack(
-                        children: <Widget>[
-                          StampverseIconButton(
-                            icon: Icons.more_horiz_rounded,
-                            onTap: () => setState(() => _showMenu = !_showMenu),
-                          ),
-                          if (_showMenu)
-                            Positioned(
-                              top: 52,
-                              right: 0,
-                              child: Material(
-                                color: AppColors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() => _showMenu = false);
-                                    widget.onDeleteConfirmVisible(true);
-                                  },
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 12,
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: <Widget>[
-                                        const Icon(
-                                          Icons.delete_outline_rounded,
-                                          color: AppColors.stampverseDanger,
-                                          size: 18,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          LocaleKey.stampverseDetailsDelete.tr,
-                                          style: StampverseTextStyles.body(
-                                            color: AppColors.stampverseDanger,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
+                      StampverseIconButton(
+                        icon: Icons.delete_outline_rounded,
+                        iconColor: AppColors.stampverseDanger,
+                        onTap: () => widget.onDeleteConfirmVisible(true),
                       ),
                     ],
                   ),

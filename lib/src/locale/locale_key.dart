@@ -12,6 +12,7 @@ class LocaleKey {
   static const String pleaseWait = CommonLocaleKey.pleaseWait;
   static const String ready = CommonLocaleKey.ready;
   static const String continueAction = CommonLocaleKey.continueAction;
+  static const String appName = CommonLocaleKey.appName;
   static const String splashTagline = CommonLocaleKey.splashTagline;
   static const String ok = CommonLocaleKey.ok;
   static const String cancel = CommonLocaleKey.cancel;
@@ -104,6 +105,20 @@ class LocaleKey {
       StampverseLocaleKey.homeSettingsTotalStamps;
   static const String stampverseHomeSettingsTotalCollections =
       StampverseLocaleKey.homeSettingsTotalCollections;
+  static const String stampverseHomeSettingsLanguage =
+      StampverseLocaleKey.homeSettingsLanguage;
+  static const String stampverseHomeSettingsLanguageVietnamese =
+      StampverseLocaleKey.homeSettingsLanguageVietnamese;
+  static const String stampverseHomeSettingsLanguageEnglish =
+      StampverseLocaleKey.homeSettingsLanguageEnglish;
+  static const String stampverseHomeSettingsLanguageJapanese =
+      StampverseLocaleKey.homeSettingsLanguageJapanese;
+  static const String stampverseHomeSettingsPrivacyPolicy =
+      StampverseLocaleKey.homeSettingsPrivacyPolicy;
+  static const String stampverseHomeSettingsTermsOfUse =
+      StampverseLocaleKey.homeSettingsTermsOfUse;
+  static const String stampverseHomeSettingsLegalLinkPending =
+      StampverseLocaleKey.homeSettingsLegalLinkPending;
   static const String stampverseHomeSettingsRefresh =
       StampverseLocaleKey.homeSettingsRefresh;
   static const String stampverseHomeSettingsResetLocal =
@@ -131,6 +146,14 @@ class LocaleKey {
       StampverseLocaleKey.homeEditFilterDaily;
   static const String stampverseHomeEditImportEmpty =
       StampverseLocaleKey.homeEditImportEmpty;
+  static const String stampverseHomeEditDeleteBoardAction =
+      StampverseLocaleKey.homeEditDeleteBoardAction;
+  static const String stampverseHomeEditDeleteBoardTitle =
+      StampverseLocaleKey.homeEditDeleteBoardTitle;
+  static const String stampverseHomeEditDeleteBoardBody =
+      StampverseLocaleKey.homeEditDeleteBoardBody;
+  static const String stampverseHomeEditDeleteBoardConfirm =
+      StampverseLocaleKey.homeEditDeleteBoardConfirm;
   static const String stampverseEditCreateTitle =
       StampverseLocaleKey.editCreateTitle;
   static const String stampverseEditCreateNameLabel =

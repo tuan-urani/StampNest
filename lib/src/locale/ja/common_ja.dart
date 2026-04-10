@@ -9,6 +9,7 @@ final Map<String, String> commonJa = <String, String>{
   CommonLocaleKey.pleaseWait: 'しばらくお待ちください',
   CommonLocaleKey.ready: '準備ができました',
   CommonLocaleKey.continueAction: '続行',
+  CommonLocaleKey.appName: 'STAMPNEST',
   CommonLocaleKey.splashTagline: '思い出を一つずつスタンプに残そう',
   CommonLocaleKey.ok: 'OK',
   CommonLocaleKey.cancel: 'キャンセル',

@@ -27,10 +27,10 @@ class AppToggle extends StatelessWidget {
           ? const LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFFAFDF46), Color(0xFF76C90D)],
+              colors: [AppColors.brandPrimary, AppColors.brandPrimaryAlt],
             )
           : null,
-      color: value ? null : const Color(0xFFE5E7EB),
+      color: value ? null : AppColors.stateDisabledBackground,
     );
 
     return GestureDetector(
@@ -56,13 +56,13 @@ class AppToggle extends StatelessWidget {
                 borderRadius: BorderRadius.circular(50),
                 boxShadow: const [
                   BoxShadow(
-                    color: Color(0x1A000000),
+                    color: AppColors.stampverseShadowStrong,
                     offset: Offset(0, 10),
                     blurRadius: 15,
                     spreadRadius: -3,
                   ),
                   BoxShadow(
-                    color: Color(0x1A000000),
+                    color: AppColors.stampverseShadowStrong,
                     offset: Offset(0, 4),
                     blurRadius: 6,
                     spreadRadius: -4,

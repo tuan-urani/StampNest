@@ -79,6 +79,7 @@ dev_dependencies:
   build_runner: ^2.13.1
   retrofit_generator: ^10.2.4
   json_serializable: ^6.13.1
+  flutter_launcher_icons: ^0.14.4
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -92,6 +93,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/take_pic_sound.mp3
+    - assets/icons/app_icon.png
     - assets/icons/camera.svg
 
   # To add assets to your application, add an assets section, like this:

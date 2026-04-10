@@ -36,12 +36,12 @@ final Map<String, String> stampverseVi = <String, String>{
   StampverseLocaleKey.homeStampFavorite: 'Yêu thích',
   StampverseLocaleKey.homeStampFavoriteEmpty:
       'Chưa có stamp nào được đánh dấu yêu thích.',
-  StampverseLocaleKey.homeAddSourceCamera: 'Camera',
-  StampverseLocaleKey.homeAddSourceFile: 'File',
-  StampverseLocaleKey.homeTabStamp: 'Tem',
+  StampverseLocaleKey.homeAddSourceCamera: 'Chụp ảnh',
+  StampverseLocaleKey.homeAddSourceFile: 'Chọn từ thư viện',
+  StampverseLocaleKey.homeTabStamp: 'Stamp',
   StampverseLocaleKey.homeTabCollection: 'Bộ sưu tập',
   StampverseLocaleKey.homeTabMemory: 'Kỷ niệm',
-  StampverseLocaleKey.homeTabEdit: 'Chỉnh sửa',
+  StampverseLocaleKey.homeTabEdit: 'Xưởng',
   StampverseLocaleKey.homeTabSettings: 'Cài đặt',
   StampverseLocaleKey.homeCollectionEmptyTitle: 'Chưa có bộ sưu tập',
   StampverseLocaleKey.homeCollectionEmptySubtitle:
@@ -55,6 +55,14 @@ final Map<String, String> stampverseVi = <String, String>{
       'Ảnh và thông tin stamp hiện chỉ được lưu trên điện thoại này.',
   StampverseLocaleKey.homeSettingsTotalStamps: 'Tổng số tem',
   StampverseLocaleKey.homeSettingsTotalCollections: 'Bộ sưu tập',
+  StampverseLocaleKey.homeSettingsLanguage: 'Ngôn ngữ',
+  StampverseLocaleKey.homeSettingsLanguageVietnamese: 'Tiếng Việt',
+  StampverseLocaleKey.homeSettingsLanguageEnglish: 'Tiếng Anh',
+  StampverseLocaleKey.homeSettingsLanguageJapanese: 'Tiếng Nhật',
+  StampverseLocaleKey.homeSettingsPrivacyPolicy: 'Chính sách quyền riêng tư',
+  StampverseLocaleKey.homeSettingsTermsOfUse: 'Điều khoản sử dụng',
+  StampverseLocaleKey.homeSettingsLegalLinkPending:
+      'Liên kết webview chưa được cấu hình.',
   StampverseLocaleKey.homeSettingsRefresh: 'Làm mới dữ liệu local',
   StampverseLocaleKey.homeSettingsResetLocal: 'Xoá toàn bộ dữ liệu local',
   StampverseLocaleKey.homeEditBoards: 'Bộ ảnh sáng tạo',
@@ -71,6 +79,11 @@ final Map<String, String> stampverseVi = <String, String>{
   StampverseLocaleKey.homeEditFilterCollection: 'Chọn bộ sưu tập',
   StampverseLocaleKey.homeEditFilterDaily: 'Chọn ngày',
   StampverseLocaleKey.homeEditImportEmpty: 'Không có stamp phù hợp để import.',
+  StampverseLocaleKey.homeEditDeleteBoardAction: 'Xoá bộ',
+  StampverseLocaleKey.homeEditDeleteBoardTitle: 'Xoá bộ ảnh này?',
+  StampverseLocaleKey.homeEditDeleteBoardBody:
+      'Bộ ảnh và toàn bộ stamp trong bộ sẽ bị xoá.',
+  StampverseLocaleKey.homeEditDeleteBoardConfirm: 'Xoá bộ',
   StampverseLocaleKey.editCreateTitle: 'Tạo bộ ảnh',
   StampverseLocaleKey.editCreateNameLabel: 'Tên bộ ảnh',
   StampverseLocaleKey.editCreateNamePlaceholder: 'Ví dụ: Đi chơi cuối tuần',
@@ -105,7 +118,7 @@ final Map<String, String> stampverseVi = <String, String>{
   StampverseLocaleKey.saveCollectionCreateAction: 'Tạo mới',
   StampverseLocaleKey.saveCollectionCreateTitle: 'Tạo bộ sưu tập',
   StampverseLocaleKey.saveCollectionCreatePlaceholder:
-      'Nhập tên bộ sưu tập mới',
+      'Ăn uống, mua sắm, du lịch...',
   StampverseLocaleKey.saveCollectionCreateHint:
       'Bạn có thể nhập tên bộ sưu tập mới trực tiếp ở ô trên.',
   StampverseLocaleKey.saveBackButton: 'Quay lại',

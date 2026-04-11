@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:stamp_camera/src/core/model/stamp_shape_type.dart';
 import 'package:stamp_camera/src/locale/locale_key.dart';
 import 'package:stamp_camera/src/ui/save_stamp/helpers/stampverse_save_stamp_export.dart';
+import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_icon_button.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_stamp.dart';
 import 'package:stamp_camera/src/utils/app_colors.dart';
 import 'package:stamp_camera/src/utils/app_styles.dart';
@@ -308,15 +309,27 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
           builder: (_, Widget? child) {
             final Widget body = Column(
               children: <Widget>[
-                Text(
-                  LocaleKey.stampverseCameraTitle.tr,
-                  textAlign: TextAlign.center,
-                  style: AppStyles.h4(
-                    color: AppColors.black,
-                    fontWeight: FontWeight.w700,
-                  ).copyWith(height: 1.1),
+                Row(
+                  children: <Widget>[
+                    StampverseIconButton(
+                      icon: Icons.chevron_left_rounded,
+                      onTap: widget.onBack,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        LocaleKey.stampverseCameraTitle.tr,
+                        textAlign: TextAlign.center,
+                        style: AppStyles.h4(
+                          color: AppColors.black,
+                          fontWeight: FontWeight.w700,
+                        ).copyWith(height: 1.1),
+                      ),
+                    ),
+                    const SizedBox(width: 60),
+                  ],
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 22),
                 Transform.scale(
                   scale: _stampScale.value,
                   child: Opacity(
@@ -484,6 +497,20 @@ class _CollectionInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> normalizedOptions = options
+        .map((String item) => item.trim())
+        .where((String item) => item.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+    final String current = controller.text.trim().toLowerCase();
+    String? selectedValue;
+    for (final String option in normalizedOptions) {
+      if (option.toLowerCase() == current) {
+        selectedValue = option;
+        break;
+      }
+    }
+
     final TextStyle valueStyle = AppStyles.bodyLarge(
       color: AppColors.black,
       fontWeight: FontWeight.w700,
@@ -492,31 +519,58 @@ class _CollectionInputField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          label,
-          style: AppStyles.bodyLarge(
-            color: AppColors.colorF586AA6,
-            fontWeight: FontWeight.w700,
-          ).copyWith(height: 1.2),
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                label,
+                style: AppStyles.bodyLarge(
+                  color: AppColors.colorF586AA6,
+                  fontWeight: FontWeight.w700,
+                ).copyWith(height: 1.2),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Tooltip(
+              message: LocaleKey.stampverseSaveCollectionCreateAction.tr,
+              child: SizedBox(
+                width: 34,
+                height: 34,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppColors.white.withValues(alpha: 0.72),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.stampverseBorderSoft),
+                  ),
+                  child: Material(
+                    color: AppColors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                      onTap: () async {
+                        await onCreateCollection();
+                      },
+                      child: const Icon(
+                        Icons.add_rounded,
+                        size: 18,
+                        color: AppColors.colorF586AA6,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
-          textInputAction: TextInputAction.done,
-          style: valueStyle.copyWith(height: 1.2),
+        InputDecorator(
+          isEmpty: selectedValue == null,
           decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: AppStyles.bodyLarge(
-              color: AppColors.colorB7B7B7,
-              fontWeight: FontWeight.w500,
-            ).copyWith(height: 1.2),
             isDense: true,
             filled: true,
             fillColor: AppColors.white.withValues(alpha: 0.72),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
-              vertical: 14,
+              vertical: 4,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -537,59 +591,51 @@ class _CollectionInputField extends StatelessWidget {
                 width: 1.4,
               ),
             ),
-            suffixIcon: IconButton(
-              onPressed: onCreateCollection,
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: selectedValue,
+              isExpanded: true,
+              borderRadius: BorderRadius.circular(14),
+              dropdownColor: AppColors.stampverseSurface,
               icon: const Icon(
-                Icons.add_circle_outline_rounded,
+                Icons.keyboard_arrow_down_rounded,
                 color: AppColors.colorF586AA6,
               ),
-              tooltip: LocaleKey.stampverseSaveCollectionCreateAction.tr,
+              style: valueStyle.copyWith(height: 1.2),
+              hint: Text(
+                hint,
+                style: AppStyles.bodyLarge(
+                  color: AppColors.colorB7B7B7,
+                  fontWeight: FontWeight.w500,
+                ).copyWith(height: 1.2),
+              ),
+              items: normalizedOptions
+                  .map(
+                    (String option) => DropdownMenuItem<String>(
+                      value: option,
+                      child: Text(
+                        option,
+                        overflow: TextOverflow.ellipsis,
+                        style: valueStyle.copyWith(height: 1.2),
+                      ),
+                    ),
+                  )
+                  .toList(growable: false),
+              onChanged: normalizedOptions.isEmpty
+                  ? null
+                  : (String? value) {
+                      final String nextValue = value?.trim() ?? '';
+                      controller.text = nextValue;
+                      controller.selection = TextSelection.collapsed(
+                        offset: nextValue.length,
+                      );
+                    },
             ),
           ),
         ),
-        const SizedBox(height: 10),
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text(
-            LocaleKey.stampverseSaveCollectionQuickPick.tr,
-            style: AppStyles.bodySmall(
-              color: AppColors.stampverseMutedText,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-        const SizedBox(height: 8),
-        if (options.isNotEmpty)
-          SizedBox(
-            height: 40,
-            child: ValueListenableBuilder<TextEditingValue>(
-              valueListenable: controller,
-              builder: (_, TextEditingValue value, Widget? child) {
-                final String current = value.text.trim().toLowerCase();
-
-                return ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: options.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 8),
-                  itemBuilder: (_, int index) {
-                    final String option = options[index];
-                    final bool selected = current == option.toLowerCase();
-                    return _CollectionOptionChip(
-                      label: option,
-                      selected: selected,
-                      onTap: () {
-                        controller.text = option;
-                        controller.selection = TextSelection.collapsed(
-                          offset: option.length,
-                        );
-                      },
-                    );
-                  },
-                );
-              },
-            ),
-          )
-        else
+        if (normalizedOptions.isEmpty) ...<Widget>[
+          const SizedBox(height: 10),
           Text(
             LocaleKey.stampverseSaveCollectionCreateHint.tr,
             style: AppStyles.bodySmall(
@@ -597,53 +643,8 @@ class _CollectionInputField extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
           ),
+        ],
       ],
-    );
-  }
-}
-
-class _CollectionOptionChip extends StatelessWidget {
-  const _CollectionOptionChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: Ink(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            color: selected
-                ? AppColors.colorF586AA6.withValues(alpha: 0.15)
-                : AppColors.white.withValues(alpha: 0.72),
-            border: Border.all(
-              color: selected
-                  ? AppColors.colorF586AA6
-                  : AppColors.stampverseBorderSoft,
-            ),
-          ),
-          child: Text(
-            label,
-            style: AppStyles.bodySmall(
-              color: selected
-                  ? AppColors.colorF586AA6
-                  : AppColors.stampversePrimaryText,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-      ),
     );
   }
 }

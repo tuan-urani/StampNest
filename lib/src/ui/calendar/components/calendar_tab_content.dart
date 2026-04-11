@@ -288,6 +288,10 @@ class _MemoryDayStampsSheet extends StatelessWidget {
             b.parsedDate?.toLocal() ?? DateTime.fromMillisecondsSinceEpoch(0);
         return dateB.compareTo(dateA);
       });
+    final double listBottomPadding =
+        StampverseLayout.bottomBarReservedSpace +
+        MediaQuery.paddingOf(context).bottom +
+        16;
 
     return FractionallySizedBox(
       heightFactor: 0.78,
@@ -332,7 +336,7 @@ class _MemoryDayStampsSheet extends StatelessWidget {
             ),
             Expanded(
               child: ListView.separated(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+                padding: EdgeInsets.fromLTRB(20, 0, 20, listBottomPadding),
                 itemCount: sorted.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (_, int index) {

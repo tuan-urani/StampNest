@@ -79,6 +79,10 @@ final Map<String, String> stampverseEn = <String, String>{
   StampverseLocaleKey.homeEditFilterCollection: 'Select collection',
   StampverseLocaleKey.homeEditFilterDaily: 'Select day',
   StampverseLocaleKey.homeEditImportEmpty: 'No matching stamp to import.',
+  StampverseLocaleKey.homeEditBackgroundLabel: 'Background',
+  StampverseLocaleKey.homeEditBackgroundGrid: 'Grid',
+  StampverseLocaleKey.homeEditBackgroundDots: 'Dots',
+  StampverseLocaleKey.homeEditBackgroundPaper: 'Paper',
   StampverseLocaleKey.homeEditDeleteBoardAction: 'Delete board',
   StampverseLocaleKey.homeEditDeleteBoardTitle: 'Delete this board?',
   StampverseLocaleKey.homeEditDeleteBoardBody:
@@ -113,8 +117,7 @@ final Map<String, String> stampverseEn = <String, String>{
   StampverseLocaleKey.saveTopAction: 'Save',
   StampverseLocaleKey.saveInbox: 'Inbox',
   StampverseLocaleKey.saveCollectionLabel: 'Collection',
-  StampverseLocaleKey.saveCollectionPlaceholder:
-      'Type collection name or pick below',
+  StampverseLocaleKey.saveCollectionPlaceholder: 'Enter collection name',
   StampverseLocaleKey.saveCollectionQuickPick: 'Quick pick',
   StampverseLocaleKey.saveCollectionCreateAction: 'Create new',
   StampverseLocaleKey.saveCollectionCreateTitle: 'Create collection',
@@ -141,4 +144,11 @@ final Map<String, String> stampverseEn = <String, String>{
   StampverseLocaleKey.detailsShareFailed: 'Unable to share image.',
   StampverseLocaleKey.detailsFavoriteAdded: 'Added to favorites.',
   StampverseLocaleKey.detailsFavoriteRemoved: 'Removed from favorites.',
+  StampverseLocaleKey.detailsAddToCollection: 'Add to collection',
+  StampverseLocaleKey.detailsCollectionSheetTitle: 'Select a collection',
+  StampverseLocaleKey.detailsCollectionEmpty: 'No collections yet.',
+  StampverseLocaleKey.detailsCollectionAssignSuccess:
+      'Stamp added to collection.',
+  StampverseLocaleKey.detailsCollectionAssignFailed:
+      'Unable to add stamp to collection.',
 };

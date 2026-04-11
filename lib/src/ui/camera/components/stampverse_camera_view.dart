@@ -208,11 +208,11 @@ class _StampverseCameraViewState extends State<StampverseCameraView> {
               padding: const EdgeInsets.fromLTRB(24, 10, 24, 24),
               child: Row(
                 children: <Widget>[
-                  StampverseIconButton(
-                    icon: Icons.refresh_rounded,
-                    onTap: widget.onReset,
-                  ),
-                  const SizedBox(width: 14),
+                  // StampverseIconButton(
+                  //   icon: Icons.refresh_rounded,
+                  //   onTap: widget.onReset,
+                  // ),
+                  // const SizedBox(width: 14),
                   Expanded(
                     child: StampversePrimaryButton(
                       label: LocaleKey.stampverseCameraCrop.tr,
@@ -341,6 +341,9 @@ class _LiveCameraCaptureViewState extends State<_LiveCameraCaptureView>
 
     try {
       await controller.initialize();
+      try {
+        await controller.setFlashMode(FlashMode.off);
+      } catch (_) {}
       _minZoom = await controller.getMinZoomLevel();
       _maxZoom = await controller.getMaxZoomLevel();
       _zoomLevel = _minZoom.clamp(1.0, _maxZoom);

@@ -14,10 +14,13 @@ class StampTabContent extends StatelessWidget {
     super.key,
     required this.stamps,
     required this.onSelectStamp,
+    this.onSelectRecentStamp,
   });
 
   final List<StampDataModel> stamps;
   final ValueChanged<String> onSelectStamp;
+  final void Function(String stampId, List<String> orderedRecentIds)?
+  onSelectRecentStamp;
 
   @override
   Widget build(BuildContext context) {
@@ -31,6 +34,9 @@ class StampTabContent extends StatelessWidget {
 
     final List<StampDataModel> recentOpened = _resolveRecentOpened(stamps);
     final List<StampDataModel> favorites = _resolveFavorites(stamps);
+    final List<String> recentOpenedIds = recentOpened
+        .map((StampDataModel item) => item.id)
+        .toList(growable: false);
 
     return LayoutBuilder(
       builder: (_, BoxConstraints constraints) {
@@ -82,7 +88,14 @@ class StampTabContent extends StatelessWidget {
                             applyShapeClip: false,
                             width: stampTileWidth,
                             showShadow: false,
-                            onTap: () => onSelectStamp(item.id),
+                            onTap: () {
+                              final onRecentTap = onSelectRecentStamp;
+                              if (onRecentTap != null) {
+                                onRecentTap(item.id, recentOpenedIds);
+                                return;
+                              }
+                              onSelectStamp(item.id);
+                            },
                           ),
                           const SizedBox(height: 4),
                           Center(

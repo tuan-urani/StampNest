@@ -95,6 +95,8 @@ flutter:
     - assets/take_pic_sound.mp3
     - assets/icons/app_icon.png
     - assets/icons/camera.svg
+    - web/privacy-policy.html
+    - web/terms-of-use.html
 
   # To add assets to your application, add an assets section, like this:
   # assets:

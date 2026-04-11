@@ -18,13 +18,30 @@ class StampDetailsCubit extends Cubit<StampDetailsState> {
 
     final List<StampDataModel> stamps = await _repository.readCache();
     final StampDataModel? stamp = _findStamp(stamps, stampId);
-    emit(state.copyWith(stamp: stamp, isInitialized: true, errorMessage: null));
+    final List<String> collections = await _repository
+        .mergeCollectionsWithStamps(stamps);
+    emit(
+      state.copyWith(
+        stamp: stamp,
+        collections: collections,
+        isInitialized: true,
+        errorMessage: null,
+      ),
+    );
   }
 
   Future<void> refresh({required String stampId}) async {
     final List<StampDataModel> stamps = await _repository.readCache();
     final StampDataModel? stamp = _findStamp(stamps, stampId);
-    emit(state.copyWith(stamp: stamp, errorMessage: null));
+    final List<String> collections = await _repository
+        .mergeCollectionsWithStamps(stamps);
+    emit(
+      state.copyWith(
+        stamp: stamp,
+        collections: collections,
+        errorMessage: null,
+      ),
+    );
   }
 
   Future<bool> toggleFavorite({required String stampId}) async {
@@ -39,7 +56,54 @@ class StampDetailsCubit extends Cubit<StampDetailsState> {
     updated[index] = selected.copyWith(isFavorite: !selected.isFavorite);
 
     await _repository.saveCache(updated);
-    emit(state.copyWith(stamp: updated[index], errorMessage: null));
+    final List<String> collections = await _repository
+        .mergeCollectionsWithStamps(updated);
+    emit(
+      state.copyWith(
+        stamp: updated[index],
+        collections: collections,
+        errorMessage: null,
+      ),
+    );
+    return true;
+  }
+
+  Future<bool> assignCollection({
+    required String stampId,
+    required String collectionName,
+  }) async {
+    final String normalizedCollection = collectionName.trim();
+    if (stampId.isEmpty || normalizedCollection.isEmpty) {
+      return false;
+    }
+
+    emit(state.copyWith(isAssigningCollection: true, errorMessage: null));
+
+    final List<StampDataModel> stamps = await _repository.readCache();
+    final int index = stamps.indexWhere(
+      (StampDataModel item) => item.id == stampId,
+    );
+    if (index < 0) {
+      emit(state.copyWith(isAssigningCollection: false));
+      return false;
+    }
+
+    final List<StampDataModel> updated = List<StampDataModel>.from(stamps);
+    updated[index] = updated[index].copyWith(album: normalizedCollection);
+
+    await _repository.saveCache(updated);
+    final List<String> collections = await _repository.addCollection(
+      normalizedCollection,
+    );
+
+    emit(
+      state.copyWith(
+        stamp: updated[index],
+        collections: collections,
+        isAssigningCollection: false,
+        errorMessage: null,
+      ),
+    );
     return true;
   }
 
@@ -54,9 +118,17 @@ class StampDetailsCubit extends Cubit<StampDetailsState> {
         .toList(growable: false);
 
     await _repository.saveCache(updated);
-    await _repository.mergeCollectionsWithStamps(updated);
+    final List<String> collections = await _repository
+        .mergeCollectionsWithStamps(updated);
 
-    emit(state.copyWith(stamp: null, isDeleting: false, errorMessage: null));
+    emit(
+      state.copyWith(
+        stamp: null,
+        collections: collections,
+        isDeleting: false,
+        errorMessage: null,
+      ),
+    );
     return true;
   }
 

@@ -23,21 +23,35 @@ class StampverseDetailsView extends StatefulWidget {
   const StampverseDetailsView({
     super.key,
     required this.stamp,
+    required this.collections,
     required this.onBack,
     required this.onToggleFavorite,
+    required this.onAssignCollection,
     required this.onDelete,
     required this.onDeleteConfirmVisible,
     required this.showDeleteConfirm,
+    this.canSwipePrevious = false,
+    this.canSwipeNext = false,
+    this.onSwipePrevious,
+    this.onSwipeNext,
     this.isDeleting = false,
+    this.isAssigningCollection = false,
   });
 
   final StampDataModel stamp;
+  final List<String> collections;
   final VoidCallback onBack;
   final VoidCallback onToggleFavorite;
+  final Future<bool> Function(String collectionName) onAssignCollection;
   final VoidCallback onDelete;
   final ValueChanged<bool> onDeleteConfirmVisible;
   final bool showDeleteConfirm;
+  final bool canSwipePrevious;
+  final bool canSwipeNext;
+  final VoidCallback? onSwipePrevious;
+  final VoidCallback? onSwipeNext;
   final bool isDeleting;
+  final bool isAssigningCollection;
 
   @override
   State<StampverseDetailsView> createState() => _StampverseDetailsViewState();
@@ -45,9 +59,44 @@ class StampverseDetailsView extends StatefulWidget {
 
 class _StampverseDetailsViewState extends State<StampverseDetailsView> {
   static const Duration _gallerySaveTimeout = Duration(seconds: 20);
+  static const double _kSwipeDistanceThreshold = 28;
+  static const double _kSwipeVelocityThreshold = 120;
 
   bool _isDownloading = false;
   bool _isSharing = false;
+  double _horizontalDragDx = 0;
+
+  void _onSwipeDragStart(DragStartDetails _) {
+    _horizontalDragDx = 0;
+  }
+
+  void _onSwipeDragUpdate(DragUpdateDetails details) {
+    _horizontalDragDx += details.delta.dx;
+  }
+
+  void _onSwipeDragEnd(DragEndDetails details) {
+    final double velocity = details.primaryVelocity ?? 0;
+    final bool shouldGoPrevious =
+        (_horizontalDragDx > _kSwipeDistanceThreshold ||
+            velocity > _kSwipeVelocityThreshold) &&
+        widget.canSwipePrevious &&
+        widget.onSwipePrevious != null;
+    final bool shouldGoNext =
+        (_horizontalDragDx < -_kSwipeDistanceThreshold ||
+            velocity < -_kSwipeVelocityThreshold) &&
+        widget.canSwipeNext &&
+        widget.onSwipeNext != null;
+
+    _horizontalDragDx = 0;
+
+    if (shouldGoPrevious) {
+      widget.onSwipePrevious!.call();
+      return;
+    }
+    if (shouldGoNext) {
+      widget.onSwipeNext!.call();
+    }
+  }
 
   Future<Uint8List?> _resolveImageBytes(String imageUrl) async {
     try {
@@ -159,25 +208,272 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
     return _isSavedSuccessfully(imageResult);
   }
 
-  void _showActionMessage(String message) {
+  void _showActionMessage(String message, {bool isError = false}) {
     if (!mounted) return;
-    final ScaffoldMessengerState? messenger = ScaffoldMessenger.maybeOf(
-      context,
-    );
-    if (messenger != null) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-      );
-      return;
-    }
-
+    final Color messageColor = isError
+        ? AppColors.stampverseDanger
+        : AppColors.stampverseSuccess;
+    final Color backgroundColor = isError
+        ? AppColors.stampverseDangerSoft
+        : AppColors.stampverseSuccessSoft;
+    final IconData iconData = isError
+        ? Icons.error_outline_rounded
+        : Icons.check_circle_rounded;
     Get.rawSnackbar(
-      message: message,
-      backgroundColor: AppColors.black.withValues(alpha: 0.88),
+      messageText: Text(
+        message,
+        style: StampverseTextStyles.caption(
+          color: messageColor,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      icon: Icon(iconData, color: messageColor),
+      backgroundColor: backgroundColor,
+      borderColor: messageColor.withValues(alpha: 0.35),
+      borderWidth: 1,
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 2),
       margin: const EdgeInsets.all(14),
       borderRadius: 12,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      dismissDirection: DismissDirection.horizontal,
+    );
+  }
+
+  Future<String?> _promptCreateCollectionName() async {
+    final TextEditingController controller = TextEditingController();
+    final String? rawValue = await showDialog<String>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.stampverseSurface,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 26,
+            vertical: 24,
+          ),
+          title: Text(
+            LocaleKey.stampverseSaveCollectionCreateTitle.tr,
+            style: StampverseTextStyles.heroTitle(
+              color: AppColors.stampverseHeadingText,
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+            textInputAction: TextInputAction.done,
+            onSubmitted: (String value) {
+              Navigator.of(dialogContext).pop(value.trim());
+            },
+            style: StampverseTextStyles.body(
+              color: AppColors.black,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: InputDecoration(
+              hintText: LocaleKey.stampverseSaveCollectionCreatePlaceholder.tr,
+              hintStyle: StampverseTextStyles.body(
+                color: AppColors.colorB7B7B7,
+              ),
+              isDense: true,
+              filled: true,
+              fillColor: AppColors.white,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: AppColors.stampverseBorderSoft,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: AppColors.stampverseBorderSoft,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: AppColors.colorF586AA6,
+                  width: 1.2,
+                ),
+              ),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(
+                LocaleKey.widgetCancel.tr,
+                style: StampverseTextStyles.body(
+                  color: AppColors.stampverseMutedText,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(controller.text.trim()),
+              child: Text(
+                LocaleKey.widgetConfirm.tr,
+                style: StampverseTextStyles.body(
+                  color: AppColors.colorF586AA6,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+
+    final String normalized = rawValue?.trim() ?? '';
+    if (normalized.isEmpty) {
+      return null;
+    }
+    for (final String item in widget.collections) {
+      if (item.trim().toLowerCase() == normalized.toLowerCase()) {
+        return item.trim();
+      }
+    }
+    return normalized;
+  }
+
+  Future<String?> _openCollectionPickerSheet() {
+    final List<String> options =
+        widget.collections
+            .map((String item) => item.trim())
+            .where((String item) => item.isNotEmpty)
+            .toSet()
+            .toList(growable: false)
+          ..sort(
+            (String a, String b) => a.toLowerCase().compareTo(b.toLowerCase()),
+          );
+
+    return showModalBottomSheet<String>(
+      context: context,
+      showDragHandle: true,
+      backgroundColor: AppColors.stampverseSurface,
+      builder: (BuildContext sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  LocaleKey.stampverseDetailsCollectionSheetTitle.tr,
+                  style: StampverseTextStyles.heroTitle(
+                    color: AppColors.stampverseHeadingText,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                if (options.isEmpty) ...<Widget>[
+                  Text(
+                    LocaleKey.stampverseDetailsCollectionEmpty.tr,
+                    style: StampverseTextStyles.body(),
+                  ),
+                  const SizedBox(height: 14),
+                  StampversePrimaryButton(
+                    label: LocaleKey.stampverseSaveCollectionCreateAction.tr,
+                    onTap: () async {
+                      final String? created =
+                          await _promptCreateCollectionName();
+                      if (!sheetContext.mounted || created == null) return;
+                      Navigator.of(sheetContext).pop(created);
+                    },
+                  ),
+                ] else ...<Widget>[
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 280),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: options.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 8),
+                      itemBuilder: (_, int index) {
+                        final String item = options[index];
+                        return Material(
+                          color: AppColors.white.withValues(alpha: 0.72),
+                          borderRadius: BorderRadius.circular(14),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(14),
+                            onTap: () => Navigator.of(sheetContext).pop(item),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: AppColors.stampverseBorderSoft,
+                                ),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 12,
+                                ),
+                                child: Row(
+                                  children: <Widget>[
+                                    const Icon(
+                                      Icons.collections_bookmark_outlined,
+                                      size: 18,
+                                      color: AppColors.colorF586AA6,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        item,
+                                        style: StampverseTextStyles.body(
+                                          color:
+                                              AppColors.stampverseHeadingText,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  StampversePrimaryButton(
+                    label: LocaleKey.stampverseSaveCollectionCreateAction.tr,
+                    onTap: () async {
+                      final String? created =
+                          await _promptCreateCollectionName();
+                      if (!sheetContext.mounted || created == null) return;
+                      Navigator.of(sheetContext).pop(created);
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _addStampToCollection() async {
+    if (widget.isAssigningCollection) return;
+
+    final String? selectedCollection = await _openCollectionPickerSheet();
+    if (!mounted || selectedCollection == null || selectedCollection.isEmpty) {
+      return;
+    }
+
+    final bool isSuccess = await widget.onAssignCollection(selectedCollection);
+    if (!mounted) return;
+    _showActionMessage(
+      isSuccess
+          ? LocaleKey.stampverseDetailsCollectionAssignSuccess.tr
+          : LocaleKey.stampverseDetailsCollectionAssignFailed.tr,
+      isError: !isSuccess,
     );
   }
 
@@ -191,7 +487,10 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
     try {
       final Uint8List? bytes = await _resolveImageBytes(widget.stamp.imageUrl);
       if (bytes == null || bytes.isEmpty) {
-        _showActionMessage(LocaleKey.stampverseDetailsDownloadFailed.tr);
+        _showActionMessage(
+          LocaleKey.stampverseDetailsDownloadFailed.tr,
+          isError: true,
+        );
         return;
       }
 
@@ -212,6 +511,7 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
         isSuccess
             ? LocaleKey.stampverseDetailsDownloadSuccess.tr
             : LocaleKey.stampverseDetailsDownloadFailed.tr,
+        isError: !isSuccess,
       );
     } catch (error, stackTrace) {
       developer.log(
@@ -221,7 +521,10 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
         stackTrace: stackTrace,
         level: 1000,
       );
-      _showActionMessage(LocaleKey.stampverseDetailsDownloadFailed.tr);
+      _showActionMessage(
+        LocaleKey.stampverseDetailsDownloadFailed.tr,
+        isError: true,
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -245,7 +548,10 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
     try {
       final Uint8List? bytes = await _resolveImageBytes(widget.stamp.imageUrl);
       if (bytes == null || bytes.isEmpty) {
-        _showActionMessage(LocaleKey.stampverseDetailsShareFailed.tr);
+        _showActionMessage(
+          LocaleKey.stampverseDetailsShareFailed.tr,
+          isError: true,
+        );
         return;
       }
 
@@ -273,7 +579,10 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
         stackTrace: stackTrace,
         level: 1000,
       );
-      _showActionMessage(LocaleKey.stampverseDetailsShareFailed.tr);
+      _showActionMessage(
+        LocaleKey.stampverseDetailsShareFailed.tr,
+        isError: true,
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -287,6 +596,7 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
   Widget build(BuildContext context) {
     final DateTime date = widget.stamp.parsedDate ?? DateTime.now();
     final String dateText = DateFormat('MMMM d, y', 'en_US').format(date);
+    final bool hasCollection = (widget.stamp.album?.trim() ?? '').isNotEmpty;
 
     return ColoredBox(
       color: AppColors.stampverseBackground,
@@ -331,64 +641,109 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
                   ),
                 ),
                 Expanded(
-                  child: LayoutBuilder(
-                    builder:
-                        (BuildContext context, BoxConstraints constraints) {
-                          final bool isCompactHeight =
-                              constraints.maxHeight < 560;
-                          const double stampWidth = 200;
-
-                          final Widget content = Column(
-                            mainAxisAlignment: isCompactHeight
-                                ? MainAxisAlignment.start
-                                : MainAxisAlignment.center,
-                            children: <Widget>[
-                              if (isCompactHeight) const SizedBox(height: 8),
-                              StampverseStamp(
-                                imageUrl: widget.stamp.imageUrl,
-                                shapeType: widget.stamp.shapeType,
-                                applyShapeClip: false,
-                                width: stampWidth,
-                                showShadow: false,
-                              ),
-                              const SizedBox(height: 40),
-                              Text(
-                                widget.stamp.name,
-                                textAlign: TextAlign.center,
-                                style: StampverseTextStyles.heroTitle(
-                                  color: AppColors.stampverseHeadingText,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onHorizontalDragStart: _onSwipeDragStart,
+                    onHorizontalDragUpdate: _onSwipeDragUpdate,
+                    onHorizontalDragEnd: _onSwipeDragEnd,
+                    child: LayoutBuilder(
+                      builder:
+                          (BuildContext context, BoxConstraints constraints) {
+                            final bool isCompactHeight =
+                                constraints.maxHeight < 560;
+                            const double stampWidth = 200;
+                            final Widget stampPreview = Stack(
+                              alignment: Alignment.center,
+                              children: <Widget>[
+                                StampverseStamp(
+                                  imageUrl: widget.stamp.imageUrl,
+                                  shapeType: widget.stamp.shapeType,
+                                  applyShapeClip: false,
+                                  width: stampWidth,
+                                  showShadow: false,
                                 ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                dateText,
-                                style: StampverseTextStyles.body(
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                            ],
-                          );
-
-                          if (isCompactHeight) {
-                            return SingleChildScrollView(
-                              padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minHeight: constraints.maxHeight - 12,
-                                ),
-                                child: content,
-                              ),
+                                if (widget.canSwipePrevious)
+                                  const Positioned(
+                                    left: -4,
+                                    child: Icon(
+                                      Icons.chevron_left_rounded,
+                                      size: 24,
+                                      color: AppColors.stampverseMutedText,
+                                    ),
+                                  ),
+                                if (widget.canSwipeNext)
+                                  const Positioned(
+                                    right: -4,
+                                    child: Icon(
+                                      Icons.chevron_right_rounded,
+                                      size: 24,
+                                      color: AppColors.stampverseMutedText,
+                                    ),
+                                  ),
+                              ],
                             );
-                          }
 
-                          return Padding(
-                            padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
-                            child: content,
-                          );
-                        },
+                            final Widget content = Column(
+                              mainAxisAlignment: isCompactHeight
+                                  ? MainAxisAlignment.start
+                                  : MainAxisAlignment.center,
+                              children: <Widget>[
+                                if (isCompactHeight) const SizedBox(height: 8),
+                                stampPreview,
+                                const SizedBox(height: 40),
+                                Text(
+                                  widget.stamp.name,
+                                  textAlign: TextAlign.center,
+                                  style: StampverseTextStyles.heroTitle(
+                                    color: AppColors.stampverseHeadingText,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  dateText,
+                                  style: StampverseTextStyles.body(
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                            );
+
+                            if (isCompactHeight) {
+                              return SingleChildScrollView(
+                                padding: const EdgeInsets.fromLTRB(
+                                  24,
+                                  0,
+                                  24,
+                                  12,
+                                ),
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    minHeight: constraints.maxHeight - 12,
+                                  ),
+                                  child: content,
+                                ),
+                              );
+                            }
+
+                            return Padding(
+                              padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+                              child: content,
+                            );
+                          },
+                    ),
                   ),
                 ),
+                if (!hasCollection)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                    child: _DetailActionButton(
+                      icon: Icons.collections_bookmark_outlined,
+                      label: LocaleKey.stampverseDetailsAddToCollection.tr,
+                      onTap: _addStampToCollection,
+                      isLoading: widget.isAssigningCollection,
+                    ),
+                  ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                   child: Row(

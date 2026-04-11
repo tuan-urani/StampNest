@@ -99,6 +99,14 @@ class StampverseLocaleKey {
       'stampverse_home_edit_filter_collection';
   static const String homeEditFilterDaily = 'stampverse_home_edit_filter_daily';
   static const String homeEditImportEmpty = 'stampverse_home_edit_import_empty';
+  static const String homeEditBackgroundLabel =
+      'stampverse_home_edit_background_label';
+  static const String homeEditBackgroundGrid =
+      'stampverse_home_edit_background_grid';
+  static const String homeEditBackgroundDots =
+      'stampverse_home_edit_background_dots';
+  static const String homeEditBackgroundPaper =
+      'stampverse_home_edit_background_paper';
   static const String homeEditDeleteBoardAction =
       'stampverse_home_edit_delete_board_action';
   static const String homeEditDeleteBoardTitle =
@@ -177,4 +185,14 @@ class StampverseLocaleKey {
       'stampverse_details_favorite_added';
   static const String detailsFavoriteRemoved =
       'stampverse_details_favorite_removed';
+  static const String detailsAddToCollection =
+      'stampverse_details_add_to_collection';
+  static const String detailsCollectionSheetTitle =
+      'stampverse_details_collection_sheet_title';
+  static const String detailsCollectionEmpty =
+      'stampverse_details_collection_empty';
+  static const String detailsCollectionAssignSuccess =
+      'stampverse_details_collection_assign_success';
+  static const String detailsCollectionAssignFailed =
+      'stampverse_details_collection_assign_failed';
 }

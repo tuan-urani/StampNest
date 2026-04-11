@@ -8,7 +8,7 @@
 PRODUCT_NAME = stamp_camera
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.stampcamera.stampcamera.stampCamera
+PRODUCT_BUNDLE_IDENTIFIER = com.urani.stampnest
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2026 com.stampcamera.stampcamera. All rights reserved.

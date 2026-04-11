@@ -24,19 +24,6 @@ Size resolveSaveStampPreviewSize({
   return Size(resolvedWidth, resolvedWidth / aspectRatio);
 }
 
-Size resolveSaveStampExportSize({
-  required StampShapeType shapeType,
-  double baseWidth = kSaveStampPreviewBaseWidth,
-}) {
-  final Size previewSize = resolveSaveStampPreviewSize(
-    shapeType: shapeType,
-    baseWidth: baseWidth,
-  );
-  final int targetWidth = previewSize.width.round().clamp(1, 4096);
-  final int targetHeight = previewSize.height.round().clamp(1, 4096);
-  return Size(targetWidth.toDouble(), targetHeight.toDouble());
-}
-
 Future<String?> exportSaveStampImageDataUrl({
   required String imageUrl,
   required StampShapeType shapeType,

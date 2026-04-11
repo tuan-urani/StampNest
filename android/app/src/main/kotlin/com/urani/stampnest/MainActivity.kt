@@ -1,4 +1,4 @@
-package com.stampnest.stampnest
+package com.urani.stampnest
 
 import io.flutter.embedding.android.FlutterActivity
 

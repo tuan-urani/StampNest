@@ -12,6 +12,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:stamp_camera/src/core/model/stamp_data_model.dart';
 import 'package:stamp_camera/src/core/model/stamp_edit_model.dart';
 import 'package:stamp_camera/src/locale/locale_key.dart';
+import 'package:stamp_camera/src/ui/edit_board/components/stampverse_edit_background_painter.dart';
 import 'package:stamp_camera/src/ui/edit_board/components/stampverse_edit_studio_view.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_text_styles.dart';
 import 'package:stamp_camera/src/utils/app_colors.dart';
@@ -68,25 +69,94 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
     await _studioController.openImportSheet();
   }
 
-  void _showActionMessage(String message) {
-    if (!mounted) return;
-    final ScaffoldMessengerState? messenger = ScaffoldMessenger.maybeOf(
-      context,
-    );
-    if (messenger != null) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-      );
-      return;
+  String _backgroundLabel(StampEditBoardBackgroundStyle style) {
+    switch (style) {
+      case StampEditBoardBackgroundStyle.grid:
+        return LocaleKey.stampverseHomeEditBackgroundGrid.tr;
+      case StampEditBoardBackgroundStyle.dots:
+        return LocaleKey.stampverseHomeEditBackgroundDots.tr;
+      case StampEditBoardBackgroundStyle.paper:
+        return LocaleKey.stampverseHomeEditBackgroundPaper.tr;
     }
+  }
 
+  Future<void> _openBackgroundMenu() async {
+    final StampEditBoardBackgroundStyle? selected =
+        await showModalBottomSheet<StampEditBoardBackgroundStyle>(
+          context: context,
+          backgroundColor: AppColors.stampverseSurface,
+          showDragHandle: true,
+          builder: (BuildContext context) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 4, 14, 14),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        LocaleKey.stampverseHomeEditBackgroundLabel.tr,
+                        style: StampverseTextStyles.body(
+                          color: AppColors.stampverseHeadingText,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...StampEditBoardBackgroundStyle.values.map((
+                      StampEditBoardBackgroundStyle style,
+                    ) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: _BoardBackgroundOptionTile(
+                          title: _backgroundLabel(style),
+                          style: style,
+                          selected: widget.board.backgroundStyle == style,
+                          onTap: () => Navigator.of(context).pop(style),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+
+    if (selected == null || selected == widget.board.backgroundStyle) return;
+    widget.onSaveBoard(widget.board.copyWith(backgroundStyle: selected));
+  }
+
+  void _showActionMessage(String message, {bool isError = false}) {
+    if (!mounted) return;
+    final Color messageColor = isError
+        ? AppColors.stampverseDanger
+        : AppColors.stampverseSuccess;
+    final Color backgroundColor = isError
+        ? AppColors.stampverseDangerSoft
+        : AppColors.stampverseSuccessSoft;
+    final IconData iconData = isError
+        ? Icons.error_outline_rounded
+        : Icons.check_circle_rounded;
     Get.rawSnackbar(
-      message: message,
-      backgroundColor: AppColors.black.withValues(alpha: 0.88),
+      messageText: Text(
+        message,
+        style: StampverseTextStyles.caption(
+          color: messageColor,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      icon: Icon(iconData, color: messageColor),
+      backgroundColor: backgroundColor,
+      borderColor: messageColor.withValues(alpha: 0.35),
+      borderWidth: 1,
       snackPosition: SnackPosition.BOTTOM,
       duration: const Duration(seconds: 2),
       margin: const EdgeInsets.all(14),
       borderRadius: 12,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      dismissDirection: DismissDirection.horizontal,
     );
   }
 
@@ -168,6 +238,7 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
       isSuccess
           ? LocaleKey.stampverseDetailsDownloadSuccess.tr
           : LocaleKey.stampverseDetailsDownloadFailed.tr,
+      isError: !isSuccess,
     );
   }
 
@@ -213,6 +284,7 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
           share
               ? LocaleKey.stampverseDetailsShareFailed.tr
               : LocaleKey.stampverseDetailsDownloadFailed.tr,
+          isError: true,
         );
         return;
       }
@@ -234,6 +306,7 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
         share
             ? LocaleKey.stampverseDetailsShareFailed.tr
             : LocaleKey.stampverseDetailsDownloadFailed.tr,
+        isError: true,
       );
     } finally {
       if (mounted) {
@@ -340,6 +413,31 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
                     tooltip: LocaleKey.stampverseDetailsShare.tr,
                   ),
                   const SizedBox(width: 2),
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        colors: <Color>[
+                          AppColors.colorF586AA6.withValues(alpha: 0.2),
+                          AppColors.colorF586AA6.withValues(alpha: 0.08),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      border: Border.all(
+                        color: AppColors.colorF586AA6.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: IconButton(
+                      onPressed: _openBackgroundMenu,
+                      icon: const Icon(
+                        Icons.dashboard_customize_rounded,
+                        color: AppColors.colorF586AA6,
+                      ),
+                      tooltip: LocaleKey.stampverseHomeEditBackgroundLabel.tr,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
                   IconButton(
                     onPressed: _openImportSheet,
                     icon: const Icon(
@@ -362,6 +460,90 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BoardBackgroundOptionTile extends StatelessWidget {
+  const _BoardBackgroundOptionTile({
+    required this.title,
+    required this.style,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String title;
+  final StampEditBoardBackgroundStyle style;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Ink(
+          height: 88,
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            color: selected
+                ? AppColors.colorF586AA6.withValues(alpha: 0.12)
+                : AppColors.white,
+            border: Border.all(
+              color: selected
+                  ? AppColors.colorF586AA6
+                  : AppColors.stampverseBorderSoft,
+            ),
+          ),
+          child: Row(
+            children: <Widget>[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: SizedBox(
+                  width: 90,
+                  height: 68,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.white,
+                      border: Border.all(
+                        color: AppColors.stampverseBorderSoft.withValues(
+                          alpha: 0.75,
+                        ),
+                      ),
+                    ),
+                    child: CustomPaint(
+                      painter: StampverseEditBackgroundPainter(
+                        backgroundStyle: style,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: StampverseTextStyles.body(
+                    color: AppColors.stampverseHeadingText,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Icon(
+                selected
+                    ? Icons.check_circle_rounded
+                    : Icons.radio_button_unchecked_rounded,
+                color: selected
+                    ? AppColors.colorF586AA6
+                    : AppColors.stampverseMutedText,
+              ),
+            ],
+          ),
         ),
       ),
     );

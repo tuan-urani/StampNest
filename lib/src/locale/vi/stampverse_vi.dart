@@ -79,6 +79,10 @@ final Map<String, String> stampverseVi = <String, String>{
   StampverseLocaleKey.homeEditFilterCollection: 'Chọn bộ sưu tập',
   StampverseLocaleKey.homeEditFilterDaily: 'Chọn ngày',
   StampverseLocaleKey.homeEditImportEmpty: 'Không có stamp phù hợp để import.',
+  StampverseLocaleKey.homeEditBackgroundLabel: 'Nền',
+  StampverseLocaleKey.homeEditBackgroundGrid: 'Ô ly',
+  StampverseLocaleKey.homeEditBackgroundDots: 'Chấm',
+  StampverseLocaleKey.homeEditBackgroundPaper: 'Giấy',
   StampverseLocaleKey.homeEditDeleteBoardAction: 'Xoá bộ',
   StampverseLocaleKey.homeEditDeleteBoardTitle: 'Xoá bộ ảnh này?',
   StampverseLocaleKey.homeEditDeleteBoardBody:
@@ -112,8 +116,7 @@ final Map<String, String> stampverseVi = <String, String>{
   StampverseLocaleKey.saveTopAction: 'Lưu',
   StampverseLocaleKey.saveInbox: 'Hộp thư',
   StampverseLocaleKey.saveCollectionLabel: 'Bộ sưu tập',
-  StampverseLocaleKey.saveCollectionPlaceholder:
-      'Nhập tên collection hoặc chọn bên dưới',
+  StampverseLocaleKey.saveCollectionPlaceholder: 'Nhập tên bộ sưu tập',
   StampverseLocaleKey.saveCollectionQuickPick: 'Chọn nhanh',
   StampverseLocaleKey.saveCollectionCreateAction: 'Tạo mới',
   StampverseLocaleKey.saveCollectionCreateTitle: 'Tạo bộ sưu tập',
@@ -140,4 +143,11 @@ final Map<String, String> stampverseVi = <String, String>{
   StampverseLocaleKey.detailsShareFailed: 'Không thể chia sẻ ảnh.',
   StampverseLocaleKey.detailsFavoriteAdded: 'Đã thêm vào mục yêu thích.',
   StampverseLocaleKey.detailsFavoriteRemoved: 'Đã bỏ khỏi mục yêu thích.',
+  StampverseLocaleKey.detailsAddToCollection: 'Thêm vào bộ sưu tập',
+  StampverseLocaleKey.detailsCollectionSheetTitle: 'Chọn bộ sưu tập',
+  StampverseLocaleKey.detailsCollectionEmpty: 'Bạn chưa có bộ sưu tập nào.',
+  StampverseLocaleKey.detailsCollectionAssignSuccess:
+      'Đã thêm stamp vào bộ sưu tập.',
+  StampverseLocaleKey.detailsCollectionAssignFailed:
+      'Không thể thêm vào bộ sưu tập.',
 };

@@ -2,6 +2,26 @@ import 'package:equatable/equatable.dart';
 
 import 'package:stamp_camera/src/core/model/stamp_shape_type.dart';
 
+enum StampEditBoardBackgroundStyle {
+  grid('grid'),
+  dots('dots'),
+  paper('paper');
+
+  const StampEditBoardBackgroundStyle(this.raw);
+
+  final String raw;
+}
+
+StampEditBoardBackgroundStyle stampEditBoardBackgroundStyleFromRaw(
+  String? raw,
+) {
+  for (final StampEditBoardBackgroundStyle style
+      in StampEditBoardBackgroundStyle.values) {
+    if (style.raw == raw) return style;
+  }
+  return StampEditBoardBackgroundStyle.grid;
+}
+
 class StampEditLayer extends Equatable {
   const StampEditLayer({
     required this.id,
@@ -91,6 +111,7 @@ class StampEditBoard extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     this.layers = const <StampEditLayer>[],
+    this.backgroundStyle = StampEditBoardBackgroundStyle.grid,
   });
 
   final String id;
@@ -98,6 +119,7 @@ class StampEditBoard extends Equatable {
   final String createdAt;
   final String updatedAt;
   final List<StampEditLayer> layers;
+  final StampEditBoardBackgroundStyle backgroundStyle;
 
   DateTime get parsedUpdatedAt {
     return DateTime.tryParse(updatedAt) ??
@@ -110,6 +132,7 @@ class StampEditBoard extends Equatable {
     String? createdAt,
     String? updatedAt,
     List<StampEditLayer>? layers,
+    StampEditBoardBackgroundStyle? backgroundStyle,
   }) {
     return StampEditBoard(
       id: id ?? this.id,
@@ -117,6 +140,7 @@ class StampEditBoard extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       layers: layers ?? this.layers,
+      backgroundStyle: backgroundStyle ?? this.backgroundStyle,
     );
   }
 
@@ -135,6 +159,11 @@ class StampEditBoard extends Equatable {
       createdAt: (json['createdAt'] ?? json['created_at'] ?? '').toString(),
       updatedAt: (json['updatedAt'] ?? json['updated_at'] ?? '').toString(),
       layers: layers,
+      backgroundStyle: stampEditBoardBackgroundStyleFromRaw(
+        json['backgroundStyle']?.toString() ??
+            json['background_style']?.toString() ??
+            json['background']?.toString(),
+      ),
     );
   }
 
@@ -147,9 +176,17 @@ class StampEditBoard extends Equatable {
       'layers': layers
           .map((StampEditLayer layer) => layer.toJson())
           .toList(growable: false),
+      'backgroundStyle': backgroundStyle.raw,
     };
   }
 
   @override
-  List<Object?> get props => <Object?>[id, name, createdAt, updatedAt, layers];
+  List<Object?> get props => <Object?>[
+    id,
+    name,
+    createdAt,
+    updatedAt,
+    layers,
+    backgroundStyle,
+  ];
 }

@@ -80,6 +80,23 @@ class StampPage extends StatelessWidget {
                 },
                 child: StampTabContent(
                   stamps: state.stamps,
+                  onSelectRecentStamp:
+                      (String id, List<String> orderedRecentIds) async {
+                        await cubit.selectStamp(id);
+                        if (!context.mounted) return;
+
+                        final Object? result = await Get.toNamed(
+                          StampRouter.stampDetails,
+                          arguments: StampDetailsPageArgs(
+                            stampId: id,
+                            browseStampIds: orderedRecentIds,
+                          ),
+                        );
+                        if (!context.mounted) return;
+                        if (result == true) {
+                          await cubit.refresh();
+                        }
+                      },
                   onSelectStamp: (String id) async {
                     await cubit.selectStamp(id);
                     if (!context.mounted) return;

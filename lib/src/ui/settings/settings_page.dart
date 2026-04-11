@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 
 import 'package:stamp_camera/src/core/repository/stampverse_repository.dart';
 import 'package:stamp_camera/src/locale/locale_key.dart';
-import 'package:stamp_camera/src/locale/translation_manager.dart';
 import 'package:stamp_camera/src/ui/settings/components/settings_tab_content.dart';
 import 'package:stamp_camera/src/ui/settings/interactor/settings_page_cubit.dart';
 import 'package:stamp_camera/src/ui/settings/interactor/settings_page_state.dart';
@@ -17,12 +16,8 @@ import 'package:stamp_camera/src/utils/app_colors.dart';
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
-  static const Map<String, String> _privacyPolicyUrlsByLanguage =
-      <String, String>{'vi': '', 'en': ''};
-  static const Map<String, String> _termsOfUseUrlsByLanguage = <String, String>{
-    'vi': '',
-    'en': '',
-  };
+  static const String _privacyPolicyAssetFilePath = 'web/privacy-policy.html';
+  static const String _termsOfUseAssetFilePath = 'web/terms-of-use.html';
 
   @override
   Widget build(BuildContext context) {
@@ -51,14 +46,14 @@ class SettingsPage extends StatelessWidget {
                   _openLegalDocument(
                     context: context,
                     title: LocaleKey.stampverseHomeSettingsPrivacyPolicy.tr,
-                    urlsByLanguage: _privacyPolicyUrlsByLanguage,
+                    assetFilePath: _privacyPolicyAssetFilePath,
                   );
                 },
                 onOpenTermsOfUse: () {
                   _openLegalDocument(
                     context: context,
                     title: LocaleKey.stampverseHomeSettingsTermsOfUse.tr,
-                    urlsByLanguage: _termsOfUseUrlsByLanguage,
+                    assetFilePath: _termsOfUseAssetFilePath,
                   );
                 },
               ),
@@ -72,47 +67,27 @@ class SettingsPage extends StatelessWidget {
   void _openLegalDocument({
     required BuildContext context,
     required String title,
-    required Map<String, String> urlsByLanguage,
+    required String assetFilePath,
   }) {
-    final String url = _resolveLegalUrl(urlsByLanguage);
-    if (url.isEmpty) {
-      Get.rawSnackbar(
-        messageText: Text(
-          LocaleKey.stampverseHomeSettingsLegalLinkPending.tr,
-          style: StampverseTextStyles.caption(color: AppColors.white),
-        ),
-        backgroundColor: AppColors.stampverseHeadingText,
-        snackPosition: SnackPosition.BOTTOM,
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-        borderRadius: 12,
-        duration: const Duration(seconds: 2),
-      );
-      return;
-    }
-
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => _StampverseLegalWebViewPage(title: title, url: url),
+        builder: (_) => _StampverseLegalWebViewPage(
+          title: title,
+          assetFilePath: assetFilePath,
+        ),
       ),
     );
-  }
-
-  String _resolveLegalUrl(Map<String, String> urlsByLanguage) {
-    final String languageCode =
-        Get.locale?.languageCode ??
-        TranslationManager.defaultLocale.languageCode;
-    return (urlsByLanguage[languageCode] ??
-            urlsByLanguage[TranslationManager.fallbackLocale.languageCode] ??
-            '')
-        .trim();
   }
 }
 
 class _StampverseLegalWebViewPage extends StatelessWidget {
-  const _StampverseLegalWebViewPage({required this.title, required this.url});
+  const _StampverseLegalWebViewPage({
+    required this.title,
+    required this.assetFilePath,
+  });
 
   final String title;
-  final String url;
+  final String assetFilePath;
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +105,7 @@ class _StampverseLegalWebViewPage extends StatelessWidget {
           ),
         ),
       ),
-      body: SafeArea(child: AppInAppWebView(url: url)),
+      body: SafeArea(child: AppInAppWebView(assetFilePath: assetFilePath)),
     );
   }
 }

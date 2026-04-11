@@ -31,6 +31,45 @@ class _SaveStampPageState extends State<SaveStampPage> {
   late final TextEditingController _nameController;
   late final TextEditingController _collectionController;
 
+  void _showExportFailedMessage(String message) {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          backgroundColor: AppColors.stampverseDangerSoft,
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(14),
+          duration: const Duration(seconds: 2),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: AppColors.stampverseDanger.withValues(alpha: 0.35),
+            ),
+          ),
+          content: Row(
+            children: <Widget>[
+              const Icon(
+                Icons.error_outline_rounded,
+                color: AppColors.stampverseDanger,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    color: AppColors.stampverseDanger,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -76,13 +115,9 @@ class _SaveStampPageState extends State<SaveStampPage> {
                     );
                 if (!context.mounted) return;
                 if (exportedImageUrl == null || exportedImageUrl.isEmpty) {
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      SnackBar(
-                        content: Text(LocaleKey.stampverseSaveExportFailed.tr),
-                      ),
-                    );
+                  _showExportFailedMessage(
+                    LocaleKey.stampverseSaveExportFailed.tr,
+                  );
                   return;
                 }
 

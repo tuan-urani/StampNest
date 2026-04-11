@@ -146,6 +146,14 @@ class LocaleKey {
       StampverseLocaleKey.homeEditFilterDaily;
   static const String stampverseHomeEditImportEmpty =
       StampverseLocaleKey.homeEditImportEmpty;
+  static const String stampverseHomeEditBackgroundLabel =
+      StampverseLocaleKey.homeEditBackgroundLabel;
+  static const String stampverseHomeEditBackgroundGrid =
+      StampverseLocaleKey.homeEditBackgroundGrid;
+  static const String stampverseHomeEditBackgroundDots =
+      StampverseLocaleKey.homeEditBackgroundDots;
+  static const String stampverseHomeEditBackgroundPaper =
+      StampverseLocaleKey.homeEditBackgroundPaper;
   static const String stampverseHomeEditDeleteBoardAction =
       StampverseLocaleKey.homeEditDeleteBoardAction;
   static const String stampverseHomeEditDeleteBoardTitle =
@@ -245,4 +253,14 @@ class LocaleKey {
       StampverseLocaleKey.detailsFavoriteAdded;
   static const String stampverseDetailsFavoriteRemoved =
       StampverseLocaleKey.detailsFavoriteRemoved;
+  static const String stampverseDetailsAddToCollection =
+      StampverseLocaleKey.detailsAddToCollection;
+  static const String stampverseDetailsCollectionSheetTitle =
+      StampverseLocaleKey.detailsCollectionSheetTitle;
+  static const String stampverseDetailsCollectionEmpty =
+      StampverseLocaleKey.detailsCollectionEmpty;
+  static const String stampverseDetailsCollectionAssignSuccess =
+      StampverseLocaleKey.detailsCollectionAssignSuccess;
+  static const String stampverseDetailsCollectionAssignFailed =
+      StampverseLocaleKey.detailsCollectionAssignFailed;
 }

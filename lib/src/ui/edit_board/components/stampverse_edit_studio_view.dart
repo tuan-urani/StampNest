@@ -10,6 +10,7 @@ import 'package:stamp_camera/src/core/model/stamp_data_model.dart';
 import 'package:stamp_camera/src/core/model/stamp_edit_model.dart';
 import 'package:stamp_camera/src/core/model/stamp_shape_type.dart';
 import 'package:stamp_camera/src/locale/locale_key.dart';
+import 'package:stamp_camera/src/ui/edit_board/components/stampverse_edit_background_painter.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_empty_tab.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_stamp.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_text_styles.dart';
@@ -742,7 +743,7 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                 },
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
           ],
           Expanded(
             child: LayoutBuilder(
@@ -767,7 +768,9 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                         children: <Widget>[
                           Positioned.fill(
                             child: CustomPaint(
-                              painter: const _NotebookGridPainter(),
+                              painter: StampverseEditBackgroundPainter(
+                                backgroundStyle: board.backgroundStyle,
+                              ),
                             ),
                           ),
                           ...board.layers.map((StampEditLayer layer) {
@@ -1012,41 +1015,4 @@ class _EditTrashDropZone extends StatelessWidget {
       ),
     );
   }
-}
-
-class _NotebookGridPainter extends CustomPainter {
-  const _NotebookGridPainter();
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const double gridSize = 24;
-    const double majorStep = 5;
-    final Paint minor = Paint()
-      ..color = AppColors.stampverseBorderSoft.withValues(alpha: 0.65)
-      ..strokeWidth = 0.7;
-    final Paint major = Paint()
-      ..color = AppColors.stampverseBorderSoft.withValues(alpha: 0.95)
-      ..strokeWidth = 1;
-
-    int line = 0;
-    for (double x = 0; x <= size.width; x += gridSize, line++) {
-      canvas.drawLine(
-        Offset(x, 0),
-        Offset(x, size.height),
-        line % majorStep == 0 ? major : minor,
-      );
-    }
-
-    line = 0;
-    for (double y = 0; y <= size.height; y += gridSize, line++) {
-      canvas.drawLine(
-        Offset(0, y),
-        Offset(size.width, y),
-        line % majorStep == 0 ? major : minor,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

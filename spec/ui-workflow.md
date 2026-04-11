@@ -34,6 +34,7 @@ Features:
    - `Xưởng`: creative board editor with notebook-grid canvas.
      - Users can create multiple boards.
      - In board list mode, long-press enters multi-select; users can tap items to select/unselect and delete selected boards from the header delete action.
+     - Each board has its own canvas background style (Grid / Dots / Paper). Users can switch styles from the header option icon, which opens a preview sheet.
      - Users can import stamps from `Bộ sưu tập` source or `Daily` source.
      - Imported stamps can be dragged, scaled, rotated, layered, and removed.
    - `Kỷ niệm`: monthly calendar (`syncfusion_flutter_calendar`) where each day displays the first stamp of that day.

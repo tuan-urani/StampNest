@@ -22,6 +22,8 @@ import 'package:stamp_camera/src/utils/app_colors.dart';
 const double _kStampGuideWidthFactor = 0.58;
 const double _kStampGuideMaxHeightFactor = 0.46;
 const double _kStampGuideVerticalAnchor = 0.44;
+const bool _kShowDebugCropRect = false;
+const bool _kShowDebugCropSizeLog = false;
 
 ui.Rect _resolveGuideRectInViewport({
   required ui.Size viewportSize,
@@ -46,20 +48,56 @@ ui.Rect _resolveGuideRectInViewport({
   return ui.Rect.fromLTWH(left, top, guideWidth, guideHeight);
 }
 
-ui.Rect _stampApertureNormalizedInPreview({
-  required ui.Size previewSize,
-  required StampShapeType shapeType,
+DeviceOrientation _resolveApplicablePreviewOrientation(CameraValue value) {
+  return value.isRecordingVideo
+      ? (value.recordingOrientation ?? value.deviceOrientation)
+      : (value.previewPauseOrientation ??
+            value.lockedCaptureOrientation ??
+            value.deviceOrientation);
+}
+
+bool _isLandscapeOrientation(DeviceOrientation orientation) {
+  return orientation == DeviceOrientation.landscapeLeft ||
+      orientation == DeviceOrientation.landscapeRight;
+}
+
+double _resolveDisplayedPreviewAspectRatio(CameraValue value) {
+  final double rawAspect = value.aspectRatio;
+  if (rawAspect <= 0) return 1;
+
+  final DeviceOrientation orientation = _resolveApplicablePreviewOrientation(
+    value,
+  );
+  if (_isLandscapeOrientation(orientation)) {
+    return rawAspect;
+  }
+  return 1 / rawAspect;
+}
+
+ui.Rect _resolvePreviewContentRectInViewport({
+  required ui.Size viewportSize,
+  required CameraValue cameraValue,
 }) {
-  final ui.Rect aperture = _resolveGuideRectInViewport(
-    viewportSize: previewSize,
-    shapeType: shapeType,
-  );
-  return ui.Rect.fromLTWH(
-    aperture.left / previewSize.width,
-    aperture.top / previewSize.height,
-    aperture.width / previewSize.width,
-    aperture.height / previewSize.height,
-  );
+  if (viewportSize.width <= 0 || viewportSize.height <= 0) {
+    return ui.Rect.fromLTWH(0, 0, viewportSize.width, viewportSize.height);
+  }
+
+  final double previewAspect = _resolveDisplayedPreviewAspectRatio(cameraValue);
+  final double viewportAspect = viewportSize.width / viewportSize.height;
+
+  double contentWidth;
+  double contentHeight;
+  if (viewportAspect > previewAspect) {
+    contentHeight = viewportSize.height;
+    contentWidth = contentHeight * previewAspect;
+  } else {
+    contentWidth = viewportSize.width;
+    contentHeight = contentWidth / previewAspect;
+  }
+
+  final double left = (viewportSize.width - contentWidth) / 2;
+  final double top = (viewportSize.height - contentHeight) / 2;
+  return ui.Rect.fromLTWH(left, top, contentWidth, contentHeight);
 }
 
 class StampverseCameraView extends StatefulWidget {
@@ -75,8 +113,8 @@ class StampverseCameraView extends StatefulWidget {
   });
 
   final VoidCallback onBack;
-  final ValueChanged<String> onCaptureLiveCamera;
-  final ValueChanged<String> onConfirmCrop;
+  final Future<bool> Function(String imageDataUrl) onCaptureLiveCamera;
+  final Future<bool> Function(String imageDataUrl) onConfirmCrop;
   final VoidCallback onReset;
   final StampShapeType selectedShape;
   final ValueChanged<StampShapeType> onShapeChanged;
@@ -105,7 +143,11 @@ class _StampverseCameraViewState extends State<StampverseCameraView> {
         ?.exportCroppedImageDataUrl();
     if (!mounted) return;
 
-    widget.onConfirmCrop(croppedImage ?? draftImage);
+    final bool didSave = await widget.onConfirmCrop(croppedImage ?? draftImage);
+    if (!mounted) return;
+    if (!didSave) {
+      widget.onReset();
+    }
 
     if (!mounted) return;
     setState(() {
@@ -199,7 +241,7 @@ class _LiveCameraCaptureView extends StatefulWidget {
 
   final StampShapeType selectedShape;
   final ValueChanged<StampShapeType> onShapeChanged;
-  final ValueChanged<String> onCapture;
+  final Future<bool> Function(String imageDataUrl) onCapture;
   final VoidCallback onBack;
 
   @override
@@ -290,7 +332,7 @@ class _LiveCameraCaptureViewState extends State<_LiveCameraCaptureView>
 
     final CameraController controller = CameraController(
       camera,
-      ResolutionPreset.high,
+      ResolutionPreset.veryHigh,
       enableAudio: false,
       imageFormatGroup: ImageFormatGroup.jpeg,
     );
@@ -386,7 +428,11 @@ class _LiveCameraCaptureViewState extends State<_LiveCameraCaptureView>
       final Uint8List bytes = await file.readAsBytes();
       final String dataUrl = 'data:image/jpeg;base64,${base64Encode(bytes)}';
       final String outputDataUrl =
-          await _cropCapturedToSelectedStamp(bytes, widget.selectedShape) ??
+          await _cropCapturedToSelectedStamp(
+            bytes,
+            widget.selectedShape,
+            controller.value,
+          ) ??
           dataUrl;
       final Uint8List? outputBytes = _tryDecodeDataUrl(outputDataUrl);
       if (outputBytes != null && mounted) {
@@ -403,7 +449,16 @@ class _LiveCameraCaptureViewState extends State<_LiveCameraCaptureView>
       await _cutController.forward(from: 0);
 
       if (!mounted) return;
-      widget.onCapture(outputDataUrl);
+      bool didSave = false;
+      try {
+        didSave = await widget.onCapture(outputDataUrl);
+      } catch (_) {
+        didSave = false;
+      }
+      if (!mounted) return;
+      if (!didSave) {
+        await _resetCapturedPreview();
+      }
     } catch (_) {
       try {
         await controller.resumePreview();
@@ -417,6 +472,22 @@ class _LiveCameraCaptureViewState extends State<_LiveCameraCaptureView>
         setState(() => _isCapturing = false);
       }
     }
+  }
+
+  Future<void> _resetCapturedPreview() async {
+    final CameraController? controller = _controller;
+    if (controller != null && controller.value.isInitialized) {
+      try {
+        await controller.resumePreview();
+      } catch (_) {}
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _capturedFrameDataUrl = null;
+      _capturedStampImageUrl = null;
+      _capturedStampImageBytes = null;
+    });
   }
 
   Future<void> _playCaptureSound() async {
@@ -442,31 +513,62 @@ class _LiveCameraCaptureViewState extends State<_LiveCameraCaptureView>
   Future<String?> _cropCapturedToSelectedStamp(
     Uint8List bytes,
     StampShapeType shapeType,
+    CameraValue cameraValue,
   ) async {
     try {
       final ui.Codec codec = await ui.instantiateImageCodec(bytes);
       final ui.FrameInfo frameInfo = await codec.getNextFrame();
       final ui.Image sourceImage = frameInfo.image;
-      final ui.Rect normalized = _stampApertureNormalizedInPreview(
-        previewSize: _previewViewportSize,
+      final ui.Rect guideRect = _resolveGuideRectInViewport(
+        viewportSize: _previewViewportSize,
         shapeType: shapeType,
       );
+      final ui.Rect previewContentRect = _resolvePreviewContentRectInViewport(
+        viewportSize: _previewViewportSize,
+        cameraValue: cameraValue,
+      );
+      final ui.Rect effectivePreviewRect =
+          previewContentRect.width > 0 && previewContentRect.height > 0
+          ? previewContentRect
+          : ui.Rect.fromLTWH(
+              0,
+              0,
+              _previewViewportSize.width,
+              _previewViewportSize.height,
+            );
 
-      final double left = (sourceImage.width * normalized.left).clamp(
+      final double normalizedLeft =
+          ((guideRect.left - effectivePreviewRect.left) /
+                  effectivePreviewRect.width)
+              .clamp(0.0, 1.0);
+      final double normalizedTop =
+          ((guideRect.top - effectivePreviewRect.top) /
+                  effectivePreviewRect.height)
+              .clamp(0.0, 1.0);
+      final double normalizedRight =
+          ((guideRect.right - effectivePreviewRect.left) /
+                  effectivePreviewRect.width)
+              .clamp(normalizedLeft + (1 / sourceImage.width), 1.0);
+      final double normalizedBottom =
+          ((guideRect.bottom - effectivePreviewRect.top) /
+                  effectivePreviewRect.height)
+              .clamp(normalizedTop + (1 / sourceImage.height), 1.0);
+
+      final double left = (sourceImage.width * normalizedLeft).clamp(
         0,
         sourceImage.width.toDouble(),
       );
-      final double top = (sourceImage.height * normalized.top).clamp(
+      final double top = (sourceImage.height * normalizedTop).clamp(
         0,
         sourceImage.height.toDouble(),
       );
       final double maxRight = sourceImage.width.toDouble();
       final double maxBottom = sourceImage.height.toDouble();
-      final double right = (sourceImage.width * normalized.right).clamp(
+      final double right = (sourceImage.width * normalizedRight).clamp(
         left + 1,
         maxRight,
       );
-      final double bottom = (sourceImage.height * normalized.bottom).clamp(
+      final double bottom = (sourceImage.height * normalizedBottom).clamp(
         top + 1,
         maxBottom,
       );
@@ -474,6 +576,17 @@ class _LiveCameraCaptureViewState extends State<_LiveCameraCaptureView>
       final ui.Rect sourceRect = ui.Rect.fromLTRB(left, top, right, bottom);
       final int targetWidth = sourceRect.width.round().clamp(1, 4096);
       final int targetHeight = sourceRect.height.round().clamp(1, 4096);
+
+      if (_kShowDebugCropSizeLog) {
+        debugPrint(
+          '[CameraCrop] source=${sourceImage.width}x${sourceImage.height}, '
+          'cropRect=(${sourceRect.left.toStringAsFixed(1)}, '
+          '${sourceRect.top.toStringAsFixed(1)}, '
+          '${sourceRect.width.toStringAsFixed(1)}, '
+          '${sourceRect.height.toStringAsFixed(1)}), '
+          'output=${targetWidth}x$targetHeight',
+        );
+      }
 
       final ui.PictureRecorder recorder = ui.PictureRecorder();
       final ui.Canvas canvas = ui.Canvas(recorder);
@@ -1030,6 +1143,16 @@ class _StampGuidePainter extends CustomPainter {
         ..strokeWidth = strokeWidth
         ..color = AppColors.white,
     );
+
+    if (_kShowDebugCropRect) {
+      canvas.drawRect(
+        guideRect,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..color = AppColors.colorEF4056,
+      );
+    }
   }
 
   @override

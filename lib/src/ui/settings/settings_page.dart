@@ -26,9 +26,9 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: AppColors.stampverseBackground,
-      child: BlocProvider<SettingsPageCubit>(
+    return Scaffold(
+      backgroundColor: AppColors.stampverseBackground,
+      body: BlocProvider<SettingsPageCubit>(
         create: (_) =>
             SettingsPageCubit(repository: Get.find<StampverseRepository>())
               ..initialize(),
@@ -44,12 +44,8 @@ class SettingsPage extends StatelessWidget {
               child: SettingsTabContent(
                 stampsCount: state.stampsCount,
                 collectionsCount: state.collectionsCount,
-                isRefreshing: state.isRefreshing,
-                onRefresh: () {
-                  cubit.refresh();
-                },
-                onResetLocal: () {
-                  cubit.resetLocal();
+                onClearLocalData: () {
+                  cubit.clearLocalData();
                 },
                 onOpenPrivacyPolicy: () {
                   _openLegalDocument(

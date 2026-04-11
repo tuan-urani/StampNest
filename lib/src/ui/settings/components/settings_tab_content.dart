@@ -12,18 +12,14 @@ class SettingsTabContent extends StatelessWidget {
     super.key,
     required this.stampsCount,
     required this.collectionsCount,
-    required this.onRefresh,
-    required this.onResetLocal,
+    required this.onClearLocalData,
     required this.onOpenPrivacyPolicy,
     required this.onOpenTermsOfUse,
-    this.isRefreshing = false,
   });
 
   final int stampsCount;
   final int collectionsCount;
-  final bool isRefreshing;
-  final VoidCallback onRefresh;
-  final VoidCallback onResetLocal;
+  final VoidCallback onClearLocalData;
   final VoidCallback onOpenPrivacyPolicy;
   final VoidCallback onOpenTermsOfUse;
 
@@ -80,16 +76,9 @@ class SettingsTabContent extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _SettingsActionButton(
-            icon: Icons.refresh_rounded,
-            label: LocaleKey.stampverseHomeSettingsRefresh.tr,
-            onTap: onRefresh,
-            loading: isRefreshing,
-          ),
-          const SizedBox(height: 10),
-          _SettingsActionButton(
             icon: Icons.delete_forever_rounded,
             label: LocaleKey.stampverseHomeSettingsResetLocal.tr,
-            onTap: onResetLocal,
+            onTap: onClearLocalData,
             danger: true,
           ),
         ],
@@ -330,14 +319,12 @@ class _SettingsActionButton extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.onTap,
-    this.loading = false,
     this.danger = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
-  final bool loading;
   final bool danger;
 
   @override
@@ -354,7 +341,7 @@ class _SettingsActionButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
-          onTap: loading ? null : onTap,
+          onTap: onTap,
           child: DecoratedBox(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
@@ -363,14 +350,7 @@ class _SettingsActionButton extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                if (loading)
-                  const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                else
-                  Icon(icon, size: 18, color: foreground),
+                Icon(icon, size: 18, color: foreground),
                 const SizedBox(width: 8),
                 Text(
                   label,

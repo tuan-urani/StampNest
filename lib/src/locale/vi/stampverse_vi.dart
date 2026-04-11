@@ -64,7 +64,7 @@ final Map<String, String> stampverseVi = <String, String>{
   StampverseLocaleKey.homeSettingsLegalLinkPending:
       'Liên kết webview chưa được cấu hình.',
   StampverseLocaleKey.homeSettingsRefresh: 'Làm mới dữ liệu local',
-  StampverseLocaleKey.homeSettingsResetLocal: 'Xoá toàn bộ dữ liệu local',
+  StampverseLocaleKey.homeSettingsResetLocal: 'Xoá dữ liệu',
   StampverseLocaleKey.homeEditBoards: 'Bộ ảnh sáng tạo',
   StampverseLocaleKey.homeEditCreateBoard: 'Tạo bộ mới',
   StampverseLocaleKey.homeEditImportStamp: 'Import stamp',
@@ -122,6 +122,9 @@ final Map<String, String> stampverseVi = <String, String>{
   StampverseLocaleKey.saveCollectionCreateHint:
       'Bạn có thể nhập tên bộ sưu tập mới trực tiếp ở ô trên.',
   StampverseLocaleKey.saveBackButton: 'Quay lại',
+  StampverseLocaleKey.saveOriginalCropLabel: 'Ảnh crop gốc',
+  StampverseLocaleKey.saveExportFailed:
+      'Không thể xử lý ảnh stamp. Vui lòng thử lại.',
   StampverseLocaleKey.albumTitle: 'Thư viện',
   StampverseLocaleKey.albumEmpty: 'Album trống',
   StampverseLocaleKey.detailsDelete: 'Xoá kỉ niệm',

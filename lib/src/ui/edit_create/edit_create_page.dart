@@ -34,9 +34,9 @@ class _EditCreatePageState extends State<EditCreatePage> {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: AppColors.stampverseBackground,
-      child: BlocProvider<EditCreatePageCubit>(
+    return Scaffold(
+      backgroundColor: AppColors.stampverseBackground,
+      body: BlocProvider<EditCreatePageCubit>(
         create: (_) =>
             EditCreatePageCubit(repository: Get.find<StampverseRepository>()),
         child: BlocBuilder<EditCreatePageCubit, EditCreatePageState>(
@@ -55,7 +55,7 @@ class _EditCreatePageState extends State<EditCreatePage> {
                   Navigator.of(context).pop(false);
                   return;
                 }
-                final Object? result = await Navigator.of(context).pushNamed(
+                final Object? result = await Get.toNamed(
                   CreativeRouter.editBoard,
                   arguments: EditBoardPageArgs(boardId: boardId),
                 );

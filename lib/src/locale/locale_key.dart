@@ -214,6 +214,10 @@ class LocaleKey {
       StampverseLocaleKey.saveCollectionCreateHint;
   static const String stampverseSaveBackButton =
       StampverseLocaleKey.saveBackButton;
+  static const String stampverseSaveOriginalCropLabel =
+      StampverseLocaleKey.saveOriginalCropLabel;
+  static const String stampverseSaveExportFailed =
+      StampverseLocaleKey.saveExportFailed;
 
   static const String stampverseAlbumTitle = StampverseLocaleKey.albumTitle;
   static const String stampverseAlbumEmpty = StampverseLocaleKey.albumEmpty;

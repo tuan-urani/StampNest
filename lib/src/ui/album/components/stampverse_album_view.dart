@@ -69,6 +69,8 @@ class StampverseAlbumView extends StatelessWidget {
                         return StampverseStamp(
                           imageUrl: item.imageUrl,
                           shapeType: item.shapeType,
+                          applyShapeClip: false,
+                          showShadow: false,
                           onTap: () => onSelectStamp(item.id),
                         );
                       },

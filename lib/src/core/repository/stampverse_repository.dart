@@ -230,6 +230,12 @@ class StampverseRepository {
     await _preferences.remove(_editBoardsCacheKey);
   }
 
+  Future<void> clearLocalData() async {
+    await _preferences.remove(_cacheKey);
+    await _preferences.remove(_collectionCacheKey);
+    await _preferences.remove(_editBoardsCacheKey);
+  }
+
   List<String> _mergeCollectionNames(List<String> base, List<String> incoming) {
     final Set<String> values = <String>{...base, ...incoming}
       ..removeWhere((String item) => item.trim().isEmpty);

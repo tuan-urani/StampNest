@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
 import 'package:stamp_camera/src/core/model/stamp_shape_type.dart';
 import 'package:stamp_camera/src/ui/camera/components/stampverse_camera_view.dart';
 import 'package:stamp_camera/src/ui/camera/interactor/camera_page_cubit.dart';
@@ -25,9 +26,9 @@ class CameraPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: AppColors.stampverseBackground,
-      child: BlocProvider<CameraPageCubit>(
+    return Scaffold(
+      backgroundColor: AppColors.black,
+      body: BlocProvider<CameraPageCubit>(
         create: (_) => CameraPageCubit(
           initialDraftImage: args.draftImage,
           initialShape: args.initialShape,
@@ -41,31 +42,35 @@ class CameraPage extends StatelessWidget {
               onShapeChanged: cubit.updateShape,
               onBack: () => Navigator.of(context).pop(false),
               onCaptureLiveCamera: (String imageDataUrl) async {
-                final Object? result = await Navigator.of(context).pushNamed(
+                final Object? result = await Get.toNamed(
                   StampRouter.saveStamp,
                   arguments: SaveStampPageArgs(
                     imageUrl: imageDataUrl,
                     shapeType: state.selectedShape,
                   ),
                 );
-                if (!context.mounted) return;
+                if (!context.mounted) return false;
                 if (result == true) {
                   Navigator.of(context).pop(true);
+                  return true;
                 }
+                return false;
               },
               onReset: cubit.resetDraft,
               onConfirmCrop: (String croppedImageDataUrl) async {
-                final Object? result = await Navigator.of(context).pushNamed(
+                final Object? result = await Get.toNamed(
                   StampRouter.saveStamp,
                   arguments: SaveStampPageArgs(
                     imageUrl: croppedImageDataUrl,
                     shapeType: state.selectedShape,
                   ),
                 );
-                if (!context.mounted) return;
+                if (!context.mounted) return false;
                 if (result == true) {
                   Navigator.of(context).pop(true);
+                  return true;
                 }
+                return false;
               },
             );
           },

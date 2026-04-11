@@ -184,6 +184,7 @@ class _MemoryCalendarCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool hasStamp = firstStamp != null;
     final Color dayColor = isToday
         ? AppColors.stampverseDanger
         : (isSunday
@@ -204,18 +205,7 @@ class _MemoryCalendarCell extends StatelessWidget {
         ),
         child: Stack(
           children: <Widget>[
-            Positioned(
-              top: 6,
-              left: 6,
-              child: Text(
-                '${day.day}',
-                style: StampverseTextStyles.caption(
-                  color: dayColor,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            if (firstStamp != null)
+            if (hasStamp)
               Positioned.fill(
                 top: 0,
                 left: 4,
@@ -237,6 +227,7 @@ class _MemoryCalendarCell extends StatelessWidget {
                       child: StampverseStamp(
                         imageUrl: firstStamp!.imageUrl,
                         shapeType: shapeType,
+                        applyShapeClip: false,
                         width: stampWidth,
                         showShadow: false,
                       ),
@@ -244,6 +235,31 @@ class _MemoryCalendarCell extends StatelessWidget {
                   },
                 ),
               ),
+            Positioned(
+              top: 5,
+              left: 5,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: hasStamp
+                      ? AppColors.white.withValues(alpha: 0.92)
+                      : AppColors.transparent,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 4,
+                    vertical: 1,
+                  ),
+                  child: Text(
+                    '${day.day}',
+                    style: StampverseTextStyles.caption(
+                      color: dayColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -342,7 +358,9 @@ class _MemoryDayStampsSheet extends StatelessWidget {
                             StampverseStamp(
                               imageUrl: stamp.imageUrl,
                               shapeType: stamp.shapeType,
+                              applyShapeClip: false,
                               width: 70,
+                              showShadow: false,
                             ),
                             const SizedBox(width: 12),
                             Expanded(

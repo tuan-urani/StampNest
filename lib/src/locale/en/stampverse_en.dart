@@ -64,7 +64,7 @@ final Map<String, String> stampverseEn = <String, String>{
   StampverseLocaleKey.homeSettingsLegalLinkPending:
       'Webview link has not been configured yet.',
   StampverseLocaleKey.homeSettingsRefresh: 'Refresh local data',
-  StampverseLocaleKey.homeSettingsResetLocal: 'Clear all local data',
+  StampverseLocaleKey.homeSettingsResetLocal: 'Delete data',
   StampverseLocaleKey.homeEditBoards: 'Creative boards',
   StampverseLocaleKey.homeEditCreateBoard: 'New board',
   StampverseLocaleKey.homeEditImportStamp: 'Import stamp',
@@ -123,6 +123,9 @@ final Map<String, String> stampverseEn = <String, String>{
   StampverseLocaleKey.saveCollectionCreateHint:
       'You can create a new collection by typing a custom name above.',
   StampverseLocaleKey.saveBackButton: 'Back',
+  StampverseLocaleKey.saveOriginalCropLabel: 'Original crop',
+  StampverseLocaleKey.saveExportFailed:
+      'Unable to process this stamp. Please try again.',
   StampverseLocaleKey.albumTitle: 'Library',
   StampverseLocaleKey.albumEmpty: 'Album is empty',
   StampverseLocaleKey.detailsDelete: 'Delete memory',

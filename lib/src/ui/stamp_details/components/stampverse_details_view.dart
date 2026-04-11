@@ -336,8 +336,7 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
                         (BuildContext context, BoxConstraints constraints) {
                           final bool isCompactHeight =
                               constraints.maxHeight < 560;
-                          final double stampWidth = (constraints.maxWidth - 48)
-                              .clamp(200.0, 256.0);
+                          const double stampWidth = 200;
 
                           final Widget content = Column(
                             mainAxisAlignment: isCompactHeight
@@ -348,7 +347,9 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
                               StampverseStamp(
                                 imageUrl: widget.stamp.imageUrl,
                                 shapeType: widget.stamp.shapeType,
+                                applyShapeClip: false,
                                 width: stampWidth,
+                                showShadow: false,
                               ),
                               const SizedBox(height: 40),
                               Text(

@@ -105,7 +105,9 @@ class CollectionTabContent extends StatelessWidget {
                           return StampverseStamp(
                             imageUrl: preview.imageUrl,
                             shapeType: preview.shapeType,
+                            applyShapeClip: false,
                             width: 70,
+                            showShadow: false,
                             onTap: () => onSelectStamp(preview.id),
                           );
                         },

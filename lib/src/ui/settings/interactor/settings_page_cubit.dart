@@ -32,8 +32,8 @@ class SettingsPageCubit extends Cubit<SettingsPageState> {
     );
   }
 
-  Future<void> resetLocal() async {
-    await _repository.clearSession();
+  Future<void> clearLocalData() async {
+    await _repository.clearLocalData();
     emit(
       state.copyWith(
         stampsCount: 0,

@@ -15,6 +15,7 @@ class StampverseStamp extends StatelessWidget {
     required this.imageUrl,
     this.imageBytes,
     this.shapeType = StampShapeType.scallop,
+    this.applyShapeClip = true,
     this.width,
     this.rotationDegrees = 0,
     this.showShadow = true,
@@ -24,6 +25,7 @@ class StampverseStamp extends StatelessWidget {
   final String imageUrl;
   final Uint8List? imageBytes;
   final StampShapeType shapeType;
+  final bool applyShapeClip;
   final double? width;
   final double rotationDegrees;
   final bool showShadow;
@@ -31,6 +33,17 @@ class StampverseStamp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Widget image = _StampImage(
+      imageUrl: imageUrl,
+      imageBytes: imageBytes,
+    );
+    final Widget shapedImage = applyShapeClip
+        ? ClipPath(
+            clipper: _StampClipper(shapeType: shapeType),
+            child: image,
+          )
+        : image;
+
     Widget content = SizedBox(
       width: width,
       child: AspectRatio(
@@ -47,10 +60,7 @@ class StampverseStamp extends StatelessWidget {
                   ]
                 : const <BoxShadow>[],
           ),
-          child: ClipPath(
-            clipper: _StampClipper(shapeType: shapeType),
-            child: _StampImage(imageUrl: imageUrl, imageBytes: imageBytes),
-          ),
+          child: shapedImage,
         ),
       ),
     );

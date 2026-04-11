@@ -657,6 +657,7 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                                     child: StampverseStamp(
                                       imageUrl: stamp.imageUrl,
                                       shapeType: stamp.shapeType,
+                                      applyShapeClip: false,
                                     ),
                                   );
                                 },
@@ -815,6 +816,7 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                                         child: StampverseStamp(
                                           imageUrl: layer.imageUrl,
                                           shapeType: layer.shapeType,
+                                          applyShapeClip: false,
                                           width: _kEditLayerBaseWidth,
                                         ),
                                       ),

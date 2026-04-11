@@ -79,7 +79,9 @@ class StampTabContent extends StatelessWidget {
                           StampverseStamp(
                             imageUrl: item.imageUrl,
                             shapeType: item.shapeType,
+                            applyShapeClip: false,
                             width: stampTileWidth,
+                            showShadow: false,
                             onTap: () => onSelectStamp(item.id),
                           ),
                           const SizedBox(height: 4),
@@ -128,6 +130,8 @@ class StampTabContent extends StatelessWidget {
                   return StampverseStamp(
                     imageUrl: item.imageUrl,
                     shapeType: item.shapeType,
+                    applyShapeClip: false,
+                    showShadow: false,
                     onTap: () => onSelectStamp(item.id),
                   );
                 },

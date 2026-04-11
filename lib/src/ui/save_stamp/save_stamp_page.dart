@@ -6,6 +6,7 @@ import 'package:stamp_camera/src/core/model/stamp_shape_type.dart';
 import 'package:stamp_camera/src/core/repository/stampverse_repository.dart';
 import 'package:stamp_camera/src/locale/locale_key.dart';
 import 'package:stamp_camera/src/ui/save_stamp/components/stampverse_save_view.dart';
+import 'package:stamp_camera/src/ui/save_stamp/helpers/stampverse_save_stamp_export.dart';
 import 'package:stamp_camera/src/ui/save_stamp/interactor/save_stamp_cubit.dart';
 import 'package:stamp_camera/src/ui/save_stamp/interactor/save_stamp_state.dart';
 import 'package:stamp_camera/src/utils/app_colors.dart';
@@ -46,9 +47,9 @@ class _SaveStampPageState extends State<SaveStampPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: AppColors.stampverseBackground,
-      child: BlocProvider<SaveStampCubit>(
+    return Scaffold(
+      backgroundColor: AppColors.stampverseBackground,
+      body: BlocProvider<SaveStampCubit>(
         create: (_) =>
             SaveStampCubit(repository: Get.find<StampverseRepository>())
               ..initialize(),
@@ -68,9 +69,25 @@ class _SaveStampPageState extends State<SaveStampPage> {
                     ? LocaleKey.stampverseSaveDefaultName.tr
                     : _nameController.text.trim();
                 final String rawCollection = _collectionController.text.trim();
+                final String? exportedImageUrl =
+                    await exportSaveStampImageDataUrl(
+                      imageUrl: widget.args.imageUrl,
+                      shapeType: widget.args.shapeType,
+                    );
+                if (!context.mounted) return;
+                if (exportedImageUrl == null || exportedImageUrl.isEmpty) {
+                  ScaffoldMessenger.of(context)
+                    ..hideCurrentSnackBar()
+                    ..showSnackBar(
+                      SnackBar(
+                        content: Text(LocaleKey.stampverseSaveExportFailed.tr),
+                      ),
+                    );
+                  return;
+                }
 
                 final bool saved = await cubit.saveStamp(
-                  imageUrl: widget.args.imageUrl,
+                  imageUrl: exportedImageUrl,
                   shapeType: widget.args.shapeType,
                   rawName: rawName,
                   rawCollection: rawCollection,

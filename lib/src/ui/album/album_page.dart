@@ -49,7 +49,7 @@ class _AlbumPageState extends State<AlbumPage> {
               onSelectStamp: (String id) async {
                 await cubit.selectStamp(id);
                 if (!context.mounted) return;
-                final Object? result = await Navigator.of(context).pushNamed(
+                final Object? result = await Get.toNamed(
                   CollectionRouter.stampDetails,
                   arguments: StampDetailsPageArgs(
                     stampId: id,

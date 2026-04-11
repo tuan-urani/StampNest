@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 import 'package:stamp_camera/src/core/model/stamp_shape_type.dart';
 import 'package:stamp_camera/src/locale/locale_key.dart';
+import 'package:stamp_camera/src/ui/save_stamp/helpers/stampverse_save_stamp_export.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_stamp.dart';
 import 'package:stamp_camera/src/utils/app_colors.dart';
 import 'package:stamp_camera/src/utils/app_styles.dart';
@@ -295,6 +296,9 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
     final List<String> collections = _collectionOptions();
     final double keyboardInset = MediaQuery.of(context).viewInsets.bottom;
     final bool isKeyboardVisible = keyboardInset > 0;
+    final Size previewSize = resolveSaveStampPreviewSize(
+      shapeType: widget.shapeType,
+    );
 
     return ColoredBox(
       color: AppColors.stampverseBackground,
@@ -320,7 +324,7 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
                     child: StampverseStamp(
                       imageUrl: widget.imageUrl,
                       shapeType: widget.shapeType,
-                      width: 146,
+                      width: previewSize.width,
                     ),
                   ),
                 ),

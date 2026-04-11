@@ -153,6 +153,9 @@ class StampverseLocaleKey {
   static const String saveCollectionCreateHint =
       'stampverse_save_collection_create_hint';
   static const String saveBackButton = 'stampverse_save_back_button';
+  static const String saveOriginalCropLabel =
+      'stampverse_save_original_crop_label';
+  static const String saveExportFailed = 'stampverse_save_export_failed';
 
   static const String albumTitle = 'stampverse_album_title';
   static const String albumEmpty = 'stampverse_album_empty';

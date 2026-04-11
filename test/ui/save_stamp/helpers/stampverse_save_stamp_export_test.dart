@@ -50,19 +50,19 @@ int _alphaAt({
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('resolveSaveStampExportSize returns expected size per shape', () {
-    final Size scallop = resolveSaveStampExportSize(
+  test('resolveSaveStampPreviewSize keeps expected preview size per shape', () {
+    final Size scallop = resolveSaveStampPreviewSize(
       shapeType: StampShapeType.scallop,
     );
-    final Size circle = resolveSaveStampExportSize(
+    final Size circle = resolveSaveStampPreviewSize(
       shapeType: StampShapeType.circle,
     );
-    final Size square = resolveSaveStampExportSize(
+    final Size square = resolveSaveStampPreviewSize(
       shapeType: StampShapeType.square,
     );
 
     expect(scallop.width, 200);
-    expect(scallop.height, 267);
+    expect(scallop.height, closeTo(266.6667, 0.001));
     expect(circle.width, 200);
     expect(circle.height, 200);
     expect(square.width, 200);
@@ -87,12 +87,12 @@ void main() {
     final ByteData? rawRgba = await image.toByteData(
       format: ui.ImageByteFormat.rawRgba,
     );
-    expect(image.width, 200);
-    expect(image.height, 200);
+    expect(image.width, 60);
+    expect(image.height, 60);
     expect(rawRgba, isNotNull);
     expect(_alphaAt(rgba: rawRgba!, width: image.width, x: 0, y: 0), equals(0));
     expect(
-      _alphaAt(rgba: rawRgba, width: image.width, x: 100, y: 100),
+      _alphaAt(rgba: rawRgba, width: image.width, x: 30, y: 30),
       greaterThan(0),
     );
     image.dispose();

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -53,21 +54,48 @@ Future<String?> exportSaveStampImageDataUrl({
     final ui.FrameInfo frameInfo = await codec.getNextFrame();
     sourceImage = frameInfo.image;
 
-    final Size outputSize = resolveSaveStampExportSize(
+    final int targetWidth = sourceImage.width.clamp(1, 4096);
+    final int targetHeight = sourceImage.height.clamp(1, 4096);
+    final Size previewShapeSize = resolveSaveStampPreviewSize(
       shapeType: shapeType,
       baseWidth: baseWidth,
     );
-    final int targetWidth = outputSize.width.toInt();
-    final int targetHeight = outputSize.height.toInt();
+    final Rect previewRect = Rect.fromLTWH(
+      0,
+      0,
+      previewShapeSize.width,
+      previewShapeSize.height,
+    );
+    final Path previewShapePath = buildStampShapePath(
+      rect: previewRect,
+      shapeType: shapeType,
+    );
+    final double scaleX = targetWidth / previewShapeSize.width;
+    final double scaleY = targetHeight / previewShapeSize.height;
+    final Float64List scaleMatrix = Float64List.fromList(<double>[
+      scaleX,
+      0,
+      0,
+      0,
+      0,
+      scaleY,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+    ]);
+    final Path shapePath = previewShapePath.transform(scaleMatrix);
     final Rect targetRect = Rect.fromLTWH(
       0,
       0,
       targetWidth.toDouble(),
       targetHeight.toDouble(),
-    );
-    final Path shapePath = buildStampShapePath(
-      rect: targetRect,
-      shapeType: shapeType,
     );
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();

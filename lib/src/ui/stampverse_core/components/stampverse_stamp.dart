@@ -95,6 +95,7 @@ class _StampImage extends StatelessWidget {
       return Image.memory(
         rawBytes,
         fit: BoxFit.cover,
+        filterQuality: FilterQuality.high,
         gaplessPlayback: true,
         errorBuilder: (_, _, _) => const _StampFallback(),
       );
@@ -106,6 +107,7 @@ class _StampImage extends StatelessWidget {
         return Image.memory(
           bytes,
           fit: BoxFit.cover,
+          filterQuality: FilterQuality.high,
           gaplessPlayback: true,
           errorBuilder: (_, _, _) => const _StampFallback(),
         );
@@ -116,6 +118,7 @@ class _StampImage extends StatelessWidget {
       return Image.network(
         imageUrl,
         fit: BoxFit.cover,
+        filterQuality: FilterQuality.high,
         gaplessPlayback: true,
         errorBuilder: (_, _, _) => const _StampFallback(),
       );
@@ -125,6 +128,7 @@ class _StampImage extends StatelessWidget {
       return Image.file(
         File(imageUrl),
         fit: BoxFit.cover,
+        filterQuality: FilterQuality.high,
         gaplessPlayback: true,
         errorBuilder: (_, _, _) => const _StampFallback(),
       );
@@ -133,6 +137,7 @@ class _StampImage extends StatelessWidget {
     return Image.asset(
       imageUrl,
       fit: BoxFit.cover,
+      filterQuality: FilterQuality.high,
       gaplessPlayback: true,
       errorBuilder: (_, _, _) => const _StampFallback(),
     );

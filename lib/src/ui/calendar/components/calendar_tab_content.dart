@@ -208,28 +208,28 @@ class _MemoryCalendarCell extends StatelessWidget {
             if (hasStamp)
               Positioned.fill(
                 top: 0,
-                left: 4,
-                right: 4,
-                bottom: 4,
+                left: 0,
+                right: 0,
+                bottom: 0,
                 child: LayoutBuilder(
                   builder: (_, BoxConstraints constraints) {
-                    final double maxWidth = constraints.maxWidth;
-                    final double maxHeight = constraints.maxHeight;
                     final StampShapeType shapeType = firstStamp!.shapeType;
-                    final double widthByHeight =
-                        maxHeight * shapeType.aspectRatio;
-                    final double stampWidth = widthByHeight < maxWidth
-                        ? widthByHeight
-                        : maxWidth;
+                    final double baseWidth = constraints.maxWidth;
+                    if (baseWidth <= 0) {
+                      return const SizedBox.shrink();
+                    }
 
-                    return Align(
-                      alignment: Alignment.bottomCenter,
-                      child: StampverseStamp(
-                        imageUrl: firstStamp!.imageUrl,
-                        shapeType: shapeType,
-                        applyShapeClip: false,
-                        width: stampWidth,
-                        showShadow: false,
+                    return SizedBox.expand(
+                      child: FittedBox(
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
+                        child: StampverseStamp(
+                          imageUrl: firstStamp!.imageUrl,
+                          shapeType: shapeType,
+                          applyShapeClip: false,
+                          width: baseWidth,
+                          showShadow: false,
+                        ),
                       ),
                     );
                   },

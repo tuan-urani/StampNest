@@ -140,6 +140,7 @@ class CreativeTabContent extends StatelessWidget {
                                   imageUrl: previewLayer.imageUrl,
                                   shapeType: previewLayer.shapeType,
                                   width: 70,
+                                  applyShapeClip: false,
                                 ),
                         ),
                         const SizedBox(width: 12),

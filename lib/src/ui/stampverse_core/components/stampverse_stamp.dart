@@ -106,7 +106,7 @@ class _StampImage extends StatelessWidget {
       if (bytes != null) {
         return Image.memory(
           bytes,
-          fit: BoxFit.cover,
+          fit: BoxFit.contain,
           filterQuality: FilterQuality.high,
           gaplessPlayback: true,
           errorBuilder: (_, _, _) => const _StampFallback(),

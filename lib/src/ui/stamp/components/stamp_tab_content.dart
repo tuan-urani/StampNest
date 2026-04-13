@@ -77,37 +77,18 @@ class StampTabContent extends StatelessWidget {
                         item.parsedDate ??
                         DateTime.fromMillisecondsSinceEpoch(0);
 
-                    return SizedBox(
-                      width: stampTileWidth,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          StampverseStamp(
-                            imageUrl: item.imageUrl,
-                            shapeType: item.shapeType,
-                            applyShapeClip: false,
-                            width: stampTileWidth,
-                            showShadow: false,
-                            onTap: () {
-                              final onRecentTap = onSelectRecentStamp;
-                              if (onRecentTap != null) {
-                                onRecentTap(item.id, recentOpenedIds);
-                                return;
-                              }
-                              onSelectStamp(item.id);
-                            },
-                          ),
-                          const SizedBox(height: 4),
-                          Center(
-                            child: Text(
-                              DateFormat('HH:mm').format(openedAt),
-                              style: StampverseTextStyles.caption(
-                                color: AppColors.stampverseMutedText,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    return _StampPreviewTile(
+                      item: item,
+                      stampTileWidth: stampTileWidth,
+                      caption: DateFormat('HH:mm').format(openedAt),
+                      onTap: () {
+                        final onRecentTap = onSelectRecentStamp;
+                        if (onRecentTap != null) {
+                          onRecentTap(item.id, recentOpenedIds);
+                          return;
+                        }
+                        onSelectStamp(item.id);
+                      },
                     );
                   },
                 ),
@@ -128,26 +109,27 @@ class StampTabContent extends StatelessWidget {
                 text: LocaleKey.stampverseHomeStampFavoriteEmpty.tr,
               )
             else
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: crossAxisCount,
-                  crossAxisSpacing: 14,
-                  mainAxisSpacing: 16,
-                  childAspectRatio: 3 / 4,
+              SizedBox(
+                height: recentRowHeight,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: favorites.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (_, int index) {
+                    final StampDataModel item = favorites[index];
+                    final DateTime openedAt =
+                        item.parsedLastOpenedAt ??
+                        item.parsedDate ??
+                        DateTime.fromMillisecondsSinceEpoch(0);
+
+                    return _StampPreviewTile(
+                      item: item,
+                      stampTileWidth: stampTileWidth,
+                      caption: DateFormat('HH:mm').format(openedAt),
+                      onTap: () => onSelectStamp(item.id),
+                    );
+                  },
                 ),
-                itemCount: favorites.length,
-                itemBuilder: (_, int index) {
-                  final StampDataModel item = favorites[index];
-                  return StampverseStamp(
-                    imageUrl: item.imageUrl,
-                    shapeType: item.shapeType,
-                    applyShapeClip: false,
-                    showShadow: false,
-                    onTap: () => onSelectStamp(item.id),
-                  );
-                },
               ),
           ],
         );
@@ -218,6 +200,49 @@ class _SectionEmptyText extends StatelessWidget {
     return Text(
       text,
       style: StampverseTextStyles.caption(color: AppColors.stampverseMutedText),
+    );
+  }
+}
+
+class _StampPreviewTile extends StatelessWidget {
+  const _StampPreviewTile({
+    required this.item,
+    required this.stampTileWidth,
+    required this.caption,
+    required this.onTap,
+  });
+
+  final StampDataModel item;
+  final double stampTileWidth;
+  final String caption;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: stampTileWidth,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          StampverseStamp(
+            imageUrl: item.imageUrl,
+            shapeType: item.shapeType,
+            applyShapeClip: false,
+            width: stampTileWidth,
+            showShadow: false,
+            onTap: onTap,
+          ),
+          const SizedBox(height: 4),
+          Center(
+            child: Text(
+              caption,
+              style: StampverseTextStyles.caption(
+                color: AppColors.stampverseMutedText,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

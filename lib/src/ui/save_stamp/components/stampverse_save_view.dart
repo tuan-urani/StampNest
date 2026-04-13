@@ -338,6 +338,7 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
                       imageUrl: widget.imageUrl,
                       shapeType: widget.shapeType,
                       width: previewSize.width,
+                      showShadow: false,
                     ),
                   ),
                 ),
@@ -502,149 +503,156 @@ class _CollectionInputField extends StatelessWidget {
         .where((String item) => item.isNotEmpty)
         .toSet()
         .toList(growable: false);
-    final String current = controller.text.trim().toLowerCase();
-    String? selectedValue;
-    for (final String option in normalizedOptions) {
-      if (option.toLowerCase() == current) {
-        selectedValue = option;
-        break;
-      }
-    }
-
     final TextStyle valueStyle = AppStyles.bodyLarge(
       color: AppColors.black,
       fontWeight: FontWeight.w700,
     );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Row(
+    return ValueListenableBuilder<TextEditingValue>(
+      valueListenable: controller,
+      builder: (_, TextEditingValue value, _) {
+        final String current = value.text.trim().toLowerCase();
+        String? selectedValue;
+        for (final String option in normalizedOptions) {
+          if (option.toLowerCase() == current) {
+            selectedValue = option;
+            break;
+          }
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Expanded(
-              child: Text(
-                label,
-                style: AppStyles.bodyLarge(
-                  color: AppColors.colorF586AA6,
-                  fontWeight: FontWeight.w700,
-                ).copyWith(height: 1.2),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Tooltip(
-              message: LocaleKey.stampverseSaveCollectionCreateAction.tr,
-              child: SizedBox(
-                width: 34,
-                height: 34,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.white.withValues(alpha: 0.72),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppColors.stampverseBorderSoft),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    label,
+                    style: AppStyles.bodyLarge(
+                      color: AppColors.colorF586AA6,
+                      fontWeight: FontWeight.w700,
+                    ).copyWith(height: 1.2),
                   ),
-                  child: Material(
-                    color: AppColors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(10),
-                      onTap: () async {
-                        await onCreateCollection();
-                      },
-                      child: const Icon(
-                        Icons.add_rounded,
-                        size: 18,
-                        color: AppColors.colorF586AA6,
+                ),
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: LocaleKey.stampverseSaveCollectionCreateAction.tr,
+                  child: SizedBox(
+                    width: 34,
+                    height: 34,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: AppColors.white.withValues(alpha: 0.72),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: AppColors.stampverseBorderSoft,
+                        ),
+                      ),
+                      child: Material(
+                        color: AppColors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: () async {
+                            await onCreateCollection();
+                          },
+                          child: const Icon(
+                            Icons.add_rounded,
+                            size: 18,
+                            color: AppColors.colorF586AA6,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            InputDecorator(
+              isEmpty: selectedValue == null,
+              decoration: InputDecoration(
+                isDense: true,
+                filled: true,
+                fillColor: AppColors.white.withValues(alpha: 0.72),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 4,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: AppColors.stampverseBorderSoft,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: AppColors.stampverseBorderSoft,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: const BorderSide(
+                    color: AppColors.colorF586AA6,
+                    width: 1.4,
+                  ),
+                ),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedValue,
+                  isExpanded: true,
+                  borderRadius: BorderRadius.circular(14),
+                  dropdownColor: AppColors.stampverseSurface,
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.colorF586AA6,
+                  ),
+                  style: valueStyle.copyWith(height: 1.2),
+                  hint: Text(
+                    hint,
+                    style: AppStyles.bodyLarge(
+                      color: AppColors.colorB7B7B7,
+                      fontWeight: FontWeight.w500,
+                    ).copyWith(height: 1.2),
+                  ),
+                  items: normalizedOptions
+                      .map(
+                        (String option) => DropdownMenuItem<String>(
+                          value: option,
+                          child: Text(
+                            option,
+                            overflow: TextOverflow.ellipsis,
+                            style: valueStyle.copyWith(height: 1.2),
+                          ),
+                        ),
+                      )
+                      .toList(growable: false),
+                  onChanged: normalizedOptions.isEmpty
+                      ? null
+                      : (String? selected) {
+                          final String nextValue = selected?.trim() ?? '';
+                          controller.text = nextValue;
+                          controller.selection = TextSelection.collapsed(
+                            offset: nextValue.length,
+                          );
+                        },
+                ),
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        InputDecorator(
-          isEmpty: selectedValue == null,
-          decoration: InputDecoration(
-            isDense: true,
-            filled: true,
-            fillColor: AppColors.white.withValues(alpha: 0.72),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 4,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                color: AppColors.stampverseBorderSoft,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                color: AppColors.stampverseBorderSoft,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                color: AppColors.colorF586AA6,
-                width: 1.4,
-              ),
-            ),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: selectedValue,
-              isExpanded: true,
-              borderRadius: BorderRadius.circular(14),
-              dropdownColor: AppColors.stampverseSurface,
-              icon: const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: AppColors.colorF586AA6,
-              ),
-              style: valueStyle.copyWith(height: 1.2),
-              hint: Text(
-                hint,
-                style: AppStyles.bodyLarge(
-                  color: AppColors.colorB7B7B7,
+            if (normalizedOptions.isEmpty) ...<Widget>[
+              const SizedBox(height: 10),
+              Text(
+                LocaleKey.stampverseSaveCollectionCreateHint.tr,
+                style: AppStyles.bodySmall(
+                  color: AppColors.stampverseMutedText,
                   fontWeight: FontWeight.w500,
-                ).copyWith(height: 1.2),
+                ),
               ),
-              items: normalizedOptions
-                  .map(
-                    (String option) => DropdownMenuItem<String>(
-                      value: option,
-                      child: Text(
-                        option,
-                        overflow: TextOverflow.ellipsis,
-                        style: valueStyle.copyWith(height: 1.2),
-                      ),
-                    ),
-                  )
-                  .toList(growable: false),
-              onChanged: normalizedOptions.isEmpty
-                  ? null
-                  : (String? value) {
-                      final String nextValue = value?.trim() ?? '';
-                      controller.text = nextValue;
-                      controller.selection = TextSelection.collapsed(
-                        offset: nextValue.length,
-                      );
-                    },
-            ),
-          ),
-        ),
-        if (normalizedOptions.isEmpty) ...<Widget>[
-          const SizedBox(height: 10),
-          Text(
-            LocaleKey.stampverseSaveCollectionCreateHint.tr,
-            style: AppStyles.bodySmall(
-              color: AppColors.stampverseMutedText,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ],
+            ],
+          ],
+        );
+      },
     );
   }
 }

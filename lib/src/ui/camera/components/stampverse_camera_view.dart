@@ -87,6 +87,8 @@ ui.Rect _resolvePreviewContentRectInViewport({
 
   double contentWidth;
   double contentHeight;
+  // Keep camera ratio intact without cropping (native-like FOV).
+  // Content is anchored at viewport start (top-left), not centered.
   if (viewportAspect > previewAspect) {
     contentHeight = viewportSize.height;
     contentWidth = contentHeight * previewAspect;
@@ -95,8 +97,8 @@ ui.Rect _resolvePreviewContentRectInViewport({
     contentHeight = contentWidth / previewAspect;
   }
 
-  final double left = (viewportSize.width - contentWidth) / 2;
-  final double top = (viewportSize.height - contentHeight) / 2;
+  const double left = 0;
+  const double top = 0;
   return ui.Rect.fromLTWH(left, top, contentWidth, contentHeight);
 }
 
@@ -621,6 +623,39 @@ class _LiveCameraCaptureViewState extends State<_LiveCameraCaptureView>
     }
   }
 
+  Widget _buildCameraPreview(CameraController controller) {
+    if (!controller.value.isInitialized) {
+      return const ColoredBox(color: AppColors.stampverseSurface);
+    }
+
+    return ValueListenableBuilder<CameraValue>(
+      valueListenable: controller,
+      builder: (_, CameraValue value, _) {
+        final ui.Rect previewRect = _resolvePreviewContentRectInViewport(
+          viewportSize: _previewViewportSize,
+          cameraValue: value,
+        );
+
+        if (previewRect.width <= 0 || previewRect.height <= 0) {
+          return CameraPreview(controller);
+        }
+
+        return Stack(
+          fit: StackFit.expand,
+          children: <Widget>[
+            Positioned(
+              left: previewRect.left,
+              top: previewRect.top,
+              width: previewRect.width,
+              height: previewRect.height,
+              child: CameraPreview(controller),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final CameraController? controller = _controller;
@@ -635,10 +670,41 @@ class _LiveCameraCaptureViewState extends State<_LiveCameraCaptureView>
 
     return LayoutBuilder(
       builder: (_, BoxConstraints constraints) {
+        const double shapeSelectorHeight = 46;
+        const double shapeSelectorBottomGapFromPreview = 12;
+        const double shapeSelectorBottomGapFromShutter = 12;
+        const double shutterButtonSize = 78;
+        const double shutterBottomSpacing = 30;
         _previewViewportSize = ui.Size(
           constraints.maxWidth,
           constraints.maxHeight,
         );
+        final ui.Rect previewRect = hasCamera
+            ? _resolvePreviewContentRectInViewport(
+                viewportSize: _previewViewportSize,
+                cameraValue: controller.value,
+              )
+            : ui.Rect.fromLTWH(
+                0,
+                0,
+                _previewViewportSize.width,
+                _previewViewportSize.height,
+              );
+        final double minShapeSelectorTop = topInset + 12;
+        final double shutterTop =
+            constraints.maxHeight -
+            bottomInset -
+            shutterBottomSpacing -
+            shutterButtonSize;
+        final double maxShapeSelectorTop = math.max(
+          minShapeSelectorTop,
+          shutterTop - shapeSelectorBottomGapFromShutter - shapeSelectorHeight,
+        );
+        final double shapeSelectorTop =
+            (previewRect.bottom -
+                    shapeSelectorHeight -
+                    shapeSelectorBottomGapFromPreview)
+                .clamp(minShapeSelectorTop, maxShapeSelectorTop);
 
         return Stack(
           fit: StackFit.expand,
@@ -663,7 +729,7 @@ class _LiveCameraCaptureViewState extends State<_LiveCameraCaptureView>
                   fit: StackFit.expand,
                   children: <Widget>[
                     if (hasCamera)
-                      CameraPreview(controller)
+                      _buildCameraPreview(controller)
                     else
                       const ColoredBox(color: AppColors.stampverseSurface),
                     IgnorePointer(
@@ -733,20 +799,22 @@ class _LiveCameraCaptureViewState extends State<_LiveCameraCaptureView>
             Positioned(
               left: 24,
               right: 24,
-              bottom: bottomInset + 24,
-              child: Column(
-                children: <Widget>[
-                  _CameraShapeSelector(
-                    selectedShape: widget.selectedShape,
-                    onShapeChanged: widget.onShapeChanged,
-                  ),
-                  const SizedBox(height: 12),
-                  _CameraShutterButton(
-                    onTap: _capture,
-                    isCapturing: _isCapturing,
-                    enabled: hasCamera && !_isInitializing,
-                  ),
-                ],
+              top: shapeSelectorTop,
+              child: _CameraShapeSelector(
+                selectedShape: widget.selectedShape,
+                onShapeChanged: widget.onShapeChanged,
+              ),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: bottomInset + shutterBottomSpacing,
+              child: Center(
+                child: _CameraShutterButton(
+                  onTap: _capture,
+                  isCapturing: _isCapturing,
+                  enabled: hasCamera && !_isInitializing,
+                ),
               ),
             ),
           ],

@@ -32,7 +32,7 @@ class StampverseSaveView extends StatefulWidget {
   final List<String> collections;
   final String defaultCollection;
   final VoidCallback onBack;
-  final VoidCallback onSave;
+  final ValueChanged<double> onSave;
 
   @override
   State<StampverseSaveView> createState() => _StampverseSaveViewState();
@@ -45,6 +45,8 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
   late final Animation<double> _stampFade;
   late final Animation<double> _metaFade;
   final List<String> _draftCollections = <String>[];
+  double _previewRotationRadians = 0;
+  double _rotationAtScaleStart = 0;
 
   @override
   void initState() {
@@ -292,6 +294,34 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
     );
   }
 
+  void _onPreviewScaleStart(ScaleStartDetails _) {
+    _rotationAtScaleStart = _previewRotationRadians;
+  }
+
+  void _onPreviewScaleUpdate(ScaleUpdateDetails details) {
+    final double nextRotation = _normalizeRotation(
+      _rotationAtScaleStart + details.rotation,
+    );
+    if (nextRotation == _previewRotationRadians) {
+      return;
+    }
+    setState(() {
+      _previewRotationRadians = nextRotation;
+    });
+  }
+
+  double _normalizeRotation(double value) {
+    if (!value.isFinite) return 0;
+    const double fullTurn = pi * 2;
+    double normalized = value % fullTurn;
+    if (normalized > pi) {
+      normalized -= fullTurn;
+    } else if (normalized < -pi) {
+      normalized += fullTurn;
+    }
+    return normalized;
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<String> collections = _collectionOptions();
@@ -334,11 +364,16 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
                   scale: _stampScale.value,
                   child: Opacity(
                     opacity: _stampFade.value,
-                    child: StampverseStamp(
-                      imageUrl: widget.imageUrl,
-                      shapeType: widget.shapeType,
-                      width: previewSize.width,
-                      showShadow: false,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onScaleStart: _onPreviewScaleStart,
+                      onScaleUpdate: _onPreviewScaleUpdate,
+                      child: _SaveStampPreview(
+                        imageUrl: widget.imageUrl,
+                        shapeType: widget.shapeType,
+                        width: previewSize.width,
+                        rotationRadians: _previewRotationRadians,
+                      ),
                     ),
                   ),
                 ),
@@ -380,7 +415,7 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
                         Expanded(
                           child: _BottomActionButton(
                             label: LocaleKey.stampverseSaveTopAction.tr,
-                            onTap: widget.onSave,
+                            onTap: () => widget.onSave(_previewRotationRadians),
                             isPrimary: true,
                           ),
                         ),
@@ -399,6 +434,52 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
               child: body,
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _SaveStampPreview extends StatelessWidget {
+  const _SaveStampPreview({
+    required this.imageUrl,
+    required this.shapeType,
+    required this.width,
+    required this.rotationRadians,
+  });
+
+  final String imageUrl;
+  final StampShapeType shapeType;
+  final double width;
+  final double rotationRadians;
+
+  @override
+  Widget build(BuildContext context) {
+    final Size previewSize = resolveSaveStampPreviewSize(
+      shapeType: shapeType,
+      baseWidth: width,
+    );
+    final double fitScale = resolveSaveStampRotationFitScale(
+      size: previewSize,
+      rotationRadians: rotationRadians,
+    );
+
+    return SizedBox(
+      width: width,
+      child: AspectRatio(
+        aspectRatio: shapeType.aspectRatio,
+        child: Center(
+          child: Transform.scale(
+            scale: fitScale,
+            child: Transform.rotate(
+              angle: rotationRadians,
+              child: StampverseStamp(
+                imageUrl: imageUrl,
+                shapeType: shapeType,
+                showShadow: false,
+              ),
+            ),
+          ),
         ),
       ),
     );

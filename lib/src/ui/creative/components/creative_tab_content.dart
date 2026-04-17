@@ -33,7 +33,7 @@ class CreativeTabContent extends StatelessWidget {
       return StampverseEmptyTab(
         icon: Icons.edit_note_rounded,
         title: LocaleKey.stampverseHomeEditEmptyTitle.tr,
-        subtitle: LocaleKey.stampverseHomeCollectionEmptySubtitle.tr,
+        subtitle: '',
         actionLabel: LocaleKey.stampverseHomeEditEmptyAction.tr,
         onActionTap: onCreateBoard,
       );

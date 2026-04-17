@@ -123,6 +123,12 @@ class LocaleKey {
       StampverseLocaleKey.homeSettingsRefresh;
   static const String stampverseHomeSettingsResetLocal =
       StampverseLocaleKey.homeSettingsResetLocal;
+  static const String stampverseHomeSettingsResetLocalTitle =
+      StampverseLocaleKey.homeSettingsResetLocalTitle;
+  static const String stampverseHomeSettingsResetLocalBody =
+      StampverseLocaleKey.homeSettingsResetLocalBody;
+  static const String stampverseHomeSettingsResetLocalConfirm =
+      StampverseLocaleKey.homeSettingsResetLocalConfirm;
   static const String stampverseHomeEditBoards =
       StampverseLocaleKey.homeEditBoards;
   static const String stampverseHomeEditCreateBoard =

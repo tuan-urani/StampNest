@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
+import 'package:syncfusion_localizations/syncfusion_localizations.dart';
 
 import 'package:stamp_camera/src/di/di_graph_setup.dart';
 import 'package:stamp_camera/src/locale/translation_manager.dart';
@@ -50,6 +52,13 @@ class App extends StatelessWidget {
       translations: TranslationManager(),
       locale: initialLocale,
       fallbackLocale: TranslationManager.fallbackLocale,
+      supportedLocales: TranslationManager.appLocales,
+      localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        SfGlobalLocalizations.delegate,
+      ],
     );
   }
 }

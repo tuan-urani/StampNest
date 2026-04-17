@@ -65,6 +65,10 @@ final Map<String, String> stampverseVi = <String, String>{
       'Liên kết webview chưa được cấu hình.',
   StampverseLocaleKey.homeSettingsRefresh: 'Làm mới dữ liệu local',
   StampverseLocaleKey.homeSettingsResetLocal: 'Xoá dữ liệu',
+  StampverseLocaleKey.homeSettingsResetLocalTitle: 'Xoá dữ liệu local?',
+  StampverseLocaleKey.homeSettingsResetLocalBody:
+      'Toàn bộ stamp, bộ sưu tập và board lưu trên thiết bị này sẽ bị xoá vĩnh viễn.',
+  StampverseLocaleKey.homeSettingsResetLocalConfirm: 'Xoá dữ liệu',
   StampverseLocaleKey.homeEditBoards: 'Bộ ảnh sáng tạo',
   StampverseLocaleKey.homeEditCreateBoard: 'Tạo bộ mới',
   StampverseLocaleKey.homeEditImportStamp: 'Import stamp',

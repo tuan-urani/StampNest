@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 import 'package:stamp_camera/src/locale/locale_key.dart';
@@ -86,7 +85,7 @@ class _StampverseAddStampFabState extends State<StampverseAddStampFab> {
                   ),
           ),
           _FabCircleButton(
-            size: 70,
+            size: 60,
             onTap: _toggleExpanded,
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 180),
@@ -99,15 +98,14 @@ class _StampverseAddStampFabState extends State<StampverseAddStampFab> {
                       size: 34,
                       color: AppColors.white,
                     )
-                  : SvgPicture.asset(
-                      AppAssets.iconsCameraSvg,
+                  : Image.asset(
+                      AppAssets.iconsCameraAnimePng,
                       key: const ValueKey<String>('camera-icon'),
-                      width: 24,
-                      height: 24,
-                      colorFilter: const ColorFilter.mode(
-                        AppColors.white,
-                        BlendMode.srcIn,
-                      ),
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.contain,
+                      color: AppColors.white,
+                      colorBlendMode: BlendMode.srcIn,
                     ),
             ),
           ),

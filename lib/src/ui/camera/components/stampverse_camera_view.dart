@@ -1390,7 +1390,7 @@ class _CropPreviewState extends State<_CropPreview> {
       shapeType: widget.shapeType,
     );
 
-    final double nextScale = (_gestureStartScale * details.scale).clamp(1, 4);
+    final double nextScale = (_gestureStartScale * details.scale).clamp(0.5, 4);
     final Offset delta = details.focalPoint - _gestureStartFocalPoint;
     final Offset nextOffset = _gestureStartOffset + delta;
     final _ResolvedCropImageLayout nextLayout = _resolveLayout(

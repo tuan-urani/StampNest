@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -24,10 +25,32 @@ Size resolveSaveStampPreviewSize({
   return Size(resolvedWidth, resolvedWidth / aspectRatio);
 }
 
+double resolveSaveStampRotationFitScale({
+  required Size size,
+  required double rotationRadians,
+}) {
+  final double width = size.width;
+  final double height = size.height;
+  if (width <= 0 || height <= 0) return 1;
+
+  final double safeRotation = rotationRadians.isFinite ? rotationRadians : 0;
+  final double cosAbs = math.cos(safeRotation).abs();
+  final double sinAbs = math.sin(safeRotation).abs();
+
+  final double rotatedWidth = (width * cosAbs) + (height * sinAbs);
+  final double rotatedHeight = (width * sinAbs) + (height * cosAbs);
+  if (rotatedWidth <= 0 || rotatedHeight <= 0) return 1;
+
+  final double scale = (width / rotatedWidth).clamp(0, 1).toDouble();
+  final double scaleHeight = (height / rotatedHeight).clamp(0, 1).toDouble();
+  return scale < scaleHeight ? scale : scaleHeight;
+}
+
 Future<String?> exportSaveStampImageDataUrl({
   required String imageUrl,
   required StampShapeType shapeType,
   double baseWidth = kSaveStampPreviewBaseWidth,
+  double rotationRadians = 0,
 }) async {
   final Uint8List? sourceBytes = await _resolveImageBytes(imageUrl);
   if (sourceBytes == null || sourceBytes.isEmpty) return null;
@@ -84,9 +107,20 @@ Future<String?> exportSaveStampImageDataUrl({
       targetWidth.toDouble(),
       targetHeight.toDouble(),
     );
+    final double safeRotation = rotationRadians.isFinite ? rotationRadians : 0;
+    final double fitScale = resolveSaveStampRotationFitScale(
+      size: previewShapeSize,
+      rotationRadians: safeRotation,
+    );
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
+    canvas.save();
+    final Offset center = targetRect.center;
+    canvas.translate(center.dx, center.dy);
+    canvas.scale(fitScale, fitScale);
+    canvas.rotate(safeRotation);
+    canvas.translate(-center.dx, -center.dy);
     canvas.clipPath(shapePath, doAntiAlias: true);
     canvas.drawImageRect(
       sourceImage,
@@ -101,6 +135,7 @@ Future<String?> exportSaveStampImageDataUrl({
         ..isAntiAlias = true
         ..filterQuality = FilterQuality.high,
     );
+    canvas.restore();
 
     final ui.Picture picture = recorder.endRecording();
     outputImage = await picture.toImage(targetWidth, targetHeight);

@@ -66,6 +66,14 @@ class CalendarTabContent extends StatelessWidget {
             cellBorderColor: AppColors.transparent,
             backgroundColor: AppColors.transparent,
             todayHighlightColor: AppColors.colorEF4056,
+            selectionDecoration: BoxDecoration(
+              color: AppColors.transparent,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppColors.stampversePrimaryText.withValues(alpha: 0.24),
+                width: 1.4,
+              ),
+            ),
             headerStyle: CalendarHeaderStyle(
               textAlign: TextAlign.center,
               textStyle: StampverseTextStyles.body(
@@ -280,6 +288,7 @@ class _MemoryDayStampsSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String localeName = Localizations.localeOf(context).toString();
     final List<StampDataModel> sorted = List<StampDataModel>.from(dayStamps)
       ..sort((StampDataModel a, StampDataModel b) {
         final DateTime dateA =
@@ -317,7 +326,7 @@ class _MemoryDayStampsSheet extends StatelessWidget {
                 children: <Widget>[
                   Expanded(
                     child: Text(
-                      DateFormat('EEEE, d MMMM y').format(day),
+                      DateFormat('EEEE, d MMMM y', localeName).format(day),
                       style: StampverseTextStyles.body(
                         color: AppColors.stampverseHeadingText,
                         fontWeight: FontWeight.w700,

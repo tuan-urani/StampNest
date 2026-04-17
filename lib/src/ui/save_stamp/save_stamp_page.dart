@@ -103,7 +103,7 @@ class _SaveStampPageState extends State<SaveStampPage> {
               collections: state.collections,
               defaultCollection: '',
               onBack: () => Navigator.of(context).pop(false),
-              onSave: () async {
+              onSave: (double rotationRadians) async {
                 final String rawName = _nameController.text.trim().isEmpty
                     ? LocaleKey.stampverseSaveDefaultName.tr
                     : _nameController.text.trim();
@@ -112,6 +112,7 @@ class _SaveStampPageState extends State<SaveStampPage> {
                     await exportSaveStampImageDataUrl(
                       imageUrl: widget.args.imageUrl,
                       shapeType: widget.args.shapeType,
+                      rotationRadians: rotationRadians,
                     );
                 if (!context.mounted) return;
                 if (exportedImageUrl == null || exportedImageUrl.isEmpty) {

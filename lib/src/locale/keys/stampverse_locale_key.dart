@@ -85,6 +85,12 @@ class StampverseLocaleKey {
   static const String homeSettingsRefresh = 'stampverse_home_settings_refresh';
   static const String homeSettingsResetLocal =
       'stampverse_home_settings_reset_local';
+  static const String homeSettingsResetLocalTitle =
+      'stampverse_home_settings_reset_local_title';
+  static const String homeSettingsResetLocalBody =
+      'stampverse_home_settings_reset_local_body';
+  static const String homeSettingsResetLocalConfirm =
+      'stampverse_home_settings_reset_local_confirm';
   static const String homeEditBoards = 'stampverse_home_edit_boards';
   static const String homeEditCreateBoard = 'stampverse_home_edit_create_board';
   static const String homeEditImportStamp = 'stampverse_home_edit_import_stamp';

@@ -56,6 +56,10 @@ final Map<String, String> stampverseJa = <String, String>{
   StampverseLocaleKey.homeSettingsLegalLinkPending: 'Webviewリンクはまだ設定されていません。',
   StampverseLocaleKey.homeSettingsRefresh: 'ローカルデータを更新',
   StampverseLocaleKey.homeSettingsResetLocal: 'データを削除',
+  StampverseLocaleKey.homeSettingsResetLocalTitle: 'ローカルデータを削除しますか？',
+  StampverseLocaleKey.homeSettingsResetLocalBody:
+      'この端末に保存されたスタンプ、コレクション、ボードがすべて完全に削除されます。',
+  StampverseLocaleKey.homeSettingsResetLocalConfirm: 'データを削除',
   StampverseLocaleKey.homeEditBoards: 'クリエイティブボード',
   StampverseLocaleKey.homeEditCreateBoard: '新規ボード',
   StampverseLocaleKey.homeEditImportStamp: 'スタンプを追加',

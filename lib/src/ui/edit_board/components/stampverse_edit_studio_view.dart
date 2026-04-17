@@ -685,7 +685,7 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
       return StampverseEmptyTab(
         icon: Icons.edit_note_rounded,
         title: LocaleKey.stampverseHomeEditEmptyTitle.tr,
-        subtitle: LocaleKey.stampverseHomeCollectionEmptySubtitle.tr,
+        subtitle: '',
         actionLabel: LocaleKey.stampverseHomeEditEmptyAction.tr,
         onActionTap: widget.onCreateBoard,
       );

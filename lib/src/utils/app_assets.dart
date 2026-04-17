@@ -4,6 +4,7 @@ class AppAssets {
   static const String audioTakePicSoundMp3 = 'assets/take_pic_sound.mp3';
   static const String iconsAppIconPng = 'assets/icons/app_icon.png';
   static const String iconsCameraSvg = 'assets/icons/camera.svg';
+  static const String iconsCameraAnimePng = 'assets/icons/camera_anime.png';
   static const String iconsInputRequiredSvg =
       'assets/images/icons/input_required.svg';
   static const String iconsChevronDownSvg =

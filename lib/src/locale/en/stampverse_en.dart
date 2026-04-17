@@ -65,6 +65,10 @@ final Map<String, String> stampverseEn = <String, String>{
       'Webview link has not been configured yet.',
   StampverseLocaleKey.homeSettingsRefresh: 'Refresh local data',
   StampverseLocaleKey.homeSettingsResetLocal: 'Delete data',
+  StampverseLocaleKey.homeSettingsResetLocalTitle: 'Delete local data?',
+  StampverseLocaleKey.homeSettingsResetLocalBody:
+      'All local stamps, collections, and boards on this device will be permanently removed.',
+  StampverseLocaleKey.homeSettingsResetLocalConfirm: 'Delete data',
   StampverseLocaleKey.homeEditBoards: 'Creative boards',
   StampverseLocaleKey.homeEditCreateBoard: 'New board',
   StampverseLocaleKey.homeEditImportStamp: 'Import stamp',

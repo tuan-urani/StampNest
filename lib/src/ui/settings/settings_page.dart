@@ -39,14 +39,19 @@ class SettingsPage extends StatelessWidget {
               child: SettingsTabContent(
                 stampsCount: state.stampsCount,
                 collectionsCount: state.collectionsCount,
-                onClearLocalData: () {
-                  cubit.clearLocalData();
+                onClearLocalData: () async {
+                  final bool shouldClear = await _confirmClearLocalData(
+                    context,
+                  );
+                  if (!context.mounted || !shouldClear) return;
+                  await cubit.clearLocalData();
                 },
                 onOpenPrivacyPolicy: () {
                   _openLegalDocument(
                     context: context,
                     title: LocaleKey.stampverseHomeSettingsPrivacyPolicy.tr,
                     assetFilePath: _privacyPolicyAssetFilePath,
+                    preferredLanguageCode: _resolveLegalLanguageCode(),
                   );
                 },
                 onOpenTermsOfUse: () {
@@ -54,6 +59,7 @@ class SettingsPage extends StatelessWidget {
                     context: context,
                     title: LocaleKey.stampverseHomeSettingsTermsOfUse.tr,
                     assetFilePath: _termsOfUseAssetFilePath,
+                    preferredLanguageCode: _resolveLegalLanguageCode(),
                   );
                 },
               ),
@@ -68,15 +74,65 @@ class SettingsPage extends StatelessWidget {
     required BuildContext context,
     required String title,
     required String assetFilePath,
+    required String preferredLanguageCode,
   }) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => _StampverseLegalWebViewPage(
           title: title,
           assetFilePath: assetFilePath,
+          preferredLanguageCode: preferredLanguageCode,
         ),
       ),
     );
+  }
+
+  String _resolveLegalLanguageCode() {
+    final String appLanguageCode =
+        Get.locale?.languageCode.toLowerCase() ?? 'vi';
+    if (appLanguageCode == 'vi') return 'vi';
+    if (appLanguageCode == 'ja') return 'ja';
+    return 'en';
+  }
+
+  Future<bool> _confirmClearLocalData(BuildContext context) async {
+    final bool? accepted = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.stampverseSurface,
+          title: Text(
+            LocaleKey.stampverseHomeSettingsResetLocalTitle.tr,
+            style: StampverseTextStyles.body(
+              color: AppColors.stampverseHeadingText,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          content: Text(
+            LocaleKey.stampverseHomeSettingsResetLocalBody.tr,
+            style: StampverseTextStyles.body(),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: Text(LocaleKey.widgetCancel.tr),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(
+                LocaleKey.stampverseHomeSettingsResetLocalConfirm.tr,
+                style: StampverseTextStyles.body(
+                  color: AppColors.stampverseDanger,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    return accepted ?? false;
   }
 }
 
@@ -84,10 +140,12 @@ class _StampverseLegalWebViewPage extends StatelessWidget {
   const _StampverseLegalWebViewPage({
     required this.title,
     required this.assetFilePath,
+    required this.preferredLanguageCode,
   });
 
   final String title;
   final String assetFilePath;
+  final String preferredLanguageCode;
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +163,12 @@ class _StampverseLegalWebViewPage extends StatelessWidget {
           ),
         ),
       ),
-      body: SafeArea(child: AppInAppWebView(assetFilePath: assetFilePath)),
+      body: SafeArea(
+        child: AppInAppWebView(
+          assetFilePath: assetFilePath,
+          preferredLanguageCode: preferredLanguageCode,
+        ),
+      ),
     );
   }
 }

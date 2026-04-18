@@ -45,7 +45,7 @@ class CameraPage extends StatelessWidget {
                 final Object? result = await Get.toNamed(
                   StampRouter.saveStamp,
                   arguments: SaveStampPageArgs(
-                    imageUrl: imageDataUrl,
+                    sourceImageUrl: imageDataUrl,
                     shapeType: state.selectedShape,
                   ),
                 );
@@ -61,7 +61,7 @@ class CameraPage extends StatelessWidget {
                 final Object? result = await Get.toNamed(
                   StampRouter.saveStamp,
                   arguments: SaveStampPageArgs(
-                    imageUrl: croppedImageDataUrl,
+                    sourceImageUrl: croppedImageDataUrl,
                     shapeType: state.selectedShape,
                   ),
                 );

@@ -366,6 +366,9 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isTemplateBoard =
+        widget.board.editorMode == StampEditBoardEditorMode.template;
+
     return ColoredBox(
       color: AppColors.stampverseBackground,
       child: SafeArea(
@@ -438,14 +441,15 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
                     ),
                   ),
                   const SizedBox(width: 2),
-                  IconButton(
-                    onPressed: _openImportSheet,
-                    icon: const Icon(
-                      Icons.add_photo_alternate_outlined,
-                      color: AppColors.stampversePrimaryText,
+                  if (!isTemplateBoard)
+                    IconButton(
+                      onPressed: _openImportSheet,
+                      icon: const Icon(
+                        Icons.add_photo_alternate_outlined,
+                        color: AppColors.stampversePrimaryText,
+                      ),
+                      tooltip: LocaleKey.stampverseHomeEditImportStamp.tr,
                     ),
-                    tooltip: LocaleKey.stampverseHomeEditImportStamp.tr,
-                  ),
                 ],
               ),
             ),

@@ -71,6 +71,34 @@ final Map<String, String> stampverseEn = <String, String>{
   StampverseLocaleKey.homeSettingsResetLocalConfirm: 'Delete data',
   StampverseLocaleKey.homeEditBoards: 'Creative boards',
   StampverseLocaleKey.homeEditCreateBoard: 'New board',
+  StampverseLocaleKey.homeCreativeModeTemplates: 'Templates',
+  StampverseLocaleKey.homeCreativeModeBoards: 'My boards',
+  StampverseLocaleKey.homeCreativeBrowseTemplates: 'Browse templates',
+  StampverseLocaleKey.creativeTemplateSectionTitle: 'Template gallery',
+  StampverseLocaleKey.creativeTemplateStoryGrid: 'Story grid',
+  StampverseLocaleKey.creativeTemplateStampAssets: 'Stamp frame test',
+  StampverseLocaleKey.creativeTemplateClassicStampWall: 'Classic stamp wall',
+  StampverseLocaleKey.creativeTemplateNightStampCollage: 'Night stamp collage',
+  StampverseLocaleKey.creativeTemplateRetroPostagePatchwork:
+      'Retro postage patchwork',
+  StampverseLocaleKey.creativeTemplateBotanicalPostage:
+      'Botanical postage board',
+  StampverseLocaleKey.creativeTemplateHint: 'Tap to start from this template.',
+  StampverseLocaleKey.creativeTemplateUse: 'Use template',
+  StampverseLocaleKey.creativeTemplateCategorySectionTitle:
+      'Choose template type',
+  StampverseLocaleKey.creativeTemplateFeaturedSectionTitle: 'Featured',
+  StampverseLocaleKey.creativeTemplateAllSectionTitle: 'All templates',
+  StampverseLocaleKey.creativeTemplateCategoryClassicStampWall:
+      'Classic Stamp Wall',
+  StampverseLocaleKey.creativeTemplateCategoryBotanicalPostage:
+      'Botanical Postage',
+  StampverseLocaleKey.creativeTemplateCategoryCuteAnime: 'Cute Anime',
+  StampverseLocaleKey.creativeTemplateMoodClassic: 'classic',
+  StampverseLocaleKey.creativeTemplateMoodBotanical: 'botanical',
+  StampverseLocaleKey.creativeTemplateMoodCuteAnime: 'anime',
+  StampverseLocaleKey.creativeTemplateBadgeHot: 'HOT',
+  StampverseLocaleKey.creativeTemplateBadgeNew: 'NEW',
   StampverseLocaleKey.homeEditImportStamp: 'Import stamp',
   StampverseLocaleKey.homeEditDeleteLayer: 'Delete selected stamp',
   StampverseLocaleKey.homeEditHint:
@@ -105,6 +133,12 @@ final Map<String, String> stampverseEn = <String, String>{
   StampverseLocaleKey.editTrashDeleteBody:
       'This stamp will be removed from this board.',
   StampverseLocaleKey.editTrashDeleteConfirm: 'Delete stamp',
+  StampverseLocaleKey.editTemplateSourceGallery: 'From gallery',
+  StampverseLocaleKey.editTemplateSourceStamp: 'From saved stamps',
+  StampverseLocaleKey.editTemplateDelete: 'Delete frame',
+  StampverseLocaleKey.editTemplateDuplicate: 'Duplicate frame',
+  StampverseLocaleKey.editTemplateLock: 'Lock frame',
+  StampverseLocaleKey.editTemplateUnlock: 'Unlock frame',
   StampverseLocaleKey.cameraTitle: 'Create Stamp',
   StampverseLocaleKey.cameraCaptureTitle: 'Capture',
   StampverseLocaleKey.cameraOpenCamera: 'Open Camera',

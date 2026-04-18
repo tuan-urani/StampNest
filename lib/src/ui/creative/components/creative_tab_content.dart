@@ -14,7 +14,7 @@ class CreativeTabContent extends StatelessWidget {
     super.key,
     required this.boards,
     required this.selectedBoardIds,
-    required this.onCreateBoard,
+    required this.onOpenTemplates,
     required this.onOpenBoard,
     required this.onStartSelection,
     required this.onToggleSelection,
@@ -22,7 +22,7 @@ class CreativeTabContent extends StatelessWidget {
 
   final List<StampEditBoard> boards;
   final List<String> selectedBoardIds;
-  final VoidCallback onCreateBoard;
+  final VoidCallback onOpenTemplates;
   final ValueChanged<String> onOpenBoard;
   final ValueChanged<String> onStartSelection;
   final ValueChanged<String> onToggleSelection;
@@ -34,8 +34,8 @@ class CreativeTabContent extends StatelessWidget {
         icon: Icons.edit_note_rounded,
         title: LocaleKey.stampverseHomeEditEmptyTitle.tr,
         subtitle: '',
-        actionLabel: LocaleKey.stampverseHomeEditEmptyAction.tr,
-        onActionTap: onCreateBoard,
+        actionLabel: LocaleKey.stampverseCreativeBrowseTemplates.tr,
+        onActionTap: onOpenTemplates,
       );
     }
 
@@ -54,7 +54,7 @@ class CreativeTabContent extends StatelessWidget {
           Align(
             alignment: Alignment.centerRight,
             child: TextButton(
-              onPressed: onCreateBoard,
+              onPressed: onOpenTemplates,
               child: Text(
                 LocaleKey.stampverseHomeEditCreateBoard.tr,
                 style: StampverseTextStyles.caption(

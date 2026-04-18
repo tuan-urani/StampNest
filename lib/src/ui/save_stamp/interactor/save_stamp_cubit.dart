@@ -22,12 +22,13 @@ class SaveStampCubit extends Cubit<SaveStampState> {
   }
 
   Future<bool> saveStamp({
-    required String imageUrl,
+    required String stampedImageUrl,
+    required String sourceImageUrl,
     required StampShapeType shapeType,
     required String rawName,
     required String rawCollection,
   }) async {
-    if (imageUrl.isEmpty) return false;
+    if (stampedImageUrl.isEmpty || sourceImageUrl.isEmpty) return false;
 
     emit(state.copyWith(isSaving: true, errorMessage: null));
 
@@ -39,7 +40,8 @@ class SaveStampCubit extends Cubit<SaveStampState> {
     final StampDataModel optimisticStamp = StampDataModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       name: stampName,
-      imageUrl: imageUrl,
+      imageUrl: stampedImageUrl,
+      sourceImageUrl: sourceImageUrl,
       date: dateIso,
       shapeType: shapeType,
       album: collectionName.isEmpty ? null : collectionName,

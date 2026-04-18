@@ -133,6 +133,52 @@ class LocaleKey {
       StampverseLocaleKey.homeEditBoards;
   static const String stampverseHomeEditCreateBoard =
       StampverseLocaleKey.homeEditCreateBoard;
+  static const String stampverseCreativeModeTemplates =
+      StampverseLocaleKey.homeCreativeModeTemplates;
+  static const String stampverseCreativeModeBoards =
+      StampverseLocaleKey.homeCreativeModeBoards;
+  static const String stampverseCreativeBrowseTemplates =
+      StampverseLocaleKey.homeCreativeBrowseTemplates;
+  static const String stampverseCreativeTemplateSectionTitle =
+      StampverseLocaleKey.creativeTemplateSectionTitle;
+  static const String stampverseCreativeTemplateStoryGrid =
+      StampverseLocaleKey.creativeTemplateStoryGrid;
+  static const String stampverseCreativeTemplateStampAssets =
+      StampverseLocaleKey.creativeTemplateStampAssets;
+  static const String stampverseCreativeTemplateClassicStampWall =
+      StampverseLocaleKey.creativeTemplateClassicStampWall;
+  static const String stampverseCreativeTemplateNightStampCollage =
+      StampverseLocaleKey.creativeTemplateNightStampCollage;
+  static const String stampverseCreativeTemplateRetroPostagePatchwork =
+      StampverseLocaleKey.creativeTemplateRetroPostagePatchwork;
+  static const String stampverseCreativeTemplateBotanicalPostage =
+      StampverseLocaleKey.creativeTemplateBotanicalPostage;
+  static const String stampverseCreativeTemplateHint =
+      StampverseLocaleKey.creativeTemplateHint;
+  static const String stampverseCreativeTemplateUse =
+      StampverseLocaleKey.creativeTemplateUse;
+  static const String stampverseCreativeTemplateCategorySectionTitle =
+      StampverseLocaleKey.creativeTemplateCategorySectionTitle;
+  static const String stampverseCreativeTemplateFeaturedSectionTitle =
+      StampverseLocaleKey.creativeTemplateFeaturedSectionTitle;
+  static const String stampverseCreativeTemplateAllSectionTitle =
+      StampverseLocaleKey.creativeTemplateAllSectionTitle;
+  static const String stampverseCreativeTemplateCategoryClassicStampWall =
+      StampverseLocaleKey.creativeTemplateCategoryClassicStampWall;
+  static const String stampverseCreativeTemplateCategoryBotanicalPostage =
+      StampverseLocaleKey.creativeTemplateCategoryBotanicalPostage;
+  static const String stampverseCreativeTemplateCategoryCuteAnime =
+      StampverseLocaleKey.creativeTemplateCategoryCuteAnime;
+  static const String stampverseCreativeTemplateMoodClassic =
+      StampverseLocaleKey.creativeTemplateMoodClassic;
+  static const String stampverseCreativeTemplateMoodBotanical =
+      StampverseLocaleKey.creativeTemplateMoodBotanical;
+  static const String stampverseCreativeTemplateMoodCuteAnime =
+      StampverseLocaleKey.creativeTemplateMoodCuteAnime;
+  static const String stampverseCreativeTemplateBadgeHot =
+      StampverseLocaleKey.creativeTemplateBadgeHot;
+  static const String stampverseCreativeTemplateBadgeNew =
+      StampverseLocaleKey.creativeTemplateBadgeNew;
   static const String stampverseHomeEditImportStamp =
       StampverseLocaleKey.homeEditImportStamp;
   static const String stampverseHomeEditDeleteLayer =
@@ -190,6 +236,18 @@ class LocaleKey {
       StampverseLocaleKey.editTrashDeleteBody;
   static const String stampverseEditTrashDeleteConfirm =
       StampverseLocaleKey.editTrashDeleteConfirm;
+  static const String stampverseEditTemplateSourceGallery =
+      StampverseLocaleKey.editTemplateSourceGallery;
+  static const String stampverseEditTemplateSourceStamp =
+      StampverseLocaleKey.editTemplateSourceStamp;
+  static const String stampverseEditTemplateDelete =
+      StampverseLocaleKey.editTemplateDelete;
+  static const String stampverseEditTemplateDuplicate =
+      StampverseLocaleKey.editTemplateDuplicate;
+  static const String stampverseEditTemplateLock =
+      StampverseLocaleKey.editTemplateLock;
+  static const String stampverseEditTemplateUnlock =
+      StampverseLocaleKey.editTemplateUnlock;
 
   static const String stampverseCameraTitle = StampverseLocaleKey.cameraTitle;
   static const String stampverseCameraCaptureTitle =

@@ -6,6 +6,7 @@ class StampDataModel extends Equatable {
     required this.id,
     required this.name,
     required this.imageUrl,
+    required this.sourceImageUrl,
     required this.date,
     this.shapeType = StampShapeType.scallop,
     this.album,
@@ -16,6 +17,7 @@ class StampDataModel extends Equatable {
   final String id;
   final String name;
   final String imageUrl;
+  final String sourceImageUrl;
   final String date;
   final StampShapeType shapeType;
   final String? album;
@@ -33,6 +35,7 @@ class StampDataModel extends Equatable {
     String? id,
     String? name,
     String? imageUrl,
+    String? sourceImageUrl,
     String? date,
     StampShapeType? shapeType,
     String? album,
@@ -43,6 +46,7 @@ class StampDataModel extends Equatable {
       id: id ?? this.id,
       name: name ?? this.name,
       imageUrl: imageUrl ?? this.imageUrl,
+      sourceImageUrl: sourceImageUrl ?? this.sourceImageUrl,
       date: date ?? this.date,
       shapeType: shapeType ?? this.shapeType,
       album: album ?? this.album,
@@ -59,6 +63,11 @@ class StampDataModel extends Equatable {
       'image_url',
       'image',
       'url',
+    ]);
+    final String sourceImageUrl = _readFirstNonEmpty(json, <String>[
+      'sourceImageUrl',
+      'source_image_url',
+      'source',
     ]);
     final String name =
         _readFirstNonEmpty(json, <String>['name', 'title']).isEmpty
@@ -97,6 +106,7 @@ class StampDataModel extends Equatable {
       id: id.isEmpty ? _generateFallbackId(json) : id,
       name: name,
       imageUrl: imageUrl,
+      sourceImageUrl: sourceImageUrl,
       date: date,
       shapeType: shapeType,
       album: albumName.isEmpty ? null : albumName,
@@ -110,6 +120,7 @@ class StampDataModel extends Equatable {
       'id': id,
       'name': name,
       'imageUrl': imageUrl,
+      'sourceImageUrl': sourceImageUrl,
       'date': date,
       'shape': shapeType.raw,
       if (album != null) 'album': album,
@@ -174,6 +185,7 @@ class StampDataModel extends Equatable {
     id,
     name,
     imageUrl,
+    sourceImageUrl,
     date,
     shapeType,
     album,

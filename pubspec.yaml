@@ -99,6 +99,14 @@ flutter:
     - assets/icons/app_icon.png
     - assets/icons/camera.svg
     - assets/icons/camera_anime.png
+    - assets/template_1.png
+    - assets/template_2.png
+    - assets/template_3_showcase.jpg
+    - assets/template_4.png
+    - assets/bg_template_2.png
+    - assets/bg_template_3.png
+    - assets/bg_template_4.png
+    - assets/images/creative/template_stamp_frame_overlay_clean.png
     - web/privacy-policy.html
     - web/terms-of-use.html
 

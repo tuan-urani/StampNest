@@ -1,7 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:stamp_camera/src/core/model/stamp_edit_model.dart';
+import 'package:stamp_camera/src/core/model/stamp_edit_template_model.dart';
+import 'package:stamp_camera/src/core/model/stamp_shape_type.dart';
 import 'package:stamp_camera/src/core/repository/stampverse_repository.dart';
 import 'package:stamp_camera/src/ui/creative/interactor/creative_page_state.dart';
+import 'package:stamp_camera/src/ui/creative/interactor/creative_template_catalog.dart';
+import 'package:intl/intl.dart';
 
 class CreativePageCubit extends Cubit<CreativePageState> {
   CreativePageCubit({required StampverseRepository repository})
@@ -22,6 +26,7 @@ class CreativePageCubit extends Cubit<CreativePageState> {
     emit(
       state.copyWith(
         boards: boards,
+        templates: creativeTemplateCatalog,
         selectedBoardIds: _sanitizeSelectedBoardIds(
           selectedIds: state.selectedBoardIds,
           boards: boards,
@@ -32,12 +37,86 @@ class CreativePageCubit extends Cubit<CreativePageState> {
     );
   }
 
+  void changeViewMode(CreativeViewMode mode) {
+    if (mode == state.viewMode) return;
+    emit(
+      state.copyWith(
+        viewMode: mode,
+        selectedBoardIds: mode == CreativeViewMode.boards
+            ? state.selectedBoardIds
+            : const <String>[],
+      ),
+    );
+  }
+
+  Future<String?> createBoardFromTemplate({
+    required StampEditTemplate template,
+    required String templateName,
+  }) async {
+    final String nowIso = DateTime.now().toIso8601String();
+    final String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+    final String boardName =
+        '$templateName ${DateFormat('dd/MM HH:mm').format(DateTime.now())}';
+
+    final List<StampEditLayer> layers = template.slots
+        .map((StampEditTemplateSlot slot) {
+          return StampEditLayer(
+            id: 'layer_${slot.id}_$timestamp',
+            stampId: '',
+            imageUrl: '',
+            shapeType: StampShapeType.square,
+            centerX: slot.centerX,
+            centerY: slot.centerY,
+            rotation: slot.rotation,
+            layerType: StampEditLayerType.templateSlot,
+            widthRatio: slot.widthRatio,
+            heightRatio: slot.heightRatio,
+            frameShape: slot.frameShape,
+          );
+        })
+        .toList(growable: false);
+
+    final StampEditBoard board = StampEditBoard(
+      id: 'board_$timestamp',
+      name: boardName,
+      createdAt: nowIso,
+      updatedAt: nowIso,
+      layers: layers,
+      editorMode: StampEditBoardEditorMode.template,
+      templateId: template.id,
+      templateBackgroundAssetPath: template.editorBackgroundAssetPath,
+      templateCanvasColorHex: template.editorCanvasColorHex,
+      templateSourceWidth: template.sourceWidth,
+      templateSourceHeight: template.sourceHeight,
+    );
+
+    final List<StampEditBoard> boards = await _repository.readEditBoardsCache();
+    final List<StampEditBoard> updatedBoards = <StampEditBoard>[
+      board,
+      ...boards,
+    ];
+    await _repository.saveEditBoardsCache(updatedBoards);
+
+    emit(
+      state.copyWith(
+        boards: updatedBoards,
+        viewMode: CreativeViewMode.boards,
+        selectedBoardIds: const <String>[],
+      ),
+    );
+    return board.id;
+  }
+
   void startEditBoardSelection(String boardId) {
     if (!_hasEditBoard(boardId)) return;
     if (state.selectedBoardIds.contains(boardId)) return;
 
     emit(
-      state.copyWith(selectedBoardIds: <String>[boardId], errorMessage: null),
+      state.copyWith(
+        selectedBoardIds: <String>[boardId],
+        errorMessage: null,
+        viewMode: CreativeViewMode.boards,
+      ),
     );
   }
 

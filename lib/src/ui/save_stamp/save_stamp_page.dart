@@ -12,9 +12,12 @@ import 'package:stamp_camera/src/ui/save_stamp/interactor/save_stamp_state.dart'
 import 'package:stamp_camera/src/utils/app_colors.dart';
 
 class SaveStampPageArgs {
-  const SaveStampPageArgs({required this.imageUrl, required this.shapeType});
+  const SaveStampPageArgs({
+    required this.sourceImageUrl,
+    required this.shapeType,
+  });
 
-  final String imageUrl;
+  final String sourceImageUrl;
   final StampShapeType shapeType;
 }
 
@@ -96,7 +99,7 @@ class _SaveStampPageState extends State<SaveStampPage> {
           builder: (BuildContext context, SaveStampState state) {
             final SaveStampCubit cubit = context.read<SaveStampCubit>();
             return StampverseSaveView(
-              imageUrl: widget.args.imageUrl,
+              imageUrl: widget.args.sourceImageUrl,
               shapeType: widget.args.shapeType,
               nameController: _nameController,
               collectionController: _collectionController,
@@ -110,7 +113,7 @@ class _SaveStampPageState extends State<SaveStampPage> {
                 final String rawCollection = _collectionController.text.trim();
                 final String? exportedImageUrl =
                     await exportSaveStampImageDataUrl(
-                      imageUrl: widget.args.imageUrl,
+                      imageUrl: widget.args.sourceImageUrl,
                       shapeType: widget.args.shapeType,
                       rotationRadians: rotationRadians,
                     );
@@ -123,7 +126,8 @@ class _SaveStampPageState extends State<SaveStampPage> {
                 }
 
                 final bool saved = await cubit.saveStamp(
-                  imageUrl: exportedImageUrl,
+                  stampedImageUrl: exportedImageUrl,
+                  sourceImageUrl: widget.args.sourceImageUrl,
                   shapeType: widget.args.shapeType,
                   rawName: rawName,
                   rawCollection: rawCollection,
@@ -145,12 +149,12 @@ SaveStampPageArgs resolveSaveStampPageArgs(Object? raw) {
   if (raw is SaveStampPageArgs) return raw;
   if (raw is Map<String, dynamic>) {
     return SaveStampPageArgs(
-      imageUrl: (raw['imageUrl'] as String? ?? '').trim(),
+      sourceImageUrl: (raw['sourceImageUrl'] as String? ?? '').trim(),
       shapeType: stampShapeFromRaw(raw['shapeType']?.toString()),
     );
   }
   return const SaveStampPageArgs(
-    imageUrl: '',
+    sourceImageUrl: '',
     shapeType: StampShapeType.scallop,
   );
 }

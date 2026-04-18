@@ -15,4 +15,20 @@ class AppAssets {
       'assets/images/icons/radio_uncheck.svg';
   static const String iconsHideEyeSvg = 'assets/images/icons/hide_eye.svg';
   static const String iconsShowEyeSvg = 'assets/images/icons/show_eye.svg';
+  static const String creativeTemplateStampFrameOverlayPng =
+      'assets/images/creative/template_stamp_frame_overlay_clean.png';
+  static const String creativeTemplateShowcaseTemplate1Png =
+      'assets/template_1.png';
+  static const String creativeTemplateShowcaseTemplate2Png =
+      'assets/template_2.png';
+  static const String creativeTemplateShowcaseTemplate3Jpg =
+      'assets/template_3_showcase.jpg';
+  static const String creativeTemplateShowcaseTemplate4Png =
+      'assets/template_4.png';
+  static const String creativeTemplateBackgroundTemplate2Png =
+      'assets/bg_template_2.png';
+  static const String creativeTemplateBackgroundTemplate3Png =
+      'assets/bg_template_3.png';
+  static const String creativeTemplateBackgroundTemplate4Png =
+      'assets/bg_template_4.png';
 }

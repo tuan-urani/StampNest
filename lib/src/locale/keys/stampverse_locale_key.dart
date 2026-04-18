@@ -93,6 +93,51 @@ class StampverseLocaleKey {
       'stampverse_home_settings_reset_local_confirm';
   static const String homeEditBoards = 'stampverse_home_edit_boards';
   static const String homeEditCreateBoard = 'stampverse_home_edit_create_board';
+  static const String homeCreativeModeTemplates =
+      'stampverse_home_creative_mode_templates';
+  static const String homeCreativeModeBoards =
+      'stampverse_home_creative_mode_boards';
+  static const String homeCreativeBrowseTemplates =
+      'stampverse_home_creative_browse_templates';
+  static const String creativeTemplateSectionTitle =
+      'stampverse_creative_template_section_title';
+  static const String creativeTemplateStoryGrid =
+      'stampverse_creative_template_story_grid';
+  static const String creativeTemplateStampAssets =
+      'stampverse_creative_template_stamp_assets';
+  static const String creativeTemplateClassicStampWall =
+      'stampverse_creative_template_classic_stamp_wall';
+  static const String creativeTemplateNightStampCollage =
+      'stampverse_creative_template_night_stamp_collage';
+  static const String creativeTemplateRetroPostagePatchwork =
+      'stampverse_creative_template_retro_postage_patchwork';
+  static const String creativeTemplateBotanicalPostage =
+      'stampverse_creative_template_botanical_postage';
+  static const String creativeTemplateHint =
+      'stampverse_creative_template_hint';
+  static const String creativeTemplateUse = 'stampverse_creative_template_use';
+  static const String creativeTemplateCategorySectionTitle =
+      'stampverse_creative_template_category_section_title';
+  static const String creativeTemplateFeaturedSectionTitle =
+      'stampverse_creative_template_featured_section_title';
+  static const String creativeTemplateAllSectionTitle =
+      'stampverse_creative_template_all_section_title';
+  static const String creativeTemplateCategoryClassicStampWall =
+      'stampverse_creative_template_category_classic_stamp_wall';
+  static const String creativeTemplateCategoryBotanicalPostage =
+      'stampverse_creative_template_category_botanical_postage';
+  static const String creativeTemplateCategoryCuteAnime =
+      'stampverse_creative_template_category_cute_anime';
+  static const String creativeTemplateMoodClassic =
+      'stampverse_creative_template_mood_classic';
+  static const String creativeTemplateMoodBotanical =
+      'stampverse_creative_template_mood_botanical';
+  static const String creativeTemplateMoodCuteAnime =
+      'stampverse_creative_template_mood_cute_anime';
+  static const String creativeTemplateBadgeHot =
+      'stampverse_creative_template_badge_hot';
+  static const String creativeTemplateBadgeNew =
+      'stampverse_creative_template_badge_new';
   static const String homeEditImportStamp = 'stampverse_home_edit_import_stamp';
   static const String homeEditDeleteLayer = 'stampverse_home_edit_delete_layer';
   static const String homeEditHint = 'stampverse_home_edit_hint';
@@ -136,6 +181,15 @@ class StampverseLocaleKey {
   static const String editTrashDeleteBody = 'stampverse_edit_trash_delete_body';
   static const String editTrashDeleteConfirm =
       'stampverse_edit_trash_delete_confirm';
+  static const String editTemplateSourceGallery =
+      'stampverse_edit_template_source_gallery';
+  static const String editTemplateSourceStamp =
+      'stampverse_edit_template_source_stamp';
+  static const String editTemplateDelete = 'stampverse_edit_template_delete';
+  static const String editTemplateDuplicate =
+      'stampverse_edit_template_duplicate';
+  static const String editTemplateLock = 'stampverse_edit_template_lock';
+  static const String editTemplateUnlock = 'stampverse_edit_template_unlock';
 
   static const String cameraTitle = 'stampverse_camera_title';
   static const String cameraCaptureTitle = 'stampverse_camera_capture_title';

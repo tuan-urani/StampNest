@@ -31,12 +31,27 @@ Features:
 3. Home has 5 tabs:
    - `Stamp`: split into `Gần đây mở` (recently opened) and `Yêu thích` sections.
    - `Bộ sưu tập`: grouped by collection; tapping a group opens album view for that collection.
-   - `Xưởng`: creative board editor with notebook-grid canvas.
-     - Users can create multiple boards.
-     - In board list mode, long-press enters multi-select; users can tap items to select/unselect and delete selected boards from the header delete action.
-     - Each board has its own canvas background style (Grid / Dots / Paper). Users can switch styles from the header option icon, which opens a preview sheet.
-     - Users can import stamps from `Bộ sưu tập` source or `Daily` source.
-     - Imported stamps can be dragged, scaled, rotated, layered, and removed.
+   - `Xưởng`: creative workspace with two internal modes.
+     - Segment mode:
+     - `Mẫu` (default): shows local template gallery with 3 sections:
+       - `Chọn loại template`: category cards for `Classic Stamp Wall`, `Botanical Postage`, `Cute Anime`.
+       - `Nổi bật`: hero card of selected category.
+       - `Tất cả template`: grid of templates filtered by selected category.
+       - Current category mapping rule:
+         - Template #1 -> `Classic Stamp Wall`
+         - Template #2 and #4 -> `Botanical Postage`
+         - Template #3 -> `Cute Anime`
+     - `Bộ ảnh của tôi`: shows existing board list with long-press multi-select delete.
+     - Selecting a template auto-creates and saves a board, then opens editor immediately.
+     - Template slot coordinates now use a common spec that supports both rect (`x1,y1 -> x2,y2 + rotation`) and quad (`x1,y1,x2,y2,x3,y3,x4,y4`) inputs; `Retro postage patchwork` is authored with quad points for higher placement accuracy.
+     - Board editor behavior by mode:
+       - `freeform` board (legacy): keeps old drag/scale/rotate/import behavior.
+       - `template` board: mixed frame slots (`stamp scallop/circle/square/classic` + `plain rect/circle`) with per-slot add image flow (`Gallery máy` + saved `Stamp`), toolbar actions (`Xoá`, `Nhân bản`, `Khoá/Mở khoá`), and transform on each slot (move/zoom/rotate).
+       - For template slot import:
+         - choosing from gallery uses the selected gallery image directly.
+         - choosing from saved stamp uses `sourceImageUrl` (original crop, not the already-stamped `imageUrl`) to avoid double clipping.
+     - Template slot lock blocks move/zoom/rotate but still allows replacing image.
+     - Each board still supports canvas background style (Grid / Dots / Paper), rename, share, and export.
    - `Kỷ niệm`: monthly calendar (`syncfusion_flutter_calendar`) where each day displays the first stamp of that day.
      - Tapping a day with stamps opens a detail list (bottom sheet) for all stamps in that date.
      - Tapping a day without stamps keeps calendar unchanged.
@@ -47,6 +62,9 @@ Features:
    - auto-generated stamp name (editable),
    - collection input with quick-pick chips and create-new action (no forced date default),
    - save to local cache.
+   - each saved stamp stores:
+     - `imageUrl`: stamped output image (used in Stamp/Album/Collection tabs),
+     - `sourceImageUrl`: original cropped image before stamp clipping (used in Template editor).
    - if collection is left empty, stamp is still saved and appears in `Tem`/`Kỷ niệm` without forcing a date-based collection.
 7. Selecting a stamp opens Details.
 8. Details supports:

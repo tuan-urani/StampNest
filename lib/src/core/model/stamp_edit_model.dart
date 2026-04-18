@@ -1,6 +1,23 @@
 import 'package:equatable/equatable.dart';
 
+import 'package:stamp_camera/src/core/model/stamp_edit_frame_shape.dart';
 import 'package:stamp_camera/src/core/model/stamp_shape_type.dart';
+
+enum StampEditBoardEditorMode {
+  freeform('freeform'),
+  template('template');
+
+  const StampEditBoardEditorMode(this.raw);
+
+  final String raw;
+}
+
+StampEditBoardEditorMode stampEditBoardEditorModeFromRaw(String? raw) {
+  for (final StampEditBoardEditorMode mode in StampEditBoardEditorMode.values) {
+    if (mode.raw == raw) return mode;
+  }
+  return StampEditBoardEditorMode.freeform;
+}
 
 enum StampEditBoardBackgroundStyle {
   grid('grid'),
@@ -22,6 +39,22 @@ StampEditBoardBackgroundStyle stampEditBoardBackgroundStyleFromRaw(
   return StampEditBoardBackgroundStyle.grid;
 }
 
+enum StampEditLayerType {
+  stamp('stamp'),
+  templateSlot('template_slot');
+
+  const StampEditLayerType(this.raw);
+
+  final String raw;
+}
+
+StampEditLayerType stampEditLayerTypeFromRaw(String? raw) {
+  for (final StampEditLayerType type in StampEditLayerType.values) {
+    if (type.raw == raw) return type;
+  }
+  return StampEditLayerType.stamp;
+}
+
 class StampEditLayer extends Equatable {
   const StampEditLayer({
     required this.id,
@@ -32,6 +65,11 @@ class StampEditLayer extends Equatable {
     required this.centerY,
     this.scale = 1,
     this.rotation = 0,
+    this.layerType = StampEditLayerType.stamp,
+    this.widthRatio,
+    this.heightRatio,
+    this.isLocked = false,
+    this.frameShape = StampEditFrameShape.plainRect,
   });
 
   final String id;
@@ -42,6 +80,11 @@ class StampEditLayer extends Equatable {
   final double centerY;
   final double scale;
   final double rotation;
+  final StampEditLayerType layerType;
+  final double? widthRatio;
+  final double? heightRatio;
+  final bool isLocked;
+  final StampEditFrameShape frameShape;
 
   StampEditLayer copyWith({
     String? id,
@@ -52,6 +95,11 @@ class StampEditLayer extends Equatable {
     double? centerY,
     double? scale,
     double? rotation,
+    StampEditLayerType? layerType,
+    Object? widthRatio = _sentinel,
+    Object? heightRatio = _sentinel,
+    bool? isLocked,
+    StampEditFrameShape? frameShape,
   }) {
     return StampEditLayer(
       id: id ?? this.id,
@@ -62,6 +110,15 @@ class StampEditLayer extends Equatable {
       centerY: centerY ?? this.centerY,
       scale: scale ?? this.scale,
       rotation: rotation ?? this.rotation,
+      layerType: layerType ?? this.layerType,
+      widthRatio: widthRatio == _sentinel
+          ? this.widthRatio
+          : widthRatio as double?,
+      heightRatio: heightRatio == _sentinel
+          ? this.heightRatio
+          : heightRatio as double?,
+      isLocked: isLocked ?? this.isLocked,
+      frameShape: frameShape ?? this.frameShape,
     );
   }
 
@@ -75,6 +132,19 @@ class StampEditLayer extends Equatable {
       centerY: (json['centerY'] as num?)?.toDouble() ?? 0.5,
       scale: (json['scale'] as num?)?.toDouble() ?? 1,
       rotation: (json['rotation'] as num?)?.toDouble() ?? 0,
+      layerType: stampEditLayerTypeFromRaw(
+        json['layerType']?.toString() ?? json['layer_type']?.toString(),
+      ),
+      widthRatio:
+          (json['widthRatio'] as num?)?.toDouble() ??
+          (json['width_ratio'] as num?)?.toDouble(),
+      heightRatio:
+          (json['heightRatio'] as num?)?.toDouble() ??
+          (json['height_ratio'] as num?)?.toDouble(),
+      isLocked: json['isLocked'] == true || json['is_locked'] == true,
+      frameShape: stampEditFrameShapeFromRaw(
+        json['frameShape']?.toString() ?? json['frame_shape']?.toString(),
+      ),
     );
   }
 
@@ -88,6 +158,11 @@ class StampEditLayer extends Equatable {
       'centerY': centerY,
       'scale': scale,
       'rotation': rotation,
+      'layerType': layerType.raw,
+      if (widthRatio != null) 'widthRatio': widthRatio,
+      if (heightRatio != null) 'heightRatio': heightRatio,
+      'isLocked': isLocked,
+      'frameShape': frameShape.raw,
     };
   }
 
@@ -101,6 +176,11 @@ class StampEditLayer extends Equatable {
     centerY,
     scale,
     rotation,
+    layerType,
+    widthRatio,
+    heightRatio,
+    isLocked,
+    frameShape,
   ];
 }
 
@@ -112,6 +192,12 @@ class StampEditBoard extends Equatable {
     required this.updatedAt,
     this.layers = const <StampEditLayer>[],
     this.backgroundStyle = StampEditBoardBackgroundStyle.grid,
+    this.editorMode = StampEditBoardEditorMode.freeform,
+    this.templateId,
+    this.templateBackgroundAssetPath,
+    this.templateCanvasColorHex,
+    this.templateSourceWidth,
+    this.templateSourceHeight,
   });
 
   final String id;
@@ -120,6 +206,12 @@ class StampEditBoard extends Equatable {
   final String updatedAt;
   final List<StampEditLayer> layers;
   final StampEditBoardBackgroundStyle backgroundStyle;
+  final StampEditBoardEditorMode editorMode;
+  final String? templateId;
+  final String? templateBackgroundAssetPath;
+  final String? templateCanvasColorHex;
+  final double? templateSourceWidth;
+  final double? templateSourceHeight;
 
   DateTime get parsedUpdatedAt {
     return DateTime.tryParse(updatedAt) ??
@@ -133,6 +225,12 @@ class StampEditBoard extends Equatable {
     String? updatedAt,
     List<StampEditLayer>? layers,
     StampEditBoardBackgroundStyle? backgroundStyle,
+    StampEditBoardEditorMode? editorMode,
+    Object? templateId = _sentinel,
+    Object? templateBackgroundAssetPath = _sentinel,
+    Object? templateCanvasColorHex = _sentinel,
+    Object? templateSourceWidth = _sentinel,
+    Object? templateSourceHeight = _sentinel,
   }) {
     return StampEditBoard(
       id: id ?? this.id,
@@ -141,6 +239,22 @@ class StampEditBoard extends Equatable {
       updatedAt: updatedAt ?? this.updatedAt,
       layers: layers ?? this.layers,
       backgroundStyle: backgroundStyle ?? this.backgroundStyle,
+      editorMode: editorMode ?? this.editorMode,
+      templateId: templateId == _sentinel
+          ? this.templateId
+          : templateId as String?,
+      templateBackgroundAssetPath: templateBackgroundAssetPath == _sentinel
+          ? this.templateBackgroundAssetPath
+          : templateBackgroundAssetPath as String?,
+      templateCanvasColorHex: templateCanvasColorHex == _sentinel
+          ? this.templateCanvasColorHex
+          : templateCanvasColorHex as String?,
+      templateSourceWidth: templateSourceWidth == _sentinel
+          ? this.templateSourceWidth
+          : templateSourceWidth as double?,
+      templateSourceHeight: templateSourceHeight == _sentinel
+          ? this.templateSourceHeight
+          : templateSourceHeight as double?,
     );
   }
 
@@ -164,6 +278,44 @@ class StampEditBoard extends Equatable {
             json['background_style']?.toString() ??
             json['background']?.toString(),
       ),
+      editorMode: stampEditBoardEditorModeFromRaw(
+        json['editorMode']?.toString() ?? json['editor_mode']?.toString(),
+      ),
+      templateId:
+          (json['templateId'] ?? json['template_id'])
+                  ?.toString()
+                  .trim()
+                  .isEmpty ==
+              true
+          ? null
+          : (json['templateId'] ?? json['template_id'])?.toString(),
+      templateBackgroundAssetPath:
+          (json['templateBackgroundAssetPath'] ??
+                      json['template_background_asset_path'])
+                  ?.toString()
+                  .trim()
+                  .isEmpty ==
+              true
+          ? null
+          : (json['templateBackgroundAssetPath'] ??
+                    json['template_background_asset_path'])
+                ?.toString(),
+      templateCanvasColorHex:
+          (json['templateCanvasColorHex'] ?? json['template_canvas_color_hex'])
+                  ?.toString()
+                  .trim()
+                  .isEmpty ==
+              true
+          ? null
+          : (json['templateCanvasColorHex'] ??
+                    json['template_canvas_color_hex'])
+                ?.toString(),
+      templateSourceWidth: _parseNullableDouble(
+        json['templateSourceWidth'] ?? json['template_source_width'],
+      ),
+      templateSourceHeight: _parseNullableDouble(
+        json['templateSourceHeight'] ?? json['template_source_height'],
+      ),
     );
   }
 
@@ -177,6 +329,16 @@ class StampEditBoard extends Equatable {
           .map((StampEditLayer layer) => layer.toJson())
           .toList(growable: false),
       'backgroundStyle': backgroundStyle.raw,
+      'editorMode': editorMode.raw,
+      if (templateId != null) 'templateId': templateId,
+      if (templateBackgroundAssetPath != null)
+        'templateBackgroundAssetPath': templateBackgroundAssetPath,
+      if (templateCanvasColorHex != null)
+        'templateCanvasColorHex': templateCanvasColorHex,
+      if (templateSourceWidth != null)
+        'templateSourceWidth': templateSourceWidth,
+      if (templateSourceHeight != null)
+        'templateSourceHeight': templateSourceHeight,
     };
   }
 
@@ -188,5 +350,19 @@ class StampEditBoard extends Equatable {
     updatedAt,
     layers,
     backgroundStyle,
+    editorMode,
+    templateId,
+    templateBackgroundAssetPath,
+    templateCanvasColorHex,
+    templateSourceWidth,
+    templateSourceHeight,
   ];
+}
+
+const Object _sentinel = Object();
+
+double? _parseNullableDouble(dynamic raw) {
+  if (raw == null) return null;
+  if (raw is num) return raw.toDouble();
+  return double.tryParse(raw.toString());
 }

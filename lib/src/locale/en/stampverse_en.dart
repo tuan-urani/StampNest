@@ -139,6 +139,10 @@ final Map<String, String> stampverseEn = <String, String>{
   StampverseLocaleKey.editTemplateDuplicate: 'Duplicate frame',
   StampverseLocaleKey.editTemplateLock: 'Lock frame',
   StampverseLocaleKey.editTemplateUnlock: 'Unlock frame',
+  StampverseLocaleKey.editTemplateAdjustImage: 'Adjust image',
+  StampverseLocaleKey.editTemplateAdjustReset: 'Reset',
+  StampverseLocaleKey.editTemplateAdjustHint:
+      'Drag, pinch, or rotate to adjust image in frame.',
   StampverseLocaleKey.cameraTitle: 'Create Stamp',
   StampverseLocaleKey.cameraCaptureTitle: 'Capture',
   StampverseLocaleKey.cameraOpenCamera: 'Open Camera',

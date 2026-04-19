@@ -138,6 +138,10 @@ final Map<String, String> stampverseVi = <String, String>{
   StampverseLocaleKey.editTemplateDuplicate: 'Nhân bản khung',
   StampverseLocaleKey.editTemplateLock: 'Khoá khung',
   StampverseLocaleKey.editTemplateUnlock: 'Mở khoá khung',
+  StampverseLocaleKey.editTemplateAdjustImage: 'Chỉnh ảnh',
+  StampverseLocaleKey.editTemplateAdjustReset: 'Đặt lại',
+  StampverseLocaleKey.editTemplateAdjustHint:
+      'Kéo, chụm hoặc xoay để căn ảnh trong khung.',
   StampverseLocaleKey.cameraTitle: 'Tạo Stamp',
   StampverseLocaleKey.cameraCaptureTitle: 'Chụp ảnh',
   StampverseLocaleKey.cameraOpenCamera: 'Mở Camera',

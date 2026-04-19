@@ -24,6 +24,12 @@ class _StudioTestTranslations extends Translations {
       StampverseLocaleKey.editTemplateDuplicate: 'Duplicate frame',
       StampverseLocaleKey.editTemplateLock: 'Lock frame',
       StampverseLocaleKey.editTemplateUnlock: 'Unlock frame',
+      StampverseLocaleKey.editTemplateAdjustImage: 'Adjust image',
+      StampverseLocaleKey.editTemplateAdjustReset: 'Reset',
+      StampverseLocaleKey.editTemplateAdjustHint:
+          'Drag, pinch, or rotate to adjust image in frame.',
+      'ok': 'OK',
+      'cancel': 'Cancel',
     },
   };
 }
@@ -366,6 +372,225 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.copy_all_outlined), findsNothing);
+  });
+
+  testWidgets('selected template slot hides adjust guide outside adjust mode', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      GetMaterialApp(
+        translations: _StudioTestTranslations(),
+        locale: const Locale('en', 'US'),
+        home: Scaffold(
+          body: SizedBox(
+            width: 390,
+            height: 780,
+            child: StampverseEditStudioView(
+              boards: <StampEditBoard>[_buildTemplateBoard()],
+              activeBoardId: 'board_template',
+              stamps: const <StampDataModel>[],
+              onSaveBoard: (_) {},
+              showBoardHeader: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('template-layer-layer_template_1')),
+    );
+    await tester.pumpAndSettle();
+
+    final Finder surfaceFinder = find.byKey(
+      const ValueKey<String>('template-slot-surface-layer_template_1'),
+    );
+    final Finder customPaintsInSurface = find.descendant(
+      of: surfaceFinder,
+      matching: find.byType(CustomPaint),
+    );
+    expect(customPaintsInSurface, findsOneWidget);
+  });
+
+  testWidgets('adjust image toolbar action opens template adjust sheet', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      GetMaterialApp(
+        translations: _StudioTestTranslations(),
+        locale: const Locale('en', 'US'),
+        home: Scaffold(
+          body: SizedBox(
+            width: 390,
+            height: 780,
+            child: StampverseEditStudioView(
+              boards: <StampEditBoard>[_buildTemplateBoard()],
+              activeBoardId: 'board_template',
+              stamps: const <StampDataModel>[],
+              onSaveBoard: (_) {},
+              showBoardHeader: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('template-layer-layer_template_1')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.crop_free_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Adjust image'), findsOneWidget);
+    expect(find.byIcon(Icons.restart_alt_rounded), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey<String>('template-adjust-corner-top-left')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('template-adjust-corner-top-right')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('template-adjust-corner-bottom-left')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('template-adjust-corner-bottom-right')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('template-adjust-edge-top')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('template-adjust-edge-right')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('template-adjust-edge-bottom')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey<String>('template-adjust-edge-left')),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Adjust image'), findsNothing);
+  });
+
+  testWidgets('dragging top edge handle updates template image scale', (
+    WidgetTester tester,
+  ) async {
+    StampEditBoard? latestSaved;
+
+    await tester.pumpWidget(
+      GetMaterialApp(
+        translations: _StudioTestTranslations(),
+        locale: const Locale('en', 'US'),
+        home: Scaffold(
+          body: SizedBox(
+            width: 390,
+            height: 780,
+            child: StampverseEditStudioView(
+              boards: <StampEditBoard>[_buildTemplateBoard()],
+              activeBoardId: 'board_template',
+              stamps: const <StampDataModel>[],
+              onSaveBoard: (StampEditBoard board) {
+                latestSaved = board;
+              },
+              showBoardHeader: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('template-layer-layer_template_1')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.crop_free_rounded));
+    await tester.pumpAndSettle();
+
+    await tester.drag(
+      find.byKey(const ValueKey<String>('template-adjust-edge-top')),
+      const Offset(0, -42),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(latestSaved, isNotNull);
+    final StampEditLayer updatedLayer = latestSaved!.layers.firstWhere(
+      (StampEditLayer layer) => layer.id == 'layer_template_1',
+    );
+    expect(updatedLayer.contentScale, 1);
+    expect(updatedLayer.contentScaleY, greaterThan(1));
+  });
+
+  testWidgets('dragging top-left corner handle updates both axis scales', (
+    WidgetTester tester,
+  ) async {
+    StampEditBoard? latestSaved;
+
+    await tester.pumpWidget(
+      GetMaterialApp(
+        translations: _StudioTestTranslations(),
+        locale: const Locale('en', 'US'),
+        home: Scaffold(
+          body: SizedBox(
+            width: 390,
+            height: 780,
+            child: StampverseEditStudioView(
+              boards: <StampEditBoard>[_buildTemplateBoard()],
+              activeBoardId: 'board_template',
+              stamps: const <StampDataModel>[],
+              onSaveBoard: (StampEditBoard board) {
+                latestSaved = board;
+              },
+              showBoardHeader: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('template-layer-layer_template_1')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.crop_free_rounded));
+    await tester.pumpAndSettle();
+
+    await tester.drag(
+      find.byKey(const ValueKey<String>('template-adjust-corner-top-left')),
+      const Offset(-36, -30),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(latestSaved, isNotNull);
+    final StampEditLayer updatedLayer = latestSaved!.layers.firstWhere(
+      (StampEditLayer layer) => layer.id == 'layer_template_1',
+    );
+    expect(updatedLayer.contentScale, 1);
+    expect(updatedLayer.contentScaleX, greaterThan(1));
+    expect(updatedLayer.contentScaleY, greaterThan(1));
   });
 
   testWidgets('template import from stamp library uses sourceImageUrl', (

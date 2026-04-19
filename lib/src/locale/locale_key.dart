@@ -248,6 +248,12 @@ class LocaleKey {
       StampverseLocaleKey.editTemplateLock;
   static const String stampverseEditTemplateUnlock =
       StampverseLocaleKey.editTemplateUnlock;
+  static const String stampverseEditTemplateAdjustImage =
+      StampverseLocaleKey.editTemplateAdjustImage;
+  static const String stampverseEditTemplateAdjustReset =
+      StampverseLocaleKey.editTemplateAdjustReset;
+  static const String stampverseEditTemplateAdjustHint =
+      StampverseLocaleKey.editTemplateAdjustHint;
 
   static const String stampverseCameraTitle = StampverseLocaleKey.cameraTitle;
   static const String stampverseCameraCaptureTitle =

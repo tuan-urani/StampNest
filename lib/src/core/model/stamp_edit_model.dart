@@ -70,6 +70,12 @@ class StampEditLayer extends Equatable {
     this.heightRatio,
     this.isLocked = false,
     this.frameShape = StampEditFrameShape.plainRect,
+    this.contentScale = 1,
+    this.contentScaleX = 1,
+    this.contentScaleY = 1,
+    this.contentOffsetX = 0,
+    this.contentOffsetY = 0,
+    this.contentRotation = 0,
   });
 
   final String id;
@@ -85,6 +91,12 @@ class StampEditLayer extends Equatable {
   final double? heightRatio;
   final bool isLocked;
   final StampEditFrameShape frameShape;
+  final double contentScale;
+  final double contentScaleX;
+  final double contentScaleY;
+  final double contentOffsetX;
+  final double contentOffsetY;
+  final double contentRotation;
 
   StampEditLayer copyWith({
     String? id,
@@ -100,6 +112,12 @@ class StampEditLayer extends Equatable {
     Object? heightRatio = _sentinel,
     bool? isLocked,
     StampEditFrameShape? frameShape,
+    double? contentScale,
+    double? contentScaleX,
+    double? contentScaleY,
+    double? contentOffsetX,
+    double? contentOffsetY,
+    double? contentRotation,
   }) {
     return StampEditLayer(
       id: id ?? this.id,
@@ -119,6 +137,12 @@ class StampEditLayer extends Equatable {
           : heightRatio as double?,
       isLocked: isLocked ?? this.isLocked,
       frameShape: frameShape ?? this.frameShape,
+      contentScale: contentScale ?? this.contentScale,
+      contentScaleX: contentScaleX ?? this.contentScaleX,
+      contentScaleY: contentScaleY ?? this.contentScaleY,
+      contentOffsetX: contentOffsetX ?? this.contentOffsetX,
+      contentOffsetY: contentOffsetY ?? this.contentOffsetY,
+      contentRotation: contentRotation ?? this.contentRotation,
     );
   }
 
@@ -145,6 +169,30 @@ class StampEditLayer extends Equatable {
       frameShape: stampEditFrameShapeFromRaw(
         json['frameShape']?.toString() ?? json['frame_shape']?.toString(),
       ),
+      contentScale:
+          (json['contentScale'] as num?)?.toDouble() ??
+          (json['content_scale'] as num?)?.toDouble() ??
+          1,
+      contentScaleX:
+          (json['contentScaleX'] as num?)?.toDouble() ??
+          (json['content_scale_x'] as num?)?.toDouble() ??
+          1,
+      contentScaleY:
+          (json['contentScaleY'] as num?)?.toDouble() ??
+          (json['content_scale_y'] as num?)?.toDouble() ??
+          1,
+      contentOffsetX:
+          (json['contentOffsetX'] as num?)?.toDouble() ??
+          (json['content_offset_x'] as num?)?.toDouble() ??
+          0,
+      contentOffsetY:
+          (json['contentOffsetY'] as num?)?.toDouble() ??
+          (json['content_offset_y'] as num?)?.toDouble() ??
+          0,
+      contentRotation:
+          (json['contentRotation'] as num?)?.toDouble() ??
+          (json['content_rotation'] as num?)?.toDouble() ??
+          0,
     );
   }
 
@@ -163,6 +211,12 @@ class StampEditLayer extends Equatable {
       if (heightRatio != null) 'heightRatio': heightRatio,
       'isLocked': isLocked,
       'frameShape': frameShape.raw,
+      'contentScale': contentScale,
+      'contentScaleX': contentScaleX,
+      'contentScaleY': contentScaleY,
+      'contentOffsetX': contentOffsetX,
+      'contentOffsetY': contentOffsetY,
+      'contentRotation': contentRotation,
     };
   }
 
@@ -181,6 +235,12 @@ class StampEditLayer extends Equatable {
     heightRatio,
     isLocked,
     frameShape,
+    contentScale,
+    contentScaleX,
+    contentScaleY,
+    contentOffsetX,
+    contentOffsetY,
+    contentRotation,
   ];
 }
 

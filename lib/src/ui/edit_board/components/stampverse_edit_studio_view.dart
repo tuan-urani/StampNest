@@ -38,6 +38,24 @@ class _TemplateSlotImageResult {
   final String imageUrl;
 }
 
+class _TemplateImageAdjustResult {
+  const _TemplateImageAdjustResult({
+    required this.scale,
+    required this.scaleX,
+    required this.scaleY,
+    required this.offsetX,
+    required this.offsetY,
+    required this.rotation,
+  });
+
+  final double scale;
+  final double scaleX;
+  final double scaleY;
+  final double offsetX;
+  final double offsetY;
+  final double rotation;
+}
+
 class StampverseEditStudioController {
   Future<void> Function()? _openImportSheet;
   Future<Uint8List?> Function()? _captureBoardImage;
@@ -93,7 +111,7 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
   static const double _kTemplateSlotMinRatio = 0.12;
   static const double _kTemplateSlotMaxRatio = 0.96;
   static const double _kTemplateDuplicateOffset = 0.04;
-  static const double _kTemplateToolbarWidth = 156;
+  static const double _kTemplateToolbarWidth = 206;
   static const double _kTemplateToolbarHeight = 44;
   static const double _kTemplateToolbarGap = 10;
   static const double _kTemplateToolbarCanvasPadding = 8;
@@ -688,6 +706,12 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
           stampId: picked.stampId,
           imageUrl: picked.imageUrl,
           shapeType: StampShapeType.square,
+          contentScale: 1,
+          contentScaleX: 1,
+          contentScaleY: 1,
+          contentOffsetX: 0,
+          contentOffsetY: 0,
+          contentRotation: 0,
         );
       },
     );
@@ -904,6 +928,62 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
       persist: true,
       mapper: (StampEditLayer current) {
         return current.copyWith(isLocked: !current.isLocked);
+      },
+    );
+  }
+
+  Future<void> _editSelectedTemplateLayerImage() async {
+    final StampEditBoard? board = _workingBoard;
+    if (board == null) return;
+    final StampEditLayer? selected = _selectedTemplateLayer(board);
+    if (selected == null) return;
+
+    if (!_layerHasImage(selected)) {
+      await _pickTemplateImageForLayer(selected.id);
+      return;
+    }
+
+    final _TemplateImageAdjustResult? result =
+        await showModalBottomSheet<_TemplateImageAdjustResult>(
+          context: context,
+          isScrollControlled: true,
+          enableDrag: false,
+          backgroundColor: AppColors.transparent,
+          builder: (_) {
+            return FractionallySizedBox(
+              heightFactor: 0.95,
+              child: _TemplateImageAdjustSheet(
+                imageUrl: selected.imageUrl,
+                frameShape: selected.frameShape,
+                slotAspectRatio:
+                    _templateWidthRatio(selected) /
+                    _templateHeightRatio(selected),
+                initialScale: selected.contentScale,
+                initialScaleX: selected.contentScaleX,
+                initialScaleY: selected.contentScaleY,
+                initialOffsetX: selected.contentOffsetX,
+                initialOffsetY: selected.contentOffsetY,
+                initialRotation: selected.contentRotation,
+                enableAssetFrameOverlay: widget.enableAssetFrameOverlay,
+              ),
+            );
+          },
+        );
+
+    if (!mounted || result == null) return;
+
+    _updateLayer(
+      layerId: selected.id,
+      persist: true,
+      mapper: (StampEditLayer current) {
+        return current.copyWith(
+          contentScale: result.scale,
+          contentScaleX: result.scaleX,
+          contentScaleY: result.scaleY,
+          contentOffsetX: result.offsetX,
+          contentOffsetY: result.offsetY,
+          contentRotation: result.rotation,
+        );
       },
     );
   }
@@ -1250,6 +1330,12 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                 isLocked: layer.isLocked,
                 frameShape: layer.frameShape,
                 enableAssetFrameOverlay: widget.enableAssetFrameOverlay,
+                imageScale: layer.contentScale,
+                imageScaleX: layer.contentScaleX,
+                imageScaleY: layer.contentScaleY,
+                imageOffsetX: layer.contentOffsetX,
+                imageOffsetY: layer.contentOffsetY,
+                imageRotation: layer.contentRotation,
               ),
             ),
           ),
@@ -1439,6 +1525,8 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                                 fit: BoxFit.scaleDown,
                                 child: _TemplateSlotToolbar(
                                   isLocked: selectedTemplateLayer.isLocked,
+                                  onAdjustImage:
+                                      _editSelectedTemplateLayerImage,
                                   onDelete: _deleteSelectedTemplateLayer,
                                   onDuplicate: _duplicateSelectedTemplateLayer,
                                   onToggleLock:
@@ -1504,15 +1592,520 @@ class _LayerGestureSession {
   Offset currentFocalPoint;
 }
 
+class _TemplateImageAdjustSheet extends StatefulWidget {
+  const _TemplateImageAdjustSheet({
+    required this.imageUrl,
+    required this.frameShape,
+    required this.slotAspectRatio,
+    required this.initialScale,
+    required this.initialScaleX,
+    required this.initialScaleY,
+    required this.initialOffsetX,
+    required this.initialOffsetY,
+    required this.initialRotation,
+    required this.enableAssetFrameOverlay,
+  });
+
+  final String imageUrl;
+  final StampEditFrameShape frameShape;
+  final double slotAspectRatio;
+  final double initialScale;
+  final double initialScaleX;
+  final double initialScaleY;
+  final double initialOffsetX;
+  final double initialOffsetY;
+  final double initialRotation;
+  final bool enableAssetFrameOverlay;
+
+  @override
+  State<_TemplateImageAdjustSheet> createState() =>
+      _TemplateImageAdjustSheetState();
+}
+
+class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
+  static const double _kMinScale = 0.5;
+  static const double _kMaxScale = 6;
+  static const double _kMinAxisScale = 0.4;
+  static const double _kMaxAxisScale = 4;
+  static const double _kMaxOffsetRatio = 1.8;
+  static const double _kGuideOutsidePadding = 14;
+  static const double _kHandleScaleStep = 0.0075;
+
+  late double _scale;
+  late double _scaleX;
+  late double _scaleY;
+  late double _offsetX;
+  late double _offsetY;
+  late double _rotation;
+
+  double _scaleAtStart = 1;
+  double _offsetXAtStart = 0;
+  double _offsetYAtStart = 0;
+  double _rotationAtStart = 0;
+  Offset _focalPointAtStart = Offset.zero;
+  Size _frameSize = const Size(1, 1);
+  _TemplateGuideEdge? _activeGuideEdge;
+  _TemplateGuideCorner? _activeGuideCorner;
+
+  @override
+  void initState() {
+    super.initState();
+    _scale = _normalizeScale(widget.initialScale);
+    _scaleX = _normalizeAxisScale(widget.initialScaleX);
+    _scaleY = _normalizeAxisScale(widget.initialScaleY);
+    _offsetX = widget.initialOffsetX;
+    _offsetY = widget.initialOffsetY;
+    _rotation = widget.initialRotation;
+  }
+
+  void _onScaleStart(ScaleStartDetails details) {
+    if (_activeGuideEdge != null || _activeGuideCorner != null) return;
+    _scaleAtStart = _scale;
+    _offsetXAtStart = _offsetX;
+    _offsetYAtStart = _offsetY;
+    _rotationAtStart = _rotation;
+    _focalPointAtStart = details.focalPoint;
+  }
+
+  void _onScaleUpdate(ScaleUpdateDetails details) {
+    if (_activeGuideEdge != null || _activeGuideCorner != null) return;
+    final double frameWidth = _frameSize.width <= 0 ? 1 : _frameSize.width;
+    final double frameHeight = _frameSize.height <= 0 ? 1 : _frameSize.height;
+    final Offset delta = details.focalPoint - _focalPointAtStart;
+    final double scaleFactor = _safeScaleFactor(details.scale);
+
+    final double nextScale = (_scaleAtStart * scaleFactor).clamp(
+      _kMinScale,
+      _kMaxScale,
+    );
+    final double nextOffsetX = (_offsetXAtStart + (delta.dx / frameWidth))
+        .clamp(-_kMaxOffsetRatio, _kMaxOffsetRatio)
+        .toDouble();
+    final double nextOffsetY = (_offsetYAtStart + (delta.dy / frameHeight))
+        .clamp(-_kMaxOffsetRatio, _kMaxOffsetRatio)
+        .toDouble();
+    final double nextRotation = _normalizeRotation(
+      _rotationAtStart + details.rotation,
+    );
+
+    setState(() {
+      _scale = nextScale.toDouble();
+      _offsetX = nextOffsetX;
+      _offsetY = nextOffsetY;
+      _rotation = nextRotation;
+    });
+  }
+
+  double _safeScaleFactor(double value) {
+    if (!value.isFinite || value <= 0) return 1;
+    return value;
+  }
+
+  double _normalizeRotation(double value) {
+    if (!value.isFinite) return 0;
+    const double fullTurn = math.pi * 2;
+    double normalized = value % fullTurn;
+    if (normalized > math.pi) {
+      normalized -= fullTurn;
+    } else if (normalized < -math.pi) {
+      normalized += fullTurn;
+    }
+    return normalized;
+  }
+
+  Size _resolveFrameSize(Size availableSize) {
+    final double safeAspect =
+        widget.slotAspectRatio.isFinite && widget.slotAspectRatio > 0
+        ? widget.slotAspectRatio
+        : 1;
+    final double minDimension = math.min(
+      availableSize.width,
+      availableSize.height,
+    );
+    final double maxWidth = (minDimension * 0.88)
+        .clamp(170.0, 460.0)
+        .toDouble();
+    final double maxHeight = (availableSize.height * 0.72)
+        .clamp(180.0, 560.0)
+        .toDouble();
+
+    double width = maxWidth;
+    double height = width / safeAspect;
+    if (height > maxHeight) {
+      height = maxHeight;
+      width = height * safeAspect;
+    }
+    return Size(width, height);
+  }
+
+  ({double left, double top, double width, double height})
+  _resolveImageViewportGeometry(Size frameSize) {
+    if (widget.frameShape != StampEditFrameShape.stampClassic) {
+      return (
+        left: 0,
+        top: 0,
+        width: frameSize.width,
+        height: frameSize.height,
+      );
+    }
+
+    final double innerInset =
+        (math.min(frameSize.width, frameSize.height) * 0.16)
+            .clamp(5.0, 16.0)
+            .toDouble();
+    final double innerWidth = (frameSize.width - (innerInset * 2))
+        .clamp(1.0, frameSize.width)
+        .toDouble();
+    final double innerHeight = (frameSize.height - (innerInset * 2))
+        .clamp(1.0, frameSize.height)
+        .toDouble();
+    return (
+      left: innerInset,
+      top: innerInset,
+      width: innerWidth,
+      height: innerHeight,
+    );
+  }
+
+  void _resetAdjustments() {
+    setState(() {
+      _scale = 1;
+      _scaleX = 1;
+      _scaleY = 1;
+      _offsetX = 0;
+      _offsetY = 0;
+      _rotation = 0;
+    });
+  }
+
+  double _normalizeScale(double value) {
+    if (!value.isFinite) return 1;
+    return value.clamp(_kMinScale, _kMaxScale).toDouble();
+  }
+
+  double _normalizeAxisScale(double value) {
+    if (!value.isFinite) return 1;
+    return value.clamp(_kMinAxisScale, _kMaxAxisScale).toDouble();
+  }
+
+  void _applyAxisScaleYDelta(double delta, {required bool anchorBottom}) {
+    if (!delta.isFinite || delta == 0) return;
+    final double previousScaleY = _scaleY;
+    final double nextScaleY = _normalizeAxisScale(previousScaleY + delta);
+    final double appliedDelta = nextScaleY - previousScaleY;
+    if (appliedDelta == 0) return;
+
+    final double offsetAdjustment = (anchorBottom ? -0.5 : 0.5) * appliedDelta;
+    setState(() {
+      _scaleY = nextScaleY;
+      _offsetY = (_offsetY + offsetAdjustment)
+          .clamp(-_kMaxOffsetRatio, _kMaxOffsetRatio)
+          .toDouble();
+    });
+  }
+
+  void _applyAxisScaleXDelta(double delta, {required bool anchorRight}) {
+    if (!delta.isFinite || delta == 0) return;
+    final double previousScaleX = _scaleX;
+    final double nextScaleX = _normalizeAxisScale(previousScaleX + delta);
+    final double appliedDelta = nextScaleX - previousScaleX;
+    if (appliedDelta == 0) return;
+
+    final double offsetAdjustment = (anchorRight ? -0.5 : 0.5) * appliedDelta;
+    setState(() {
+      _scaleX = nextScaleX;
+      _offsetX = (_offsetX + offsetAdjustment)
+          .clamp(-_kMaxOffsetRatio, _kMaxOffsetRatio)
+          .toDouble();
+    });
+  }
+
+  void _onTopHandleDrag(Offset delta) {
+    _applyAxisScaleYDelta(-delta.dy * _kHandleScaleStep, anchorBottom: true);
+  }
+
+  void _onBottomHandleDrag(Offset delta) {
+    _applyAxisScaleYDelta(delta.dy * _kHandleScaleStep, anchorBottom: false);
+  }
+
+  void _onLeftHandleDrag(Offset delta) {
+    _applyAxisScaleXDelta(-delta.dx * _kHandleScaleStep, anchorRight: true);
+  }
+
+  void _onRightHandleDrag(Offset delta) {
+    _applyAxisScaleXDelta(delta.dx * _kHandleScaleStep, anchorRight: false);
+  }
+
+  void _onCornerHandleDrag(_TemplateGuideCorner corner, Offset delta) {
+    final double deltaX = switch (corner) {
+      _TemplateGuideCorner.topLeft => -delta.dx,
+      _TemplateGuideCorner.bottomLeft => -delta.dx,
+      _TemplateGuideCorner.topRight => delta.dx,
+      _TemplateGuideCorner.bottomRight => delta.dx,
+    };
+    final double deltaY = switch (corner) {
+      _TemplateGuideCorner.topLeft => -delta.dy,
+      _TemplateGuideCorner.topRight => -delta.dy,
+      _TemplateGuideCorner.bottomLeft => delta.dy,
+      _TemplateGuideCorner.bottomRight => delta.dy,
+    };
+    final bool anchorRight = switch (corner) {
+      _TemplateGuideCorner.topLeft => true,
+      _TemplateGuideCorner.bottomLeft => true,
+      _TemplateGuideCorner.topRight => false,
+      _TemplateGuideCorner.bottomRight => false,
+    };
+    final bool anchorBottom = switch (corner) {
+      _TemplateGuideCorner.topLeft => true,
+      _TemplateGuideCorner.topRight => true,
+      _TemplateGuideCorner.bottomLeft => false,
+      _TemplateGuideCorner.bottomRight => false,
+    };
+
+    final double previousScaleX = _scaleX;
+    final double previousScaleY = _scaleY;
+    final double nextScaleX = _normalizeAxisScale(
+      previousScaleX + (deltaX * _kHandleScaleStep),
+    );
+    final double nextScaleY = _normalizeAxisScale(
+      previousScaleY + (deltaY * _kHandleScaleStep),
+    );
+    final double appliedDeltaX = nextScaleX - previousScaleX;
+    final double appliedDeltaY = nextScaleY - previousScaleY;
+    if (appliedDeltaX == 0 && appliedDeltaY == 0) return;
+
+    final double offsetAdjustmentX = (anchorRight ? -0.5 : 0.5) * appliedDeltaX;
+    final double offsetAdjustmentY =
+        (anchorBottom ? -0.5 : 0.5) * appliedDeltaY;
+    setState(() {
+      _scaleX = nextScaleX;
+      _scaleY = nextScaleY;
+      _offsetX = (_offsetX + offsetAdjustmentX)
+          .clamp(-_kMaxOffsetRatio, _kMaxOffsetRatio)
+          .toDouble();
+      _offsetY = (_offsetY + offsetAdjustmentY)
+          .clamp(-_kMaxOffsetRatio, _kMaxOffsetRatio)
+          .toDouble();
+    });
+  }
+
+  void _onEdgeHandleStateChanged(_TemplateGuideEdge? edge) {
+    if (_activeGuideEdge == edge &&
+        (edge == null || _activeGuideCorner == null)) {
+      return;
+    }
+    setState(() {
+      _activeGuideEdge = edge;
+      if (edge != null) {
+        _activeGuideCorner = null;
+      }
+    });
+  }
+
+  void _onCornerHandleStateChanged(_TemplateGuideCorner? corner) {
+    if (_activeGuideCorner == corner &&
+        (corner == null || _activeGuideEdge == null)) {
+      return;
+    }
+    setState(() {
+      _activeGuideCorner = corner;
+      if (corner != null) {
+        _activeGuideEdge = null;
+      }
+    });
+  }
+
+  void _saveAdjustments() {
+    Navigator.of(context).pop(
+      _TemplateImageAdjustResult(
+        scale: _scale,
+        scaleX: _scaleX,
+        scaleY: _scaleY,
+        offsetX: _offsetX,
+        offsetY: _offsetY,
+        rotation: _rotation,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: AppColors.stampverseBackground,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
+          child: Column(
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    tooltip: LocaleKey.cancel.tr,
+                    icon: const Icon(
+                      Icons.close_rounded,
+                      color: AppColors.stampversePrimaryText,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      LocaleKey.stampverseEditTemplateAdjustImage.tr,
+                      textAlign: TextAlign.center,
+                      style: StampverseTextStyles.body(
+                        color: AppColors.stampverseHeadingText,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _saveAdjustments,
+                    child: Text(
+                      LocaleKey.ok.tr,
+                      style: StampverseTextStyles.caption(
+                        color: AppColors.colorF586AA6,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Text(
+                LocaleKey.stampverseEditTemplateAdjustHint.tr,
+                textAlign: TextAlign.center,
+                style: StampverseTextStyles.caption(
+                  color: AppColors.stampverseMutedText,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (_, BoxConstraints constraints) {
+                    final Size frameSize = _resolveFrameSize(
+                      Size(constraints.maxWidth, constraints.maxHeight),
+                    );
+                    final ({
+                      double left,
+                      double top,
+                      double width,
+                      double height,
+                    })
+                    viewportGeometry = _resolveImageViewportGeometry(frameSize);
+                    _frameSize = Size(
+                      viewportGeometry.width,
+                      viewportGeometry.height,
+                    );
+
+                    return Center(
+                      child: SizedBox(
+                        width: frameSize.width + (_kGuideOutsidePadding * 2),
+                        height: frameSize.height + (_kGuideOutsidePadding * 2),
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onScaleStart: _onScaleStart,
+                          onScaleUpdate: _onScaleUpdate,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            children: <Widget>[
+                              Positioned(
+                                left: _kGuideOutsidePadding,
+                                top: _kGuideOutsidePadding,
+                                width: frameSize.width,
+                                height: frameSize.height,
+                                child: _TemplateSlotSurface(
+                                  width: frameSize.width,
+                                  height: frameSize.height,
+                                  imageUrl: widget.imageUrl,
+                                  showAddAction: false,
+                                  isSelected: true,
+                                  isLocked: false,
+                                  frameShape: widget.frameShape,
+                                  enableAssetFrameOverlay:
+                                      widget.enableAssetFrameOverlay,
+                                  imageScale: _scale,
+                                  imageScaleX: _scaleX,
+                                  imageScaleY: _scaleY,
+                                  imageOffsetX: _offsetX,
+                                  imageOffsetY: _offsetY,
+                                  imageRotation: _rotation,
+                                  showLockBadge: false,
+                                ),
+                              ),
+                              Positioned(
+                                left:
+                                    _kGuideOutsidePadding +
+                                    viewportGeometry.left,
+                                top:
+                                    _kGuideOutsidePadding +
+                                    viewportGeometry.top,
+                                width: viewportGeometry.width,
+                                height: viewportGeometry.height,
+                                child: _TemplateAdjustImageGuideOverlay(
+                                  width: viewportGeometry.width,
+                                  height: viewportGeometry.height,
+                                  scaleX: _scale * _scaleX,
+                                  scaleY: _scale * _scaleY,
+                                  offsetX: _offsetX,
+                                  offsetY: _offsetY,
+                                  rotation: _rotation,
+                                  onTopHandleDrag: _onTopHandleDrag,
+                                  onBottomHandleDrag: _onBottomHandleDrag,
+                                  onLeftHandleDrag: _onLeftHandleDrag,
+                                  onRightHandleDrag: _onRightHandleDrag,
+                                  onCornerHandleDrag: _onCornerHandleDrag,
+                                  onEdgeHandleStateChanged:
+                                      _onEdgeHandleStateChanged,
+                                  activeCorner: _activeGuideCorner,
+                                  activeEdge: _activeGuideEdge,
+                                  onCornerHandleStateChanged:
+                                      _onCornerHandleStateChanged,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton.icon(
+                onPressed: _resetAdjustments,
+                icon: const Icon(
+                  Icons.restart_alt_rounded,
+                  color: AppColors.stampversePrimaryText,
+                ),
+                label: Text(
+                  LocaleKey.stampverseEditTemplateAdjustReset.tr,
+                  style: StampverseTextStyles.caption(
+                    color: AppColors.stampversePrimaryText,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _TemplateSlotToolbar extends StatelessWidget {
   const _TemplateSlotToolbar({
     required this.isLocked,
+    required this.onAdjustImage,
     required this.onDelete,
     required this.onDuplicate,
     required this.onToggleLock,
   });
 
   final bool isLocked;
+  final VoidCallback onAdjustImage;
   final VoidCallback onDelete;
   final VoidCallback onDuplicate;
   final VoidCallback onToggleLock;
@@ -1537,6 +2130,16 @@ class _TemplateSlotToolbar extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
+            IconButton(
+              iconSize: 18,
+              visualDensity: VisualDensity.compact,
+              onPressed: onAdjustImage,
+              tooltip: LocaleKey.stampverseEditTemplateAdjustImage.tr,
+              icon: const Icon(
+                Icons.crop_free_rounded,
+                color: AppColors.stampversePrimaryText,
+              ),
+            ),
             IconButton(
               iconSize: 18,
               visualDensity: VisualDensity.compact,
@@ -1587,6 +2190,13 @@ class _TemplateSlotSurface extends StatelessWidget {
     required this.isLocked,
     required this.frameShape,
     required this.enableAssetFrameOverlay,
+    this.imageScale = 1,
+    this.imageScaleX = 1,
+    this.imageScaleY = 1,
+    this.imageOffsetX = 0,
+    this.imageOffsetY = 0,
+    this.imageRotation = 0,
+    this.showLockBadge = true,
   });
 
   final double width;
@@ -1597,6 +2207,13 @@ class _TemplateSlotSurface extends StatelessWidget {
   final bool isLocked;
   final StampEditFrameShape frameShape;
   final bool enableAssetFrameOverlay;
+  final double imageScale;
+  final double imageScaleX;
+  final double imageScaleY;
+  final double imageOffsetX;
+  final double imageOffsetY;
+  final double imageRotation;
+  final bool showLockBadge;
 
   String? _frameOverlayAssetPath() {
     if (!enableAssetFrameOverlay) return null;
@@ -1656,7 +2273,15 @@ class _TemplateSlotSurface extends StatelessWidget {
                     color: slotBackgroundColor,
                     child: imageUrl.trim().isEmpty
                         ? null
-                        : _TemplateSlotImage(imageUrl: imageUrl),
+                        : _TemplateSlotImageViewport(
+                            imageUrl: imageUrl,
+                            scale: imageScale,
+                            scaleX: imageScaleX,
+                            scaleY: imageScaleY,
+                            offsetX: imageOffsetX,
+                            offsetY: imageOffsetY,
+                            rotation: imageRotation,
+                          ),
                   ),
                 ),
               if (isClassicStamp)
@@ -1667,7 +2292,15 @@ class _TemplateSlotSurface extends StatelessWidget {
                       color: slotBackgroundColor,
                       child: imageUrl.trim().isEmpty
                           ? null
-                          : _TemplateSlotImage(imageUrl: imageUrl),
+                          : _TemplateSlotImageViewport(
+                              imageUrl: imageUrl,
+                              scale: imageScale,
+                              scaleX: imageScaleX,
+                              scaleY: imageScaleY,
+                              offsetX: imageOffsetX,
+                              offsetY: imageOffsetY,
+                              rotation: imageRotation,
+                            ),
                     ),
                   ),
                 ),
@@ -1696,7 +2329,7 @@ class _TemplateSlotSurface extends StatelessWidget {
                     color: AppColors.stampverseMutedText,
                   ),
                 ),
-              if (isLocked)
+              if (isLocked && showLockBadge)
                 const Positioned(
                   top: 6,
                   right: 6,
@@ -1810,6 +2443,463 @@ class _TemplateSlotBorderPainter extends CustomPainter {
     return oldDelegate.frameShape != frameShape ||
         oldDelegate.borderColor != borderColor ||
         oldDelegate.borderWidth != borderWidth;
+  }
+}
+
+enum _TemplateGuideCorner { topLeft, topRight, bottomLeft, bottomRight }
+
+enum _TemplateGuideEdge { top, right, bottom, left }
+
+class _TemplateAdjustImageGuideOverlay extends StatelessWidget {
+  const _TemplateAdjustImageGuideOverlay({
+    required this.width,
+    required this.height,
+    required this.scaleX,
+    required this.scaleY,
+    required this.offsetX,
+    required this.offsetY,
+    required this.rotation,
+    required this.onTopHandleDrag,
+    required this.onBottomHandleDrag,
+    required this.onLeftHandleDrag,
+    required this.onRightHandleDrag,
+    required this.onCornerHandleDrag,
+    required this.onEdgeHandleStateChanged,
+    required this.activeCorner,
+    required this.activeEdge,
+    required this.onCornerHandleStateChanged,
+  });
+
+  final double width;
+  final double height;
+  final double scaleX;
+  final double scaleY;
+  final double offsetX;
+  final double offsetY;
+  final double rotation;
+  final ValueChanged<Offset> onTopHandleDrag;
+  final ValueChanged<Offset> onBottomHandleDrag;
+  final ValueChanged<Offset> onLeftHandleDrag;
+  final ValueChanged<Offset> onRightHandleDrag;
+  final void Function(_TemplateGuideCorner corner, Offset delta)
+  onCornerHandleDrag;
+  final ValueChanged<_TemplateGuideEdge?> onEdgeHandleStateChanged;
+  final _TemplateGuideCorner? activeCorner;
+  final _TemplateGuideEdge? activeEdge;
+  final ValueChanged<_TemplateGuideCorner?> onCornerHandleStateChanged;
+
+  Widget _buildEdgeHandle({
+    required String keyValue,
+    required _TemplateGuideEdge edge,
+    required double left,
+    required double top,
+    required double width,
+    required double height,
+    required ValueChanged<Offset> onDrag,
+  }) {
+    return Positioned(
+      left: left,
+      top: top,
+      width: width,
+      height: height,
+      child: Listener(
+        key: ValueKey<String>(keyValue),
+        behavior: HitTestBehavior.opaque,
+        onPointerDown: (_) => onEdgeHandleStateChanged(edge),
+        onPointerMove: (PointerMoveEvent event) => onDrag(event.delta),
+        onPointerUp: (_) => onEdgeHandleStateChanged(null),
+        onPointerCancel: (_) => onEdgeHandleStateChanged(null),
+      ),
+    );
+  }
+
+  Widget _buildCornerHandle({
+    required String keyValue,
+    required _TemplateGuideCorner corner,
+    required double left,
+    required double top,
+    required double size,
+  }) {
+    return Positioned(
+      left: left,
+      top: top,
+      width: size,
+      height: size,
+      child: Listener(
+        key: ValueKey<String>(keyValue),
+        behavior: HitTestBehavior.opaque,
+        onPointerDown: (_) => onCornerHandleStateChanged(corner),
+        onPointerMove: (PointerMoveEvent event) {
+          onCornerHandleDrag(corner, event.delta);
+        },
+        onPointerUp: (_) => onCornerHandleStateChanged(null),
+        onPointerCancel: (_) => onCornerHandleStateChanged(null),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final double safeScaleX = scaleX.isFinite ? scaleX.clamp(0.2, 8) : 1;
+    final double safeScaleY = scaleY.isFinite ? scaleY.clamp(0.2, 8) : 1;
+    final double safeRotation = rotation.isFinite ? rotation : 0;
+    final Offset panOffset = Offset(width * offsetX, height * offsetY);
+    const double topEdge = 0;
+    const double leftEdge = 0;
+    final double rightEdge = width;
+    final double bottomEdge = height;
+    const double minTouchTarget = 44;
+    final double edgeHitThicknessY = (minTouchTarget / safeScaleY)
+        .clamp(26.0, 96.0)
+        .toDouble();
+    final double edgeHitThicknessX = (minTouchTarget / safeScaleX)
+        .clamp(26.0, 96.0)
+        .toDouble();
+    final double cornerHitSize = math
+        .max(minTouchTarget / safeScaleX, minTouchTarget / safeScaleY)
+        .clamp(32.0, 110.0)
+        .toDouble();
+    final double edgeWidth = rightEdge - leftEdge;
+    final double edgeHeight = bottomEdge - topEdge;
+
+    return Transform.translate(
+      offset: panOffset,
+      child: Transform.rotate(
+        angle: safeRotation,
+        child: Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.diagonal3Values(
+            safeScaleX.toDouble(),
+            safeScaleY.toDouble(),
+            1,
+          ),
+          child: SizedBox(
+            width: width,
+            height: height,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: <Widget>[
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  width: width,
+                  height: height,
+                  child: CustomPaint(
+                    painter: _TemplateAdjustGuidePainter(
+                      activeCorner: activeCorner,
+                      activeEdge: activeEdge,
+                    ),
+                  ),
+                ),
+                _buildEdgeHandle(
+                  keyValue: 'template-adjust-edge-top',
+                  edge: _TemplateGuideEdge.top,
+                  left: leftEdge,
+                  top: topEdge - (edgeHitThicknessY / 2),
+                  width: edgeWidth,
+                  height: edgeHitThicknessY,
+                  onDrag: onTopHandleDrag,
+                ),
+                _buildEdgeHandle(
+                  keyValue: 'template-adjust-edge-bottom',
+                  edge: _TemplateGuideEdge.bottom,
+                  left: leftEdge,
+                  top: bottomEdge - (edgeHitThicknessY / 2),
+                  width: edgeWidth,
+                  height: edgeHitThicknessY,
+                  onDrag: onBottomHandleDrag,
+                ),
+                _buildEdgeHandle(
+                  keyValue: 'template-adjust-edge-left',
+                  edge: _TemplateGuideEdge.left,
+                  left: leftEdge - (edgeHitThicknessX / 2),
+                  top: topEdge,
+                  width: edgeHitThicknessX,
+                  height: edgeHeight,
+                  onDrag: onLeftHandleDrag,
+                ),
+                _buildEdgeHandle(
+                  keyValue: 'template-adjust-edge-right',
+                  edge: _TemplateGuideEdge.right,
+                  left: rightEdge - (edgeHitThicknessX / 2),
+                  top: topEdge,
+                  width: edgeHitThicknessX,
+                  height: edgeHeight,
+                  onDrag: onRightHandleDrag,
+                ),
+                _buildCornerHandle(
+                  keyValue: 'template-adjust-corner-top-left',
+                  corner: _TemplateGuideCorner.topLeft,
+                  left: -(cornerHitSize / 2),
+                  top: -(cornerHitSize / 2),
+                  size: cornerHitSize,
+                ),
+                _buildCornerHandle(
+                  keyValue: 'template-adjust-corner-top-right',
+                  corner: _TemplateGuideCorner.topRight,
+                  left: rightEdge - (cornerHitSize / 2),
+                  top: -(cornerHitSize / 2),
+                  size: cornerHitSize,
+                ),
+                _buildCornerHandle(
+                  keyValue: 'template-adjust-corner-bottom-left',
+                  corner: _TemplateGuideCorner.bottomLeft,
+                  left: -(cornerHitSize / 2),
+                  top: bottomEdge - (cornerHitSize / 2),
+                  size: cornerHitSize,
+                ),
+                _buildCornerHandle(
+                  keyValue: 'template-adjust-corner-bottom-right',
+                  corner: _TemplateGuideCorner.bottomRight,
+                  left: rightEdge - (cornerHitSize / 2),
+                  top: bottomEdge - (cornerHitSize / 2),
+                  size: cornerHitSize,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TemplateAdjustGuidePainter extends CustomPainter {
+  const _TemplateAdjustGuidePainter({
+    required this.activeCorner,
+    required this.activeEdge,
+  });
+
+  final _TemplateGuideCorner? activeCorner;
+  final _TemplateGuideEdge? activeEdge;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+    final Rect borderRect = (Offset.zero & size).deflate(0.8);
+    if (borderRect.width <= 0 || borderRect.height <= 0) return;
+    final double minEdge = math.min(borderRect.width, borderRect.height);
+    final RRect borderRRect = RRect.fromRectAndRadius(
+      borderRect,
+      Radius.circular((minEdge * 0.08).clamp(6.0, 12.0).toDouble()),
+    );
+    final Paint shadowPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.2
+      ..color = AppColors.black.withValues(alpha: 0.26);
+    final Paint strokePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..color = AppColors.white;
+    canvas.drawRRect(borderRRect, shadowPaint);
+    canvas.drawRRect(borderRRect, strokePaint);
+
+    final double handleRadius = (minEdge * 0.045).clamp(4.8, 7.2).toDouble();
+    final double horizontalHandleWidth = (minEdge * 0.26)
+        .clamp(22.0, 30.0)
+        .toDouble();
+    final double verticalHandleHeight = (minEdge * 0.26)
+        .clamp(22.0, 30.0)
+        .toDouble();
+    final double handleThickness = (handleRadius * 1.7).clamp(8.0, 10.0);
+
+    final Map<_TemplateGuideCorner, Offset> cornerPoints =
+        <_TemplateGuideCorner, Offset>{
+          _TemplateGuideCorner.topLeft: borderRect.topLeft,
+          _TemplateGuideCorner.topRight: borderRect.topRight,
+          _TemplateGuideCorner.bottomLeft: borderRect.bottomLeft,
+          _TemplateGuideCorner.bottomRight: borderRect.bottomRight,
+        };
+    for (final MapEntry<_TemplateGuideCorner, Offset> entry
+        in cornerPoints.entries) {
+      _drawCircleHandle(
+        canvas,
+        center: entry.value,
+        radius: handleRadius,
+        isActive: entry.key == activeCorner,
+      );
+    }
+
+    _drawPillHandle(
+      canvas,
+      center: Offset(borderRect.center.dx, borderRect.top),
+      width: horizontalHandleWidth,
+      height: handleThickness,
+      isActive: activeEdge == _TemplateGuideEdge.top,
+    );
+    _drawPillHandle(
+      canvas,
+      center: Offset(borderRect.center.dx, borderRect.bottom),
+      width: horizontalHandleWidth,
+      height: handleThickness,
+      isActive: activeEdge == _TemplateGuideEdge.bottom,
+    );
+    _drawPillHandle(
+      canvas,
+      center: Offset(borderRect.left, borderRect.center.dy),
+      width: handleThickness,
+      height: verticalHandleHeight,
+      isActive: activeEdge == _TemplateGuideEdge.left,
+    );
+    _drawPillHandle(
+      canvas,
+      center: Offset(borderRect.right, borderRect.center.dy),
+      width: handleThickness,
+      height: verticalHandleHeight,
+      isActive: activeEdge == _TemplateGuideEdge.right,
+    );
+  }
+
+  void _drawCircleHandle(
+    Canvas canvas, {
+    required Offset center,
+    required double radius,
+    required bool isActive,
+  }) {
+    if (isActive) {
+      canvas.drawCircle(
+        center,
+        radius + 1.6,
+        Paint()..color = AppColors.black.withValues(alpha: 0.28),
+      );
+      canvas.drawCircle(
+        center,
+        radius + 0.4,
+        Paint()..color = AppColors.colorF586AA6,
+      );
+      canvas.drawCircle(
+        center,
+        radius + 0.4,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2
+          ..color = AppColors.white,
+      );
+      return;
+    }
+
+    canvas.drawCircle(
+      center,
+      radius + 1.2,
+      Paint()..color = AppColors.black.withValues(alpha: 0.24),
+    );
+    canvas.drawCircle(center, radius, Paint()..color = AppColors.white);
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1
+        ..color = AppColors.stampverseBorderSoft,
+    );
+  }
+
+  void _drawPillHandle(
+    Canvas canvas, {
+    required Offset center,
+    required double width,
+    required double height,
+    required bool isActive,
+  }) {
+    final RRect rect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: center, width: width, height: height),
+      Radius.circular(math.min(width, height) / 2),
+    );
+    if (isActive) {
+      canvas.drawRRect(
+        rect.inflate(1.4),
+        Paint()..color = AppColors.black.withValues(alpha: 0.28),
+      );
+      canvas.drawRRect(rect, Paint()..color = AppColors.colorF586AA6);
+      canvas.drawRRect(
+        rect,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.1
+          ..color = AppColors.white,
+      );
+      return;
+    }
+
+    canvas.drawRRect(
+      rect.inflate(1.2),
+      Paint()..color = AppColors.black.withValues(alpha: 0.24),
+    );
+    canvas.drawRRect(rect, Paint()..color = AppColors.white);
+    canvas.drawRRect(
+      rect,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1
+        ..color = AppColors.stampverseBorderSoft,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _TemplateAdjustGuidePainter oldDelegate) {
+    return oldDelegate.activeCorner != activeCorner ||
+        oldDelegate.activeEdge != activeEdge;
+  }
+}
+
+class _TemplateSlotImageViewport extends StatelessWidget {
+  const _TemplateSlotImageViewport({
+    required this.imageUrl,
+    required this.scale,
+    required this.scaleX,
+    required this.scaleY,
+    required this.offsetX,
+    required this.offsetY,
+    required this.rotation,
+  });
+
+  final String imageUrl;
+  final double scale;
+  final double scaleX;
+  final double scaleY;
+  final double offsetX;
+  final double offsetY;
+  final double rotation;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRect(
+      child: LayoutBuilder(
+        builder: (_, BoxConstraints constraints) {
+          final double width = constraints.maxWidth;
+          final double height = constraints.maxHeight;
+          final Offset panOffset = Offset(width * offsetX, height * offsetY);
+          final double safeScale = scale.isFinite ? scale.clamp(0.2, 8) : 1;
+          final double safeScaleX = scaleX.isFinite ? scaleX.clamp(0.2, 8) : 1;
+          final double safeScaleY = scaleY.isFinite ? scaleY.clamp(0.2, 8) : 1;
+          final double effectiveScaleX = (safeScale * safeScaleX)
+              .clamp(0.2, 8.0)
+              .toDouble();
+          final double effectiveScaleY = (safeScale * safeScaleY)
+              .clamp(0.2, 8.0)
+              .toDouble();
+          final double safeRotation = rotation.isFinite ? rotation : 0;
+
+          return Transform.translate(
+            offset: panOffset,
+            child: Transform.rotate(
+              angle: safeRotation,
+              child: Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.diagonal3Values(
+                  effectiveScaleX,
+                  effectiveScaleY,
+                  1,
+                ),
+                child: SizedBox.expand(
+                  child: _TemplateSlotImage(imageUrl: imageUrl),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 

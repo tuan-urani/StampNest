@@ -190,6 +190,12 @@ class StampverseLocaleKey {
       'stampverse_edit_template_duplicate';
   static const String editTemplateLock = 'stampverse_edit_template_lock';
   static const String editTemplateUnlock = 'stampverse_edit_template_unlock';
+  static const String editTemplateAdjustImage =
+      'stampverse_edit_template_adjust_image';
+  static const String editTemplateAdjustReset =
+      'stampverse_edit_template_adjust_reset';
+  static const String editTemplateAdjustHint =
+      'stampverse_edit_template_adjust_hint';
 
   static const String cameraTitle = 'stampverse_camera_title';
   static const String cameraCaptureTitle = 'stampverse_camera_capture_title';

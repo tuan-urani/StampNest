@@ -266,6 +266,30 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
         AppAssets.creativeTemplateBackgroundTemplate3Png.toLowerCase();
   }
 
+  bool _useClassicWallV5PerforationStyleForTemplate(StampEditBoard _) {
+    return false;
+  }
+
+  bool _useClassicWallV6StyleForTemplate(StampEditBoard board) {
+    if (!_isTemplateBoard(board)) return false;
+    final String templateId = (board.templateId ?? '').trim().toLowerCase();
+    return templateId == 'template_classic_stamp_wall_v6';
+  }
+
+  double _resolveTemplateCanvasCornerRadius(StampEditBoard board) {
+    if (_useClassicWallV6StyleForTemplate(board)) {
+      return 0;
+    }
+    return 18;
+  }
+
+  Color _resolveTemplateCanvasBorderColor(StampEditBoard board) {
+    if (_useClassicWallV6StyleForTemplate(board)) {
+      return AppColors.transparent;
+    }
+    return AppColors.stampverseBorderSoft;
+  }
+
   Size _resolveCanvasSize({
     required StampEditBoard board,
     required Size availableSize,
@@ -1028,6 +1052,9 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                     _usePerforatedScallopStyleForTemplate(board),
                 useRetroPatchworkScallopStyle:
                     _useRetroPatchworkScallopStyleForTemplate(board),
+                useClassicWallV5PerforationStyle:
+                    _useClassicWallV5PerforationStyleForTemplate(board),
+                useClassicWallV6Style: _useClassicWallV6StyleForTemplate(board),
               ),
             );
           },
@@ -1353,6 +1380,8 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
     required bool useScallopedClassicFrame,
     required bool usePerforatedScallopStyle,
     required bool useRetroPatchworkScallopStyle,
+    required bool useClassicWallV5PerforationStyle,
+    required bool useClassicWallV6Style,
   }) {
     final double widthRatio = _templateWidthRatio(layer);
     final double heightRatio = _templateHeightRatio(layer);
@@ -1408,6 +1437,9 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                 useScallopedClassicFrame: useScallopedClassicFrame,
                 usePerforatedScallopStyle: usePerforatedScallopStyle,
                 useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
+                useClassicWallV5PerforationStyle:
+                    useClassicWallV5PerforationStyle,
+                useClassicWallV6Style: useClassicWallV6Style,
               ),
             ),
           ),
@@ -1443,6 +1475,11 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
         _usePerforatedScallopStyleForTemplate(board);
     final bool useRetroPatchworkScallopStyle =
         _useRetroPatchworkScallopStyleForTemplate(board);
+    final bool useClassicWallV5PerforationStyle =
+        _useClassicWallV5PerforationStyleForTemplate(board);
+    final bool useClassicWallV6Style = _useClassicWallV6StyleForTemplate(board);
+    final double canvasCornerRadius = _resolveTemplateCanvasCornerRadius(board);
+    final Color canvasBorderColor = _resolveTemplateCanvasBorderColor(board);
 
     final EdgeInsets contentPadding = widget.showBoardHeader
         ? const EdgeInsets.fromLTRB(
@@ -1531,13 +1568,13 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                           RepaintBoundary(
                             key: _canvasBoundaryKey,
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(18),
+                              borderRadius: BorderRadius.circular(
+                                canvasCornerRadius,
+                              ),
                               child: DecoratedBox(
                                 decoration: BoxDecoration(
                                   color: canvasColor,
-                                  border: Border.all(
-                                    color: AppColors.stampverseBorderSoft,
-                                  ),
+                                  border: Border.all(color: canvasBorderColor),
                                 ),
                                 child: Stack(
                                   children: <Widget>[
@@ -1589,6 +1626,10 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                                               usePerforatedScallopStyle,
                                           useRetroPatchworkScallopStyle:
                                               useRetroPatchworkScallopStyle,
+                                          useClassicWallV5PerforationStyle:
+                                              useClassicWallV5PerforationStyle,
+                                          useClassicWallV6Style:
+                                              useClassicWallV6Style,
                                         );
                                       }
                                       return _buildFreeformLayer(
@@ -1696,6 +1737,8 @@ class _TemplateImageAdjustSheet extends StatefulWidget {
     required this.useScallopedClassicFrame,
     required this.usePerforatedScallopStyle,
     required this.useRetroPatchworkScallopStyle,
+    required this.useClassicWallV5PerforationStyle,
+    required this.useClassicWallV6Style,
   });
 
   final String imageUrl;
@@ -1712,6 +1755,8 @@ class _TemplateImageAdjustSheet extends StatefulWidget {
   final bool useScallopedClassicFrame;
   final bool usePerforatedScallopStyle;
   final bool useRetroPatchworkScallopStyle;
+  final bool useClassicWallV5PerforationStyle;
+  final bool useClassicWallV6Style;
 
   @override
   State<_TemplateImageAdjustSheet> createState() =>
@@ -2136,6 +2181,10 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
                                       widget.usePerforatedScallopStyle,
                                   useRetroPatchworkScallopStyle:
                                       widget.useRetroPatchworkScallopStyle,
+                                  useClassicWallV5PerforationStyle:
+                                      widget.useClassicWallV5PerforationStyle,
+                                  useClassicWallV6Style:
+                                      widget.useClassicWallV6Style,
                                 ),
                               ),
                               Positioned(
@@ -2305,6 +2354,8 @@ class _TemplateSlotSurface extends StatelessWidget {
     this.useScallopedClassicFrame = false,
     this.usePerforatedScallopStyle = false,
     this.useRetroPatchworkScallopStyle = false,
+    this.useClassicWallV5PerforationStyle = false,
+    this.useClassicWallV6Style = false,
   });
 
   final double width;
@@ -2326,6 +2377,8 @@ class _TemplateSlotSurface extends StatelessWidget {
   final bool useScallopedClassicFrame;
   final bool usePerforatedScallopStyle;
   final bool useRetroPatchworkScallopStyle;
+  final bool useClassicWallV5PerforationStyle;
+  final bool useClassicWallV6Style;
 
   String? _frameOverlayAssetPath() {
     if (!enableAssetFrameOverlay) return null;
@@ -2334,6 +2387,10 @@ class _TemplateSlotSurface extends StatelessWidget {
       return null;
     }
     if (useRetroPatchworkScallopStyle &&
+        frameShape == StampEditFrameShape.stampScallop) {
+      return null;
+    }
+    if (useClassicWallV6Style &&
         frameShape == StampEditFrameShape.stampScallop) {
       return null;
     }
@@ -2357,18 +2414,39 @@ class _TemplateSlotSurface extends StatelessWidget {
     final bool useRetroPatchworkScallop =
         useRetroPatchworkScallopStyle &&
         frameShape == StampEditFrameShape.stampScallop;
+    final bool useClassicWallV5Style =
+        useClassicWallV5PerforationStyle &&
+        frameShape == StampEditFrameShape.stampClassic;
+    final bool useClassicWallV6ScallopStyle =
+        useClassicWallV6Style && frameShape == StampEditFrameShape.stampScallop;
+    final bool useClassicWallV6PlainRectStyle =
+        useClassicWallV6Style && frameShape == StampEditFrameShape.plainRect;
     final Color slotBackgroundColor = usePerforatedScallop
         ? AppColors.stampverseBorderSoft.withValues(alpha: 0.55)
         : useRetroPatchworkScallop
         ? AppColors.white.withValues(alpha: 0.64)
+        : useClassicWallV5Style
+        ? AppColors.white.withValues(alpha: 0.88)
+        : useClassicWallV6ScallopStyle
+        ? AppColors.colorF8F1DD.withValues(alpha: 0.92)
+        : useClassicWallV6PlainRectStyle
+        ? AppColors.colorF8F1DD.withValues(alpha: 0.92)
         : AppColors.stampverseBorderSoft.withValues(alpha: 0.36);
     final double borderWidth = isSelected
         ? 2
-        : (usePerforatedScallop ? 1 : 1.2);
+        : useClassicWallV6Style
+        ? 1.05
+        : (usePerforatedScallop || useClassicWallV5Style ? 1 : 1.2);
     final Color borderColor = isSelected
         ? AppColors.colorF586AA6
+        : useClassicWallV6PlainRectStyle
+        ? AppColors.stampversePrimaryText.withValues(alpha: 0.62)
+        : useClassicWallV6ScallopStyle
+        ? AppColors.stampversePrimaryText.withValues(alpha: 0.26)
         : frameShape == StampEditFrameShape.stampClassic
-        ? (useLightClassicInnerBorder
+        ? (useClassicWallV5Style
+              ? AppColors.white.withValues(alpha: 0.98)
+              : useLightClassicInnerBorder
               ? AppColors.black.withValues(alpha: 0.88)
               : AppColors.stampversePrimaryText)
         : usePerforatedScallop
@@ -2377,13 +2455,22 @@ class _TemplateSlotSurface extends StatelessWidget {
         ? AppColors.white.withValues(alpha: 0.96)
         : AppColors.white;
     final String? overlayAssetPath = _frameOverlayAssetPath();
-    final bool showPainterBorder = overlayAssetPath == null;
-    final Color classicInnerBorderColor = useLightClassicInnerBorder
+    final bool showPainterBorder =
+        overlayAssetPath == null && !useClassicWallV6ScallopStyle;
+    final Color classicWallV6OuterBorderColor = isSelected
+        ? AppColors.colorF586AA6
+        : AppColors.stampversePrimaryText.withValues(alpha: 0.78);
+    final double classicWallV6OuterBorderWidth = isSelected ? 1.35 : 1.1;
+    final Color classicInnerBorderColor = useClassicWallV5Style
+        ? AppColors.black.withValues(alpha: isSelected ? 0.25 : 0.2)
+        : useLightClassicInnerBorder
         ? AppColors.white.withValues(alpha: isSelected ? 0.92 : 0.82)
         : AppColors.stampversePrimaryText.withValues(
             alpha: isSelected ? 0.92 : 0.82,
           );
-    final double classicInnerBorderWidth = useLightClassicInnerBorder
+    final double classicInnerBorderWidth = useClassicWallV5Style
+        ? (isSelected ? 1.1 : 0.9)
+        : useLightClassicInnerBorder
         ? (isSelected ? 1.2 : 1)
         : (isSelected ? 1.5 : 1.15);
 
@@ -2396,9 +2483,13 @@ class _TemplateSlotSurface extends StatelessWidget {
           final Rect frameRect = Offset.zero & size;
           final bool isClassicStamp =
               frameShape == StampEditFrameShape.stampClassic;
-          final double classicInnerInset = (math.min(width, height) * 0.16)
-              .clamp(5.0, 16.0)
-              .toDouble();
+          final double classicInnerInset =
+              (math.min(width, height) * (useClassicWallV5Style ? 0.11 : 0.16))
+                  .clamp(
+                    useClassicWallV5Style ? 4.0 : 5.0,
+                    useClassicWallV5Style ? 12.0 : 16.0,
+                  )
+                  .toDouble();
           final double perforatedInnerInset = (math.min(width, height) * 0.07)
               .clamp(4.5, 9.5)
               .toDouble();
@@ -2424,11 +2515,79 @@ class _TemplateSlotSurface extends StatelessWidget {
             alpha: 0.92,
           );
           final double retroInnerBorderWidth = isSelected ? 1.25 : 0.95;
+          final double classicWallV6InnerInset =
+              (math.min(width, height) * 0.04).clamp(3.2, 5.0).toDouble();
+          final Color classicWallV6InnerBorderColor = AppColors
+              .stampversePrimaryText
+              .withValues(alpha: 0.22);
+          final double classicWallV6InnerBorderWidth = isSelected ? 1.1 : 0.9;
 
           return Stack(
             fit: StackFit.expand,
             children: <Widget>[
-              if (isClassicStamp ||
+              if (useClassicWallV6ScallopStyle)
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppColors.white,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: classicWallV6OuterBorderColor,
+                      width: classicWallV6OuterBorderWidth,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.all(classicWallV6InnerInset),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: <Widget>[
+                        _buildTemplateFrameClip(
+                          frameShape: StampEditFrameShape.stampScallop,
+                          clipRect:
+                              Offset.zero &
+                              Size(
+                                math.max(
+                                  1.0,
+                                  size.width - (classicWallV6InnerInset * 2),
+                                ),
+                                math.max(
+                                  1.0,
+                                  size.height - (classicWallV6InnerInset * 2),
+                                ),
+                              ),
+                          useScallopedClassicFrame: false,
+                          usePerforatedScallopStyle: false,
+                          useRetroPatchworkScallopStyle: false,
+                          useClassicWallV5PerforationStyle: false,
+                          useClassicWallV6Style: true,
+                          child: ColoredBox(
+                            color: imageUrl.trim().isEmpty
+                                ? AppColors.colorF8F1DD
+                                : AppColors.white,
+                            child: imageUrl.trim().isEmpty
+                                ? null
+                                : _TemplateSlotImageViewport(
+                                    imageUrl: imageUrl,
+                                    scale: imageScale,
+                                    scaleX: imageScaleX,
+                                    scaleY: imageScaleY,
+                                    offsetX: imageOffsetX,
+                                    offsetY: imageOffsetY,
+                                    rotation: imageRotation,
+                                  ),
+                          ),
+                        ),
+                        CustomPaint(
+                          painter: _TemplateInnerScallopBorderPainter(
+                            color: classicWallV6InnerBorderColor,
+                            borderWidth: classicWallV6InnerBorderWidth,
+                            useClassicWallV6Style: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else if (isClassicStamp ||
                   usePerforatedScallop ||
                   useRetroPatchworkScallop)
                 _buildTemplateFrameClip(
@@ -2437,9 +2596,14 @@ class _TemplateSlotSurface extends StatelessWidget {
                   useScallopedClassicFrame: useScallopedClassicFrame,
                   usePerforatedScallopStyle: usePerforatedScallopStyle,
                   useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
+                  useClassicWallV5PerforationStyle:
+                      useClassicWallV5PerforationStyle,
+                  useClassicWallV6Style: useClassicWallV6Style,
                   child: ColoredBox(
                     color: isClassicStamp
-                        ? AppColors.colorF8F1DD
+                        ? (useClassicWallV5Style
+                              ? AppColors.white.withValues(alpha: 0.96)
+                              : AppColors.colorF8F1DD)
                         : useRetroPatchworkScallop
                         ? retroOuterColor
                         : perforatedOuterColor,
@@ -2452,6 +2616,9 @@ class _TemplateSlotSurface extends StatelessWidget {
                   useScallopedClassicFrame: useScallopedClassicFrame,
                   usePerforatedScallopStyle: usePerforatedScallopStyle,
                   useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
+                  useClassicWallV5PerforationStyle:
+                      useClassicWallV5PerforationStyle,
+                  useClassicWallV6Style: useClassicWallV6Style,
                   child: ColoredBox(
                     color: slotBackgroundColor,
                     child: imageUrl.trim().isEmpty
@@ -2561,11 +2728,31 @@ class _TemplateSlotSurface extends StatelessWidget {
                         usePerforatedScallopStyle: usePerforatedScallopStyle,
                         useRetroPatchworkScallopStyle:
                             useRetroPatchworkScallopStyle,
+                        useClassicWallV5PerforationStyle:
+                            useClassicWallV5PerforationStyle,
+                        useClassicWallV6Style: useClassicWallV6Style,
                         borderColor: borderColor,
                         borderWidth: borderWidth,
                       )
                     : null,
               ),
+              if (useClassicWallV6Style && !useClassicWallV6ScallopStyle)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Padding(
+                      padding: const EdgeInsets.all(0.6),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: classicWallV6OuterBorderColor,
+                            width: classicWallV6OuterBorderWidth,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               if (overlayAssetPath != null)
                 IgnorePointer(
                   child: Image.asset(
@@ -2615,13 +2802,18 @@ Widget _buildTemplateFrameClip({
   required bool useScallopedClassicFrame,
   required bool usePerforatedScallopStyle,
   required bool useRetroPatchworkScallopStyle,
+  required bool useClassicWallV5PerforationStyle,
+  required bool useClassicWallV6Style,
   required Widget child,
 }) {
   switch (frameShape) {
     case StampEditFrameShape.plainCircle:
       return ClipOval(child: child);
     case StampEditFrameShape.plainRect:
-      return ClipRRect(borderRadius: BorderRadius.circular(8), child: child);
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(useClassicWallV6Style ? 6 : 8),
+        child: child,
+      );
     case StampEditFrameShape.stampScallop:
     case StampEditFrameShape.stampCircle:
     case StampEditFrameShape.stampSquare:
@@ -2633,6 +2825,8 @@ Widget _buildTemplateFrameClip({
           useScallopedClassicFrame: useScallopedClassicFrame,
           usePerforatedScallopStyle: usePerforatedScallopStyle,
           useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
+          useClassicWallV5PerforationStyle: useClassicWallV5PerforationStyle,
+          useClassicWallV6Style: useClassicWallV6Style,
         ),
         child: child,
       );
@@ -2645,7 +2839,20 @@ Path _buildTemplateFramePath({
   required bool useScallopedClassicFrame,
   required bool usePerforatedScallopStyle,
   required bool useRetroPatchworkScallopStyle,
+  required bool useClassicWallV5PerforationStyle,
+  required bool useClassicWallV6Style,
 }) {
+  if (useClassicWallV6Style && frameShape == StampEditFrameShape.plainRect) {
+    return Path()
+      ..addRRect(RRect.fromRectAndRadius(rect, const Radius.circular(6)));
+  }
+  if (useClassicWallV6Style && frameShape == StampEditFrameShape.stampScallop) {
+    return _buildClassicWallV6ScallopPath(rect);
+  }
+  if (useClassicWallV5PerforationStyle &&
+      frameShape == StampEditFrameShape.stampClassic) {
+    return _buildClassicWallV5PerforationPath(rect);
+  }
   if (useRetroPatchworkScallopStyle &&
       frameShape == StampEditFrameShape.stampScallop) {
     return _buildRetroPatchworkScallopPath(rect);
@@ -2662,6 +2869,65 @@ Path _buildTemplateFramePath({
     );
   }
   return buildTemplateFramePath(frameShape: frameShape, rect: rect);
+}
+
+Path _buildClassicWallV6ScallopPath(Rect rect) {
+  if (rect.width <= 0 || rect.height <= 0) {
+    return Path()..addRect(rect);
+  }
+
+  final double minEdge = math.min(rect.width, rect.height);
+  final double notchRadius = (minEdge * 0.043).clamp(2.4, 4.8).toDouble();
+  final int topCount = math.max(
+    8,
+    math.max(
+      (rect.width / 12).round(),
+      (rect.width / (notchRadius * 2.6)).round(),
+    ),
+  );
+  final int sideCount = math.max(
+    10,
+    math.max(
+      (rect.height / 12).round(),
+      (rect.height / (notchRadius * 2.55)).round(),
+    ),
+  );
+
+  final Path base = Path()..addRect(rect);
+  final Path notches = Path();
+  final double topStep = rect.width / (topCount + 1);
+  final double sideStep = rect.height / (sideCount + 1);
+
+  for (int index = 1; index <= topCount; index += 1) {
+    final double x = rect.left + (topStep * index);
+    notches.addOval(
+      Rect.fromCircle(center: Offset(x, rect.top), radius: notchRadius),
+    );
+    notches.addOval(
+      Rect.fromCircle(center: Offset(x, rect.bottom), radius: notchRadius),
+    );
+  }
+
+  for (int index = 1; index <= sideCount; index += 1) {
+    final double y = rect.top + (sideStep * index);
+    notches.addOval(
+      Rect.fromCircle(center: Offset(rect.left, y), radius: notchRadius),
+    );
+    notches.addOval(
+      Rect.fromCircle(center: Offset(rect.right, y), radius: notchRadius),
+    );
+  }
+
+  final Path scallopedPath = Path.combine(
+    PathOperation.difference,
+    base,
+    notches,
+  );
+  final double cornerRadius = (notchRadius * 0.6).clamp(1.2, 3.2).toDouble();
+  final Path cornerMask = Path()
+    ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(cornerRadius)));
+
+  return Path.combine(PathOperation.intersect, scallopedPath, cornerMask);
 }
 
 Path _buildDensePerforatedScallopPath(Rect rect) {
@@ -2722,6 +2988,58 @@ Path _buildDensePerforatedScallopPath(Rect rect) {
   final Path cornerMask = Path()
     ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(cornerRadius)));
   return Path.combine(PathOperation.intersect, perforatedPath, cornerMask);
+}
+
+Path _buildClassicWallV5PerforationPath(Rect rect) {
+  if (rect.width <= 0 || rect.height <= 0) {
+    return Path()..addRect(rect);
+  }
+
+  final double minEdge = math.min(rect.width, rect.height);
+  final double notchRadius = (minEdge * 0.044).clamp(2.1, 3.7).toDouble();
+  final double cornerRadius = (minEdge * 0.014).clamp(0.8, 2.2).toDouble();
+  final int topCount = math.max(
+    8,
+    math.max(
+      (rect.width / 10).round(),
+      (rect.width / (notchRadius * 2.05)).round(),
+    ),
+  );
+  final int sideCount = math.max(
+    8,
+    math.max(
+      (rect.height / 10).round(),
+      (rect.height / (notchRadius * 2.05)).round(),
+    ),
+  );
+
+  final Path base = Path()
+    ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(cornerRadius)));
+  final Path notches = Path();
+  final double topStep = rect.width / (topCount + 1);
+  final double sideStep = rect.height / (sideCount + 1);
+
+  for (int index = 1; index <= topCount; index += 1) {
+    final double x = rect.left + (topStep * index);
+    notches.addOval(
+      Rect.fromCircle(center: Offset(x, rect.top), radius: notchRadius),
+    );
+    notches.addOval(
+      Rect.fromCircle(center: Offset(x, rect.bottom), radius: notchRadius),
+    );
+  }
+
+  for (int index = 1; index <= sideCount; index += 1) {
+    final double y = rect.top + (sideStep * index);
+    notches.addOval(
+      Rect.fromCircle(center: Offset(rect.left, y), radius: notchRadius),
+    );
+    notches.addOval(
+      Rect.fromCircle(center: Offset(rect.right, y), radius: notchRadius),
+    );
+  }
+
+  return Path.combine(PathOperation.difference, base, notches);
 }
 
 Path _buildRetroPatchworkScallopPath(Rect rect) {
@@ -2826,6 +3144,8 @@ class _TemplateSlotFrameClipper extends CustomClipper<Path> {
     required this.useScallopedClassicFrame,
     required this.usePerforatedScallopStyle,
     required this.useRetroPatchworkScallopStyle,
+    required this.useClassicWallV5PerforationStyle,
+    required this.useClassicWallV6Style,
   });
 
   final StampEditFrameShape frameShape;
@@ -2833,6 +3153,8 @@ class _TemplateSlotFrameClipper extends CustomClipper<Path> {
   final bool useScallopedClassicFrame;
   final bool usePerforatedScallopStyle;
   final bool useRetroPatchworkScallopStyle;
+  final bool useClassicWallV5PerforationStyle;
+  final bool useClassicWallV6Style;
 
   @override
   Path getClip(Size size) {
@@ -2842,6 +3164,8 @@ class _TemplateSlotFrameClipper extends CustomClipper<Path> {
       useScallopedClassicFrame: useScallopedClassicFrame,
       usePerforatedScallopStyle: usePerforatedScallopStyle,
       useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
+      useClassicWallV5PerforationStyle: useClassicWallV5PerforationStyle,
+      useClassicWallV6Style: useClassicWallV6Style,
     );
   }
 
@@ -2852,7 +3176,10 @@ class _TemplateSlotFrameClipper extends CustomClipper<Path> {
         oldClipper.useScallopedClassicFrame != useScallopedClassicFrame ||
         oldClipper.usePerforatedScallopStyle != usePerforatedScallopStyle ||
         oldClipper.useRetroPatchworkScallopStyle !=
-            useRetroPatchworkScallopStyle;
+            useRetroPatchworkScallopStyle ||
+        oldClipper.useClassicWallV5PerforationStyle !=
+            useClassicWallV5PerforationStyle ||
+        oldClipper.useClassicWallV6Style != useClassicWallV6Style;
   }
 }
 
@@ -2862,6 +3189,8 @@ class _TemplateSlotBorderPainter extends CustomPainter {
     required this.useScallopedClassicFrame,
     required this.usePerforatedScallopStyle,
     required this.useRetroPatchworkScallopStyle,
+    required this.useClassicWallV5PerforationStyle,
+    required this.useClassicWallV6Style,
     required this.borderColor,
     required this.borderWidth,
   });
@@ -2870,6 +3199,8 @@ class _TemplateSlotBorderPainter extends CustomPainter {
   final bool useScallopedClassicFrame;
   final bool usePerforatedScallopStyle;
   final bool useRetroPatchworkScallopStyle;
+  final bool useClassicWallV5PerforationStyle;
+  final bool useClassicWallV6Style;
   final Color borderColor;
   final double borderWidth;
 
@@ -2882,16 +3213,23 @@ class _TemplateSlotBorderPainter extends CustomPainter {
       useScallopedClassicFrame: useScallopedClassicFrame,
       usePerforatedScallopStyle: usePerforatedScallopStyle,
       useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
+      useClassicWallV5PerforationStyle: useClassicWallV5PerforationStyle,
+      useClassicWallV6Style: useClassicWallV6Style,
     );
     final bool isClassicStamp = frameShape == StampEditFrameShape.stampClassic;
     final bool isPerforatedScallop =
         usePerforatedScallopStyle &&
         frameShape == StampEditFrameShape.stampScallop;
+    final bool isClassicWallV5 =
+        useClassicWallV5PerforationStyle &&
+        frameShape == StampEditFrameShape.stampClassic;
     canvas.drawPath(
       borderPath,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = isClassicStamp
+        ..strokeWidth = isClassicWallV5
+            ? math.max(0.95, borderWidth + 0.1)
+            : isClassicStamp
             ? math.max(1.8, borderWidth + 0.5)
             : isPerforatedScallop
             ? math.max(0.9, borderWidth - 0.1)
@@ -2907,8 +3245,52 @@ class _TemplateSlotBorderPainter extends CustomPainter {
         oldDelegate.usePerforatedScallopStyle != usePerforatedScallopStyle ||
         oldDelegate.useRetroPatchworkScallopStyle !=
             useRetroPatchworkScallopStyle ||
+        oldDelegate.useClassicWallV5PerforationStyle !=
+            useClassicWallV5PerforationStyle ||
+        oldDelegate.useClassicWallV6Style != useClassicWallV6Style ||
         oldDelegate.borderColor != borderColor ||
         oldDelegate.borderWidth != borderWidth;
+  }
+}
+
+class _TemplateInnerScallopBorderPainter extends CustomPainter {
+  const _TemplateInnerScallopBorderPainter({
+    required this.color,
+    required this.borderWidth,
+    required this.useClassicWallV6Style,
+  });
+
+  final Color color;
+  final double borderWidth;
+  final bool useClassicWallV6Style;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Rect borderRect = (Offset.zero & size).deflate(borderWidth / 2);
+    if (borderRect.width <= 0 || borderRect.height <= 0) return;
+    final Path path = _buildTemplateFramePath(
+      frameShape: StampEditFrameShape.stampScallop,
+      rect: borderRect,
+      useScallopedClassicFrame: false,
+      usePerforatedScallopStyle: false,
+      useRetroPatchworkScallopStyle: false,
+      useClassicWallV5PerforationStyle: false,
+      useClassicWallV6Style: useClassicWallV6Style,
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = borderWidth
+        ..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _TemplateInnerScallopBorderPainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.borderWidth != borderWidth ||
+        oldDelegate.useClassicWallV6Style != useClassicWallV6Style;
   }
 }
 

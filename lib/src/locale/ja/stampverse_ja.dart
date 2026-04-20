@@ -77,11 +77,9 @@ final Map<String, String> stampverseJa = <String, String>{
   StampverseLocaleKey.creativeTemplateCategorySectionTitle: 'テンプレートタイプを選択',
   StampverseLocaleKey.creativeTemplateFeaturedSectionTitle: '注目',
   StampverseLocaleKey.creativeTemplateAllSectionTitle: 'すべてのテンプレート',
-  StampverseLocaleKey.creativeTemplateCategoryClassicStampWall:
-      'Classic Stamp Wall',
-  StampverseLocaleKey.creativeTemplateCategoryBotanicalPostage:
-      'Botanical Postage',
-  StampverseLocaleKey.creativeTemplateCategoryCuteAnime: 'Cute Anime',
+  StampverseLocaleKey.creativeTemplateCategoryClassicStampWall: 'クラシック切手ウォール',
+  StampverseLocaleKey.creativeTemplateCategoryBotanicalPostage: 'ボタニカル切手',
+  StampverseLocaleKey.creativeTemplateCategoryCuteAnime: 'かわいいアニメ',
   StampverseLocaleKey.creativeTemplateMoodClassic: 'クラシック',
   StampverseLocaleKey.creativeTemplateMoodBotanical: 'ボタニカル',
   StampverseLocaleKey.creativeTemplateMoodCuteAnime: 'アニメ',

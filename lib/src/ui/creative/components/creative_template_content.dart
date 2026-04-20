@@ -41,10 +41,7 @@ class _CreativeTemplateContentState extends State<CreativeTemplateContent> {
           return _CategorizedTemplate(
             index: entry.key,
             template: entry.value,
-            category: _resolveTemplateCategory(
-              index: entry.key,
-              template: entry.value,
-            ),
+            category: _resolveTemplateCategory(template: entry.value),
           );
         })
         .toList(growable: false);
@@ -835,28 +832,16 @@ extension _CreativeTemplateCategoryX on _CreativeTemplateCategory {
 }
 
 _CreativeTemplateCategory _resolveTemplateCategory({
-  required int index,
   required StampEditTemplate template,
 }) {
-  switch (index) {
-    case 0:
-      return _CreativeTemplateCategory.classicStampWall;
-    case 1:
-      return _CreativeTemplateCategory.botanicalPostage;
-    case 2:
-      return _CreativeTemplateCategory.cuteAnime;
-    case 3:
-      return _CreativeTemplateCategory.botanicalPostage;
-    default:
-      final String templateId = template.id.toLowerCase();
-      if (templateId.contains('classic')) {
-        return _CreativeTemplateCategory.classicStampWall;
-      }
-      if (templateId.contains('botanical') || templateId.contains('night')) {
-        return _CreativeTemplateCategory.botanicalPostage;
-      }
-      return _CreativeTemplateCategory.cuteAnime;
+  final String templateId = template.id.toLowerCase();
+  if (templateId.contains('classic')) {
+    return _CreativeTemplateCategory.classicStampWall;
   }
+  if (templateId.contains('botanical') || templateId.contains('night')) {
+    return _CreativeTemplateCategory.botanicalPostage;
+  }
+  return _CreativeTemplateCategory.cuteAnime;
 }
 
 class _TemplateCardTone {

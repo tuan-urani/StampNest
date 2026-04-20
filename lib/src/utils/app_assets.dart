@@ -25,10 +25,14 @@ class AppAssets {
       'assets/template_3_showcase.jpg';
   static const String creativeTemplateShowcaseTemplate4Png =
       'assets/template_4.png';
+  static const String creativeTemplateShowcaseTemplate6Png =
+      'assets/template_6.png';
   static const String creativeTemplateBackgroundTemplate2Png =
       'assets/bg_template_2.png';
   static const String creativeTemplateBackgroundTemplate3Png =
       'assets/bg_template_3.png';
   static const String creativeTemplateBackgroundTemplate4Png =
       'assets/bg_template_4.png';
+  static const String creativeTemplateBackgroundTemplate6Png =
+      'assets/bg_template_6.png';
 }

@@ -104,10 +104,13 @@ flutter:
     - assets/template_3_showcase.jpg
     - assets/template_4.png
     - assets/template_6.png
+    - assets/template_7.png
     - assets/bg_template_2.png
     - assets/bg_template_3.png
     - assets/bg_template_4.png
     - assets/bg_template_6.png
+    - assets/bg_template_7.png
+    - assets/bg_splash.png
     - assets/images/creative/template_stamp_frame_overlay_clean.png
     - web/privacy-policy.html
     - web/terms-of-use.html

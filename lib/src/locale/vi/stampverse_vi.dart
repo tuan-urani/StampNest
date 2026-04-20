@@ -91,7 +91,7 @@ final Map<String, String> stampverseVi = <String, String>{
   StampverseLocaleKey.creativeTemplateAllSectionTitle: 'Tất cả template',
   StampverseLocaleKey.creativeTemplateCategoryClassicStampWall: 'Tem cổ điển',
   StampverseLocaleKey.creativeTemplateCategoryBotanicalPostage: 'Tem thực vật',
-  StampverseLocaleKey.creativeTemplateCategoryCuteAnime: 'Anime dễ thương',
+  StampverseLocaleKey.creativeTemplateCategoryCuteAnime: 'Tem hoạt hình',
   StampverseLocaleKey.creativeTemplateMoodClassic: 'cổ điển',
   StampverseLocaleKey.creativeTemplateMoodBotanical: 'thực vật',
   StampverseLocaleKey.creativeTemplateMoodCuteAnime: 'dễ thương',
@@ -140,6 +140,10 @@ final Map<String, String> stampverseVi = <String, String>{
   StampverseLocaleKey.editTemplateAdjustReset: 'Đặt lại',
   StampverseLocaleKey.editTemplateAdjustHint:
       'Kéo, chụm hoặc xoay để căn ảnh trong khung.',
+  StampverseLocaleKey.editTemplateAdjustTone: 'Chỉnh màu',
+  StampverseLocaleKey.editTemplateAdjustBrightness: 'Độ sáng',
+  StampverseLocaleKey.editTemplateAdjustContrast: 'Tương phản',
+  StampverseLocaleKey.editTemplateAdjustSaturation: 'Độ bão hòa',
   StampverseLocaleKey.cameraTitle: 'Tạo Stamp',
   StampverseLocaleKey.cameraCaptureTitle: 'Chụp ảnh',
   StampverseLocaleKey.cameraOpenCamera: 'Mở Camera',
@@ -190,4 +194,19 @@ final Map<String, String> stampverseVi = <String, String>{
       'Đã thêm stamp vào bộ sưu tập.',
   StampverseLocaleKey.detailsCollectionAssignFailed:
       'Không thể thêm vào bộ sưu tập.',
+  StampverseLocaleKey.paywallTitle: 'Stamp Premium',
+  StampverseLocaleKey.paywallSubtitle:
+      'Tận hưởng quyền truy cập đầy đủ với Stamp Premium',
+  StampverseLocaleKey.paywallBenefitAllFeatures:
+      'Mở khóa toàn bộ tính năng và mẫu',
+  StampverseLocaleKey.paywallBenefitUnlimitedStamps:
+      'Lưu không giới hạn ảnh tem',
+  StampverseLocaleKey.paywallPlanMonthly: 'Hàng tháng',
+  StampverseLocaleKey.paywallPlanMonthlyPrice: '99.000 đ mỗi tháng',
+  StampverseLocaleKey.paywallPlanYearly: 'Hàng năm',
+  StampverseLocaleKey.paywallPlanYearlyPrice: '499.000 đ mỗi năm',
+  StampverseLocaleKey.paywallPlanYearlyBadge: 'TIẾT KIỆM 90%',
+  StampverseLocaleKey.paywallCtaStartTrial: 'Nâng cấp ngay',
+  StampverseLocaleKey.paywallUpgradeSuccess:
+      'Nâng cấp thành công. Bạn đã mở khóa Premium.',
 };

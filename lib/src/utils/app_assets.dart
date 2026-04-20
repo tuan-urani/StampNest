@@ -27,6 +27,8 @@ class AppAssets {
       'assets/template_4.png';
   static const String creativeTemplateShowcaseTemplate6Png =
       'assets/template_6.png';
+  static const String creativeTemplateShowcaseTemplate7Png =
+      'assets/template_7.png';
   static const String creativeTemplateBackgroundTemplate2Png =
       'assets/bg_template_2.png';
   static const String creativeTemplateBackgroundTemplate3Png =
@@ -35,4 +37,7 @@ class AppAssets {
       'assets/bg_template_4.png';
   static const String creativeTemplateBackgroundTemplate6Png =
       'assets/bg_template_6.png';
+  static const String creativeTemplateBackgroundTemplate7Png =
+      'assets/bg_template_7.png';
+  static const String splashBackgroundPng = 'assets/bg_splash.png';
 }

@@ -15,6 +15,7 @@ import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_empty_
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_stamp.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_template_frame_path.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_text_styles.dart';
+import 'package:stamp_camera/src/ui/stampverse_core/helpers/stampverse_image_adjustments.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/helpers/stampverse_layout.dart';
 import 'package:stamp_camera/src/utils/app_colors.dart';
 
@@ -413,6 +414,9 @@ class _CreativeTemplateSlotPreview extends StatelessWidget {
                 offsetX: layer.contentOffsetX,
                 offsetY: layer.contentOffsetY,
                 rotation: layer.contentRotation,
+                brightness: layer.contentBrightness,
+                contrast: layer.contentContrast,
+                saturation: layer.contentSaturation,
               )
             : const SizedBox.shrink();
 
@@ -545,6 +549,9 @@ class _CreativeTemplateSlotImageViewport extends StatelessWidget {
     required this.offsetX,
     required this.offsetY,
     required this.rotation,
+    required this.brightness,
+    required this.contrast,
+    required this.saturation,
   });
 
   final String imageUrl;
@@ -554,6 +561,9 @@ class _CreativeTemplateSlotImageViewport extends StatelessWidget {
   final double offsetX;
   final double offsetY;
   final double rotation;
+  final double brightness;
+  final double contrast;
+  final double saturation;
 
   @override
   Widget build(BuildContext context) {
@@ -573,6 +583,38 @@ class _CreativeTemplateSlotImageViewport extends StatelessWidget {
               .clamp(0.2, 8.0)
               .toDouble();
           final double safeRotation = rotation.isFinite ? rotation : 0;
+          final double safeBrightness =
+              StampverseImageAdjustments.normalizeBrightness(brightness);
+          final double safeContrast =
+              StampverseImageAdjustments.normalizeContrast(contrast);
+          final double safeSaturation =
+              StampverseImageAdjustments.normalizeSaturation(saturation);
+          Widget image = _CreativeTemplateSlotImage(imageUrl: imageUrl);
+
+          if (safeSaturation != 1) {
+            image = ColorFiltered(
+              colorFilter: StampverseImageAdjustments.saturationFilter(
+                safeSaturation,
+              ),
+              child: image,
+            );
+          }
+          if (safeContrast != 1) {
+            image = ColorFiltered(
+              colorFilter: StampverseImageAdjustments.contrastFilter(
+                safeContrast,
+              ),
+              child: image,
+            );
+          }
+          if (safeBrightness != 0) {
+            image = ColorFiltered(
+              colorFilter: StampverseImageAdjustments.brightnessFilter(
+                safeBrightness,
+              ),
+              child: image,
+            );
+          }
 
           return Transform.translate(
             offset: panOffset,
@@ -585,9 +627,7 @@ class _CreativeTemplateSlotImageViewport extends StatelessWidget {
                   effectiveScaleY,
                   1,
                 ),
-                child: SizedBox.expand(
-                  child: _CreativeTemplateSlotImage(imageUrl: imageUrl),
-                ),
+                child: SizedBox.expand(child: image),
               ),
             ),
           );

@@ -38,6 +38,9 @@ StampEditBoard _buildTemplateBoard({
   bool isLocked = false,
   double? templateSourceWidth,
   double? templateSourceHeight,
+  double layerWidthRatio = 0.4,
+  double layerHeightRatio = 0.28,
+  StampEditFrameShape frameShape = StampEditFrameShape.plainRect,
 }) {
   return StampEditBoard(
     id: 'board_template',
@@ -56,10 +59,10 @@ StampEditBoard _buildTemplateBoard({
         centerX: 0.5,
         centerY: 0.5,
         layerType: StampEditLayerType.templateSlot,
-        widthRatio: 0.4,
-        heightRatio: 0.28,
+        widthRatio: layerWidthRatio,
+        heightRatio: layerHeightRatio,
         isLocked: isLocked,
-        frameShape: StampEditFrameShape.plainRect,
+        frameShape: frameShape,
       ),
     ],
   );
@@ -591,6 +594,78 @@ void main() {
     expect(updatedLayer.contentScale, 1);
     expect(updatedLayer.contentScaleX, greaterThan(1));
     expect(updatedLayer.contentScaleY, greaterThan(1));
+  });
+
+  testWidgets('pinch in adjust modal zooms out slim template slot', (
+    WidgetTester tester,
+  ) async {
+    StampEditBoard? latestSaved;
+
+    await tester.pumpWidget(
+      GetMaterialApp(
+        translations: _StudioTestTranslations(),
+        locale: const Locale('en', 'US'),
+        home: Scaffold(
+          body: SizedBox(
+            width: 390,
+            height: 780,
+            child: StampverseEditStudioView(
+              boards: <StampEditBoard>[
+                _buildTemplateBoard(
+                  layerWidthRatio: 0.72,
+                  layerHeightRatio: 0.12,
+                  frameShape: StampEditFrameShape.stampScallop,
+                ),
+              ],
+              activeBoardId: 'board_template',
+              stamps: const <StampDataModel>[],
+              onSaveBoard: (StampEditBoard board) {
+                latestSaved = board;
+              },
+              showBoardHeader: false,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('template-layer-layer_template_1')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.crop_free_rounded));
+    await tester.pumpAndSettle();
+
+    final Finder gestureSurface = find.byKey(
+      const ValueKey<String>('template-adjust-gesture-surface'),
+    );
+    final Offset center = tester.getCenter(gestureSurface);
+    final TestGesture firstFinger = await tester.startGesture(
+      center + const Offset(-70, 0),
+      pointer: 1,
+    );
+    final TestGesture secondFinger = await tester.startGesture(
+      center + const Offset(70, 0),
+      pointer: 2,
+    );
+    await tester.pump();
+    await firstFinger.moveTo(center + const Offset(-22, 0));
+    await secondFinger.moveTo(center + const Offset(22, 0));
+    await tester.pumpAndSettle();
+    await firstFinger.up();
+    await secondFinger.up();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(latestSaved, isNotNull);
+    final StampEditLayer updatedLayer = latestSaved!.layers.firstWhere(
+      (StampEditLayer layer) => layer.id == 'layer_template_1',
+    );
+    expect(updatedLayer.contentScale, lessThan(1));
   });
 
   testWidgets('template import from stamp library uses sourceImageUrl', (

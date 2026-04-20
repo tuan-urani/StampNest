@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:stamp_camera/src/core/model/stamp_edit_frame_shape.dart';
 import 'package:stamp_camera/src/core/model/stamp_edit_template_model.dart';
 import 'package:stamp_camera/src/locale/locale_key.dart';
+import 'package:stamp_camera/src/ui/widgets/app_premium_paywall.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_template_frame_path.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_text_styles.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/helpers/stampverse_layout.dart';
@@ -32,6 +33,40 @@ class CreativeTemplateContent extends StatefulWidget {
 class _CreativeTemplateContentState extends State<CreativeTemplateContent> {
   _CreativeTemplateCategory _selectedCategory =
       _CreativeTemplateCategory.classicStampWall;
+  bool _isPremiumUnlocked = false;
+
+  bool _isPremiumCategory(_CreativeTemplateCategory category) {
+    return category == _CreativeTemplateCategory.botanicalPostage ||
+        category == _CreativeTemplateCategory.cuteAnime;
+  }
+
+  Future<void> _requestPremiumAccess({required VoidCallback onGranted}) async {
+    if (_isPremiumUnlocked) {
+      onGranted();
+      return;
+    }
+
+    final AppPremiumPaywallResult? result = await showAppPremiumPaywall(
+      context,
+    );
+    if (!mounted) return;
+    if (result != AppPremiumPaywallResult.upgraded) return;
+
+    setState(() {
+      _isPremiumUnlocked = true;
+    });
+    _showPremiumUnlockedToast();
+    onGranted();
+  }
+
+  void _showPremiumUnlockedToast() {
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(LocaleKey.stampversePaywallUpgradeSuccess.tr)),
+      );
+  }
 
   List<_CategorizedTemplate> _buildCategorizedTemplates() {
     return widget.templates
@@ -109,6 +144,17 @@ class _CreativeTemplateContentState extends State<CreativeTemplateContent> {
               enableAssetFrameOverlay: widget.enableAssetFrameOverlay,
               isSelected: category == _selectedCategory,
               onTap: () {
+                if (_isPremiumCategory(category)) {
+                  _requestPremiumAccess(
+                    onGranted: () {
+                      if (_selectedCategory == category) return;
+                      setState(() {
+                        _selectedCategory = category;
+                      });
+                    },
+                  );
+                  return;
+                }
                 if (_selectedCategory == category) return;
                 setState(() {
                   _selectedCategory = category;
@@ -131,7 +177,16 @@ class _CreativeTemplateContentState extends State<CreativeTemplateContent> {
             ),
             item: featuredTemplate,
             enableAssetFrameOverlay: widget.enableAssetFrameOverlay,
-            onTap: () => widget.onSelectTemplate(featuredTemplate.template),
+            onTap: () {
+              if (_isPremiumCategory(featuredTemplate.category)) {
+                _requestPremiumAccess(
+                  onGranted: () =>
+                      widget.onSelectTemplate(featuredTemplate.template),
+                );
+                return;
+              }
+              widget.onSelectTemplate(featuredTemplate.template);
+            },
           )
         else
           const SizedBox.shrink(),
@@ -172,7 +227,15 @@ class _CreativeTemplateContentState extends State<CreativeTemplateContent> {
                 ),
                 item: item,
                 enableAssetFrameOverlay: widget.enableAssetFrameOverlay,
-                onTap: () => widget.onSelectTemplate(item.template),
+                onTap: () {
+                  if (_isPremiumCategory(item.category)) {
+                    _requestPremiumAccess(
+                      onGranted: () => widget.onSelectTemplate(item.template),
+                    );
+                    return;
+                  }
+                  widget.onSelectTemplate(item.template);
+                },
               );
             },
           )
@@ -835,6 +898,9 @@ _CreativeTemplateCategory _resolveTemplateCategory({
   required StampEditTemplate template,
 }) {
   final String templateId = template.id.toLowerCase();
+  if (templateId == 'template_classic_stamp_wall_v7') {
+    return _CreativeTemplateCategory.cuteAnime;
+  }
   if (templateId.contains('classic')) {
     return _CreativeTemplateCategory.classicStampWall;
   }

@@ -196,6 +196,14 @@ class StampverseLocaleKey {
       'stampverse_edit_template_adjust_reset';
   static const String editTemplateAdjustHint =
       'stampverse_edit_template_adjust_hint';
+  static const String editTemplateAdjustTone =
+      'stampverse_edit_template_adjust_tone';
+  static const String editTemplateAdjustBrightness =
+      'stampverse_edit_template_adjust_brightness';
+  static const String editTemplateAdjustContrast =
+      'stampverse_edit_template_adjust_contrast';
+  static const String editTemplateAdjustSaturation =
+      'stampverse_edit_template_adjust_saturation';
 
   static const String cameraTitle = 'stampverse_camera_title';
   static const String cameraCaptureTitle = 'stampverse_camera_capture_title';
@@ -261,4 +269,23 @@ class StampverseLocaleKey {
       'stampverse_details_collection_assign_success';
   static const String detailsCollectionAssignFailed =
       'stampverse_details_collection_assign_failed';
+
+  static const String paywallTitle = 'stampverse_paywall_title';
+  static const String paywallSubtitle = 'stampverse_paywall_subtitle';
+  static const String paywallBenefitAllFeatures =
+      'stampverse_paywall_benefit_all_features';
+  static const String paywallBenefitUnlimitedStamps =
+      'stampverse_paywall_benefit_unlimited_stamps';
+  static const String paywallPlanMonthly = 'stampverse_paywall_plan_monthly';
+  static const String paywallPlanMonthlyPrice =
+      'stampverse_paywall_plan_monthly_price';
+  static const String paywallPlanYearly = 'stampverse_paywall_plan_yearly';
+  static const String paywallPlanYearlyPrice =
+      'stampverse_paywall_plan_yearly_price';
+  static const String paywallPlanYearlyBadge =
+      'stampverse_paywall_plan_yearly_badge';
+  static const String paywallCtaStartTrial =
+      'stampverse_paywall_cta_start_trial';
+  static const String paywallUpgradeSuccess =
+      'stampverse_paywall_upgrade_success';
 }

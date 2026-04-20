@@ -14,8 +14,11 @@ class AppSplashState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: AppColors.primaryBackgroundGradient(),
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage(AppAssets.splashBackgroundPng),
+          fit: BoxFit.cover,
+        ),
       ),
       child: SafeArea(
         child: Center(

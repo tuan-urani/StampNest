@@ -20,6 +20,7 @@ import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_empty_
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_stamp.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_template_frame_path.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_text_styles.dart';
+import 'package:stamp_camera/src/ui/stampverse_core/helpers/stampverse_image_adjustments.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/helpers/stampverse_layout.dart';
 import 'package:stamp_camera/src/utils/app_assets.dart';
 import 'package:stamp_camera/src/utils/app_colors.dart';
@@ -46,6 +47,9 @@ class _TemplateImageAdjustResult {
     required this.offsetX,
     required this.offsetY,
     required this.rotation,
+    required this.brightness,
+    required this.contrast,
+    required this.saturation,
   });
 
   final double scale;
@@ -54,6 +58,9 @@ class _TemplateImageAdjustResult {
   final double offsetX;
   final double offsetY;
   final double rotation;
+  final double brightness;
+  final double contrast;
+  final double saturation;
 }
 
 class StampverseEditStudioController {
@@ -276,15 +283,23 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
     return templateId == 'template_classic_stamp_wall_v6';
   }
 
+  bool _useClassicWallV7StyleForTemplate(StampEditBoard board) {
+    if (!_isTemplateBoard(board)) return false;
+    final String templateId = (board.templateId ?? '').trim().toLowerCase();
+    return templateId == 'template_classic_stamp_wall_v7';
+  }
+
   double _resolveTemplateCanvasCornerRadius(StampEditBoard board) {
-    if (_useClassicWallV6StyleForTemplate(board)) {
+    if (_useClassicWallV6StyleForTemplate(board) ||
+        _useClassicWallV7StyleForTemplate(board)) {
       return 0;
     }
     return 18;
   }
 
   Color _resolveTemplateCanvasBorderColor(StampEditBoard board) {
-    if (_useClassicWallV6StyleForTemplate(board)) {
+    if (_useClassicWallV6StyleForTemplate(board) ||
+        _useClassicWallV7StyleForTemplate(board)) {
       return AppColors.transparent;
     }
     return AppColors.stampverseBorderSoft;
@@ -791,6 +806,9 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
           contentOffsetX: 0,
           contentOffsetY: 0,
           contentRotation: 0,
+          contentBrightness: 0,
+          contentContrast: 1,
+          contentSaturation: 1,
         );
       },
     );
@@ -1043,6 +1061,9 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                 initialOffsetX: selected.contentOffsetX,
                 initialOffsetY: selected.contentOffsetY,
                 initialRotation: selected.contentRotation,
+                initialBrightness: selected.contentBrightness,
+                initialContrast: selected.contentContrast,
+                initialSaturation: selected.contentSaturation,
                 enableAssetFrameOverlay: widget.enableAssetFrameOverlay,
                 useLightClassicInnerBorder: _useLightClassicInnerBorder(board),
                 useScallopedClassicFrame: _useScallopedClassicFrameForTemplate(
@@ -1055,6 +1076,7 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                 useClassicWallV5PerforationStyle:
                     _useClassicWallV5PerforationStyleForTemplate(board),
                 useClassicWallV6Style: _useClassicWallV6StyleForTemplate(board),
+                useClassicWallV7Style: _useClassicWallV7StyleForTemplate(board),
               ),
             );
           },
@@ -1073,6 +1095,9 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
           contentOffsetX: result.offsetX,
           contentOffsetY: result.offsetY,
           contentRotation: result.rotation,
+          contentBrightness: result.brightness,
+          contentContrast: result.contrast,
+          contentSaturation: result.saturation,
         );
       },
     );
@@ -1382,6 +1407,7 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
     required bool useRetroPatchworkScallopStyle,
     required bool useClassicWallV5PerforationStyle,
     required bool useClassicWallV6Style,
+    required bool useClassicWallV7Style,
   }) {
     final double widthRatio = _templateWidthRatio(layer);
     final double heightRatio = _templateHeightRatio(layer);
@@ -1433,6 +1459,9 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                 imageOffsetX: layer.contentOffsetX,
                 imageOffsetY: layer.contentOffsetY,
                 imageRotation: layer.contentRotation,
+                imageBrightness: layer.contentBrightness,
+                imageContrast: layer.contentContrast,
+                imageSaturation: layer.contentSaturation,
                 useLightClassicInnerBorder: useLightClassicInnerBorder,
                 useScallopedClassicFrame: useScallopedClassicFrame,
                 usePerforatedScallopStyle: usePerforatedScallopStyle,
@@ -1440,6 +1469,7 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                 useClassicWallV5PerforationStyle:
                     useClassicWallV5PerforationStyle,
                 useClassicWallV6Style: useClassicWallV6Style,
+                useClassicWallV7Style: useClassicWallV7Style,
               ),
             ),
           ),
@@ -1478,6 +1508,7 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
     final bool useClassicWallV5PerforationStyle =
         _useClassicWallV5PerforationStyleForTemplate(board);
     final bool useClassicWallV6Style = _useClassicWallV6StyleForTemplate(board);
+    final bool useClassicWallV7Style = _useClassicWallV7StyleForTemplate(board);
     final double canvasCornerRadius = _resolveTemplateCanvasCornerRadius(board);
     final Color canvasBorderColor = _resolveTemplateCanvasBorderColor(board);
 
@@ -1630,6 +1661,8 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                                               useClassicWallV5PerforationStyle,
                                           useClassicWallV6Style:
                                               useClassicWallV6Style,
+                                          useClassicWallV7Style:
+                                              useClassicWallV7Style,
                                         );
                                       }
                                       return _buildFreeformLayer(
@@ -1732,6 +1765,9 @@ class _TemplateImageAdjustSheet extends StatefulWidget {
     required this.initialOffsetX,
     required this.initialOffsetY,
     required this.initialRotation,
+    required this.initialBrightness,
+    required this.initialContrast,
+    required this.initialSaturation,
     required this.enableAssetFrameOverlay,
     required this.useLightClassicInnerBorder,
     required this.useScallopedClassicFrame,
@@ -1739,6 +1775,7 @@ class _TemplateImageAdjustSheet extends StatefulWidget {
     required this.useRetroPatchworkScallopStyle,
     required this.useClassicWallV5PerforationStyle,
     required this.useClassicWallV6Style,
+    required this.useClassicWallV7Style,
   });
 
   final String imageUrl;
@@ -1750,6 +1787,9 @@ class _TemplateImageAdjustSheet extends StatefulWidget {
   final double initialOffsetX;
   final double initialOffsetY;
   final double initialRotation;
+  final double initialBrightness;
+  final double initialContrast;
+  final double initialSaturation;
   final bool enableAssetFrameOverlay;
   final bool useLightClassicInnerBorder;
   final bool useScallopedClassicFrame;
@@ -1757,6 +1797,7 @@ class _TemplateImageAdjustSheet extends StatefulWidget {
   final bool useRetroPatchworkScallopStyle;
   final bool useClassicWallV5PerforationStyle;
   final bool useClassicWallV6Style;
+  final bool useClassicWallV7Style;
 
   @override
   State<_TemplateImageAdjustSheet> createState() =>
@@ -1778,6 +1819,10 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
   late double _offsetX;
   late double _offsetY;
   late double _rotation;
+  late double _brightness;
+  late double _contrast;
+  late double _saturation;
+  bool _showToneControls = false;
 
   double _scaleAtStart = 1;
   double _offsetXAtStart = 0;
@@ -1787,6 +1832,7 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
   Size _frameSize = const Size(1, 1);
   _TemplateGuideEdge? _activeGuideEdge;
   _TemplateGuideCorner? _activeGuideCorner;
+  final Set<int> _activeAdjustPointers = <int>{};
 
   @override
   void initState() {
@@ -1797,6 +1843,16 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
     _offsetX = widget.initialOffsetX;
     _offsetY = widget.initialOffsetY;
     _rotation = widget.initialRotation;
+    _brightness = StampverseImageAdjustments.normalizeBrightness(
+      widget.initialBrightness,
+    );
+    _contrast = StampverseImageAdjustments.normalizeContrast(
+      widget.initialContrast,
+    );
+    _saturation = StampverseImageAdjustments.normalizeSaturation(
+      widget.initialSaturation,
+    );
+    _showToneControls = _brightness != 0 || _contrast != 1 || _saturation != 1;
   }
 
   void _onScaleStart(ScaleStartDetails details) {
@@ -1809,7 +1865,17 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
   }
 
   void _onScaleUpdate(ScaleUpdateDetails details) {
-    if (_activeGuideEdge != null || _activeGuideCorner != null) return;
+    if (_isMultiTouchAdjusting &&
+        (_activeGuideEdge != null || _activeGuideCorner != null)) {
+      setState(() {
+        _activeGuideEdge = null;
+        _activeGuideCorner = null;
+      });
+    }
+    if (!_isMultiTouchAdjusting &&
+        (_activeGuideEdge != null || _activeGuideCorner != null)) {
+      return;
+    }
     final double frameWidth = _frameSize.width <= 0 ? 1 : _frameSize.width;
     final double frameHeight = _frameSize.height <= 0 ? 1 : _frameSize.height;
     final Offset delta = details.focalPoint - _focalPointAtStart;
@@ -1916,6 +1982,9 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
       _offsetX = 0;
       _offsetY = 0;
       _rotation = 0;
+      _brightness = 0;
+      _contrast = 1;
+      _saturation = 1;
     });
   }
 
@@ -1962,22 +2031,27 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
   }
 
   void _onTopHandleDrag(Offset delta) {
+    if (_isMultiTouchAdjusting) return;
     _applyAxisScaleYDelta(-delta.dy * _kHandleScaleStep, anchorBottom: true);
   }
 
   void _onBottomHandleDrag(Offset delta) {
+    if (_isMultiTouchAdjusting) return;
     _applyAxisScaleYDelta(delta.dy * _kHandleScaleStep, anchorBottom: false);
   }
 
   void _onLeftHandleDrag(Offset delta) {
+    if (_isMultiTouchAdjusting) return;
     _applyAxisScaleXDelta(-delta.dx * _kHandleScaleStep, anchorRight: true);
   }
 
   void _onRightHandleDrag(Offset delta) {
+    if (_isMultiTouchAdjusting) return;
     _applyAxisScaleXDelta(delta.dx * _kHandleScaleStep, anchorRight: false);
   }
 
   void _onCornerHandleDrag(_TemplateGuideCorner corner, Offset delta) {
+    if (_isMultiTouchAdjusting) return;
     final double deltaX = switch (corner) {
       _TemplateGuideCorner.topLeft => -delta.dx,
       _TemplateGuideCorner.bottomLeft => -delta.dx,
@@ -2031,6 +2105,7 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
   }
 
   void _onEdgeHandleStateChanged(_TemplateGuideEdge? edge) {
+    if (edge != null && _isMultiTouchAdjusting) return;
     if (_activeGuideEdge == edge &&
         (edge == null || _activeGuideCorner == null)) {
       return;
@@ -2044,6 +2119,7 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
   }
 
   void _onCornerHandleStateChanged(_TemplateGuideCorner? corner) {
+    if (corner != null && _isMultiTouchAdjusting) return;
     if (_activeGuideCorner == corner &&
         (corner == null || _activeGuideEdge == null)) {
       return;
@@ -2065,6 +2141,87 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
         offsetX: _offsetX,
         offsetY: _offsetY,
         rotation: _rotation,
+        brightness: _brightness,
+        contrast: _contrast,
+        saturation: _saturation,
+      ),
+    );
+  }
+
+  void _toggleToneControls() {
+    setState(() {
+      _showToneControls = !_showToneControls;
+    });
+  }
+
+  void _onBrightnessChanged(double value) {
+    setState(() {
+      _brightness = StampverseImageAdjustments.normalizeBrightness(value);
+    });
+  }
+
+  void _onContrastChanged(double value) {
+    setState(() {
+      _contrast = StampverseImageAdjustments.normalizeContrast(value);
+    });
+  }
+
+  void _onSaturationChanged(double value) {
+    setState(() {
+      _saturation = StampverseImageAdjustments.normalizeSaturation(value);
+    });
+  }
+
+  void _onAdjustPointerDown(PointerDownEvent event) {
+    _activeAdjustPointers.add(event.pointer);
+    if (_activeAdjustPointers.length <= 1) return;
+    if (_activeGuideEdge == null && _activeGuideCorner == null) return;
+    setState(() {
+      _activeGuideEdge = null;
+      _activeGuideCorner = null;
+    });
+  }
+
+  void _onAdjustPointerEnd(PointerEvent event) {
+    _activeAdjustPointers.remove(event.pointer);
+  }
+
+  bool get _isMultiTouchAdjusting => _activeAdjustPointers.length > 1;
+
+  Widget _buildToneControls() {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.white.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.stampverseBorderSoft),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+        child: Column(
+          children: <Widget>[
+            _TemplateToneSlider(
+              label: LocaleKey.stampverseEditTemplateAdjustBrightness.tr,
+              value: _brightness,
+              min: StampverseImageAdjustments.minBrightness,
+              max: StampverseImageAdjustments.maxBrightness,
+              onChanged: _onBrightnessChanged,
+            ),
+            _TemplateToneSlider(
+              label: LocaleKey.stampverseEditTemplateAdjustContrast.tr,
+              value: _contrast,
+              min: StampverseImageAdjustments.minContrast,
+              max: StampverseImageAdjustments.maxContrast,
+              onChanged: _onContrastChanged,
+            ),
+            _TemplateToneSlider(
+              label: LocaleKey.stampverseEditTemplateAdjustSaturation.tr,
+              value: _saturation,
+              min: StampverseImageAdjustments.minSaturation,
+              max: StampverseImageAdjustments.maxSaturation,
+              onChanged: _onSaturationChanged,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -2102,15 +2259,30 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
                       ),
                     ),
                   ),
-                  TextButton(
-                    onPressed: _saveAdjustments,
-                    child: Text(
-                      LocaleKey.ok.tr,
-                      style: StampverseTextStyles.caption(
-                        color: AppColors.colorF586AA6,
-                        fontWeight: FontWeight.w700,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      IconButton(
+                        onPressed: _toggleToneControls,
+                        tooltip: LocaleKey.stampverseEditTemplateAdjustTone.tr,
+                        icon: Icon(
+                          _showToneControls
+                              ? Icons.tune_rounded
+                              : Icons.tune_outlined,
+                          color: AppColors.stampversePrimaryText,
+                        ),
                       ),
-                    ),
+                      TextButton(
+                        onPressed: _saveAdjustments,
+                        child: Text(
+                          LocaleKey.ok.tr,
+                          style: StampverseTextStyles.caption(
+                            color: AppColors.colorF586AA6,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -2144,86 +2316,109 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
                       child: SizedBox(
                         width: frameSize.width + (_kGuideOutsidePadding * 2),
                         height: frameSize.height + (_kGuideOutsidePadding * 2),
-                        child: GestureDetector(
+                        child: Listener(
                           behavior: HitTestBehavior.translucent,
-                          onScaleStart: _onScaleStart,
-                          onScaleUpdate: _onScaleUpdate,
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: <Widget>[
-                              Positioned(
-                                left: _kGuideOutsidePadding,
-                                top: _kGuideOutsidePadding,
-                                width: frameSize.width,
-                                height: frameSize.height,
-                                child: _TemplateSlotSurface(
+                          onPointerDown: _onAdjustPointerDown,
+                          onPointerUp: _onAdjustPointerEnd,
+                          onPointerCancel: _onAdjustPointerEnd,
+                          child: GestureDetector(
+                            key: const ValueKey<String>(
+                              'template-adjust-gesture-surface',
+                            ),
+                            behavior: HitTestBehavior.translucent,
+                            onScaleStart: _onScaleStart,
+                            onScaleUpdate: _onScaleUpdate,
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: <Widget>[
+                                Positioned(
+                                  left: _kGuideOutsidePadding,
+                                  top: _kGuideOutsidePadding,
                                   width: frameSize.width,
                                   height: frameSize.height,
-                                  imageUrl: widget.imageUrl,
-                                  showAddAction: false,
-                                  isSelected: true,
-                                  isLocked: false,
-                                  frameShape: widget.frameShape,
-                                  enableAssetFrameOverlay:
-                                      widget.enableAssetFrameOverlay,
-                                  imageScale: _scale,
-                                  imageScaleX: _scaleX,
-                                  imageScaleY: _scaleY,
-                                  imageOffsetX: _offsetX,
-                                  imageOffsetY: _offsetY,
-                                  imageRotation: _rotation,
-                                  showLockBadge: false,
-                                  useLightClassicInnerBorder:
-                                      widget.useLightClassicInnerBorder,
-                                  useScallopedClassicFrame:
-                                      widget.useScallopedClassicFrame,
-                                  usePerforatedScallopStyle:
-                                      widget.usePerforatedScallopStyle,
-                                  useRetroPatchworkScallopStyle:
-                                      widget.useRetroPatchworkScallopStyle,
-                                  useClassicWallV5PerforationStyle:
-                                      widget.useClassicWallV5PerforationStyle,
-                                  useClassicWallV6Style:
-                                      widget.useClassicWallV6Style,
+                                  child: _TemplateSlotSurface(
+                                    width: frameSize.width,
+                                    height: frameSize.height,
+                                    imageUrl: widget.imageUrl,
+                                    showAddAction: false,
+                                    isSelected: true,
+                                    isLocked: false,
+                                    frameShape: widget.frameShape,
+                                    enableAssetFrameOverlay:
+                                        widget.enableAssetFrameOverlay,
+                                    imageScale: _scale,
+                                    imageScaleX: _scaleX,
+                                    imageScaleY: _scaleY,
+                                    imageOffsetX: _offsetX,
+                                    imageOffsetY: _offsetY,
+                                    imageRotation: _rotation,
+                                    imageBrightness: _brightness,
+                                    imageContrast: _contrast,
+                                    imageSaturation: _saturation,
+                                    showLockBadge: false,
+                                    useLightClassicInnerBorder:
+                                        widget.useLightClassicInnerBorder,
+                                    useScallopedClassicFrame:
+                                        widget.useScallopedClassicFrame,
+                                    usePerforatedScallopStyle:
+                                        widget.usePerforatedScallopStyle,
+                                    useRetroPatchworkScallopStyle:
+                                        widget.useRetroPatchworkScallopStyle,
+                                    useClassicWallV5PerforationStyle:
+                                        widget.useClassicWallV5PerforationStyle,
+                                    useClassicWallV6Style:
+                                        widget.useClassicWallV6Style,
+                                    useClassicWallV7Style:
+                                        widget.useClassicWallV7Style,
+                                  ),
                                 ),
-                              ),
-                              Positioned(
-                                left:
-                                    _kGuideOutsidePadding +
-                                    viewportGeometry.left,
-                                top:
-                                    _kGuideOutsidePadding +
-                                    viewportGeometry.top,
-                                width: viewportGeometry.width,
-                                height: viewportGeometry.height,
-                                child: _TemplateAdjustImageGuideOverlay(
+                                Positioned(
+                                  left:
+                                      _kGuideOutsidePadding +
+                                      viewportGeometry.left,
+                                  top:
+                                      _kGuideOutsidePadding +
+                                      viewportGeometry.top,
                                   width: viewportGeometry.width,
                                   height: viewportGeometry.height,
-                                  scaleX: _scale * _scaleX,
-                                  scaleY: _scale * _scaleY,
-                                  offsetX: _offsetX,
-                                  offsetY: _offsetY,
-                                  rotation: _rotation,
-                                  onTopHandleDrag: _onTopHandleDrag,
-                                  onBottomHandleDrag: _onBottomHandleDrag,
-                                  onLeftHandleDrag: _onLeftHandleDrag,
-                                  onRightHandleDrag: _onRightHandleDrag,
-                                  onCornerHandleDrag: _onCornerHandleDrag,
-                                  onEdgeHandleStateChanged:
-                                      _onEdgeHandleStateChanged,
-                                  activeCorner: _activeGuideCorner,
-                                  activeEdge: _activeGuideEdge,
-                                  onCornerHandleStateChanged:
-                                      _onCornerHandleStateChanged,
+                                  child: _TemplateAdjustImageGuideOverlay(
+                                    width: viewportGeometry.width,
+                                    height: viewportGeometry.height,
+                                    scaleX: _scale * _scaleX,
+                                    scaleY: _scale * _scaleY,
+                                    offsetX: _offsetX,
+                                    offsetY: _offsetY,
+                                    rotation: _rotation,
+                                    onTopHandleDrag: _onTopHandleDrag,
+                                    onBottomHandleDrag: _onBottomHandleDrag,
+                                    onLeftHandleDrag: _onLeftHandleDrag,
+                                    onRightHandleDrag: _onRightHandleDrag,
+                                    onCornerHandleDrag: _onCornerHandleDrag,
+                                    onEdgeHandleStateChanged:
+                                        _onEdgeHandleStateChanged,
+                                    activeCorner: _activeGuideCorner,
+                                    activeEdge: _activeGuideEdge,
+                                    onCornerHandleStateChanged:
+                                        _onCornerHandleStateChanged,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     );
                   },
                 ),
+              ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                child: _showToneControls
+                    ? Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: _buildToneControls(),
+                      )
+                    : const SizedBox.shrink(),
               ),
               const SizedBox(height: 8),
               TextButton.icon(
@@ -2332,6 +2527,58 @@ class _TemplateSlotToolbar extends StatelessWidget {
   }
 }
 
+class _TemplateToneSlider extends StatelessWidget {
+  const _TemplateToneSlider({
+    required this.label,
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.onChanged,
+  });
+
+  final String label;
+  final double value;
+  final double min;
+  final double max;
+  final ValueChanged<double> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        SizedBox(
+          width: 92,
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: StampverseTextStyles.caption(
+              color: AppColors.stampversePrimaryText,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        Expanded(
+          child: SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: AppColors.colorF586AA6,
+              thumbColor: AppColors.colorF586AA6,
+              inactiveTrackColor: AppColors.stampverseBorderSoft,
+              overlayColor: AppColors.colorF586AA6.withValues(alpha: 0.14),
+            ),
+            child: Slider(
+              value: value,
+              min: min,
+              max: max,
+              onChanged: onChanged,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _TemplateSlotSurface extends StatelessWidget {
   const _TemplateSlotSurface({
     super.key,
@@ -2349,6 +2596,9 @@ class _TemplateSlotSurface extends StatelessWidget {
     this.imageOffsetX = 0,
     this.imageOffsetY = 0,
     this.imageRotation = 0,
+    this.imageBrightness = 0,
+    this.imageContrast = 1,
+    this.imageSaturation = 1,
     this.showLockBadge = true,
     this.useLightClassicInnerBorder = false,
     this.useScallopedClassicFrame = false,
@@ -2356,6 +2606,7 @@ class _TemplateSlotSurface extends StatelessWidget {
     this.useRetroPatchworkScallopStyle = false,
     this.useClassicWallV5PerforationStyle = false,
     this.useClassicWallV6Style = false,
+    this.useClassicWallV7Style = false,
   });
 
   final double width;
@@ -2372,6 +2623,9 @@ class _TemplateSlotSurface extends StatelessWidget {
   final double imageOffsetX;
   final double imageOffsetY;
   final double imageRotation;
+  final double imageBrightness;
+  final double imageContrast;
+  final double imageSaturation;
   final bool showLockBadge;
   final bool useLightClassicInnerBorder;
   final bool useScallopedClassicFrame;
@@ -2379,6 +2633,7 @@ class _TemplateSlotSurface extends StatelessWidget {
   final bool useRetroPatchworkScallopStyle;
   final bool useClassicWallV5PerforationStyle;
   final bool useClassicWallV6Style;
+  final bool useClassicWallV7Style;
 
   String? _frameOverlayAssetPath() {
     if (!enableAssetFrameOverlay) return null;
@@ -2391,6 +2646,10 @@ class _TemplateSlotSurface extends StatelessWidget {
       return null;
     }
     if (useClassicWallV6Style &&
+        frameShape == StampEditFrameShape.stampScallop) {
+      return null;
+    }
+    if (useClassicWallV7Style &&
         frameShape == StampEditFrameShape.stampScallop) {
       return null;
     }
@@ -2421,6 +2680,8 @@ class _TemplateSlotSurface extends StatelessWidget {
         useClassicWallV6Style && frameShape == StampEditFrameShape.stampScallop;
     final bool useClassicWallV6PlainRectStyle =
         useClassicWallV6Style && frameShape == StampEditFrameShape.plainRect;
+    final bool useClassicWallV7ScallopStyle =
+        useClassicWallV7Style && frameShape == StampEditFrameShape.stampScallop;
     final Color slotBackgroundColor = usePerforatedScallop
         ? AppColors.stampverseBorderSoft.withValues(alpha: 0.55)
         : useRetroPatchworkScallop
@@ -2429,6 +2690,8 @@ class _TemplateSlotSurface extends StatelessWidget {
         ? AppColors.white.withValues(alpha: 0.88)
         : useClassicWallV6ScallopStyle
         ? AppColors.colorF8F1DD.withValues(alpha: 0.92)
+        : useClassicWallV7ScallopStyle
+        ? AppColors.colorF8F1DD.withValues(alpha: 0.95)
         : useClassicWallV6PlainRectStyle
         ? AppColors.colorF8F1DD.withValues(alpha: 0.92)
         : AppColors.stampverseBorderSoft.withValues(alpha: 0.36);
@@ -2436,6 +2699,8 @@ class _TemplateSlotSurface extends StatelessWidget {
         ? 2
         : useClassicWallV6Style
         ? 1.05
+        : useClassicWallV7ScallopStyle
+        ? 1.25
         : (usePerforatedScallop || useClassicWallV5Style ? 1 : 1.2);
     final Color borderColor = isSelected
         ? AppColors.colorF586AA6
@@ -2443,6 +2708,8 @@ class _TemplateSlotSurface extends StatelessWidget {
         ? AppColors.stampversePrimaryText.withValues(alpha: 0.62)
         : useClassicWallV6ScallopStyle
         ? AppColors.stampversePrimaryText.withValues(alpha: 0.26)
+        : useClassicWallV7ScallopStyle
+        ? AppColors.stampversePrimaryText.withValues(alpha: 0.58)
         : frameShape == StampEditFrameShape.stampClassic
         ? (useClassicWallV5Style
               ? AppColors.white.withValues(alpha: 0.98)
@@ -2521,6 +2788,11 @@ class _TemplateSlotSurface extends StatelessWidget {
               .stampversePrimaryText
               .withValues(alpha: 0.22);
           final double classicWallV6InnerBorderWidth = isSelected ? 1.1 : 0.9;
+          final double classicWallV7InnerInset =
+              (math.min(width, height) * 0.11).clamp(8.0, 22.0).toDouble();
+          final Color classicWallV7InnerFill = AppColors.colorF8F1DD.withValues(
+            alpha: 0.9,
+          );
 
           return Stack(
             fit: StackFit.expand,
@@ -2559,6 +2831,7 @@ class _TemplateSlotSurface extends StatelessWidget {
                           useRetroPatchworkScallopStyle: false,
                           useClassicWallV5PerforationStyle: false,
                           useClassicWallV6Style: true,
+                          useClassicWallV7Style: false,
                           child: ColoredBox(
                             color: imageUrl.trim().isEmpty
                                 ? AppColors.colorF8F1DD
@@ -2573,6 +2846,9 @@ class _TemplateSlotSurface extends StatelessWidget {
                                     offsetX: imageOffsetX,
                                     offsetY: imageOffsetY,
                                     rotation: imageRotation,
+                                    brightness: imageBrightness,
+                                    contrast: imageContrast,
+                                    saturation: imageSaturation,
                                   ),
                           ),
                         ),
@@ -2587,6 +2863,21 @@ class _TemplateSlotSurface extends StatelessWidget {
                     ),
                   ),
                 )
+              else if (useClassicWallV7ScallopStyle)
+                _buildTemplateFrameClip(
+                  frameShape: frameShape,
+                  clipRect: frameRect,
+                  useScallopedClassicFrame: useScallopedClassicFrame,
+                  usePerforatedScallopStyle: usePerforatedScallopStyle,
+                  useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
+                  useClassicWallV5PerforationStyle:
+                      useClassicWallV5PerforationStyle,
+                  useClassicWallV6Style: useClassicWallV6Style,
+                  useClassicWallV7Style: useClassicWallV7Style,
+                  child: ColoredBox(
+                    color: AppColors.colorF8F1DD.withValues(alpha: 0.95),
+                  ),
+                )
               else if (isClassicStamp ||
                   usePerforatedScallop ||
                   useRetroPatchworkScallop)
@@ -2599,6 +2890,7 @@ class _TemplateSlotSurface extends StatelessWidget {
                   useClassicWallV5PerforationStyle:
                       useClassicWallV5PerforationStyle,
                   useClassicWallV6Style: useClassicWallV6Style,
+                  useClassicWallV7Style: useClassicWallV7Style,
                   child: ColoredBox(
                     color: isClassicStamp
                         ? (useClassicWallV5Style
@@ -2619,6 +2911,7 @@ class _TemplateSlotSurface extends StatelessWidget {
                   useClassicWallV5PerforationStyle:
                       useClassicWallV5PerforationStyle,
                   useClassicWallV6Style: useClassicWallV6Style,
+                  useClassicWallV7Style: useClassicWallV7Style,
                   child: ColoredBox(
                     color: slotBackgroundColor,
                     child: imageUrl.trim().isEmpty
@@ -2631,7 +2924,36 @@ class _TemplateSlotSurface extends StatelessWidget {
                             offsetX: imageOffsetX,
                             offsetY: imageOffsetY,
                             rotation: imageRotation,
+                            brightness: imageBrightness,
+                            contrast: imageContrast,
+                            saturation: imageSaturation,
                           ),
+                  ),
+                ),
+              if (useClassicWallV7ScallopStyle)
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.all(classicWallV7InnerInset),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: classicWallV7InnerFill,
+                        borderRadius: BorderRadius.circular(2.5),
+                      ),
+                      child: imageUrl.trim().isEmpty
+                          ? null
+                          : _TemplateSlotImageViewport(
+                              imageUrl: imageUrl,
+                              scale: imageScale,
+                              scaleX: imageScaleX,
+                              scaleY: imageScaleY,
+                              offsetX: imageOffsetX,
+                              offsetY: imageOffsetY,
+                              rotation: imageRotation,
+                              brightness: imageBrightness,
+                              contrast: imageContrast,
+                              saturation: imageSaturation,
+                            ),
+                    ),
                   ),
                 ),
               if (isClassicStamp)
@@ -2656,6 +2978,9 @@ class _TemplateSlotSurface extends StatelessWidget {
                               offsetX: imageOffsetX,
                               offsetY: imageOffsetY,
                               rotation: imageRotation,
+                              brightness: imageBrightness,
+                              contrast: imageContrast,
+                              saturation: imageSaturation,
                             ),
                     ),
                   ),
@@ -2686,6 +3011,9 @@ class _TemplateSlotSurface extends StatelessWidget {
                                 offsetX: imageOffsetX,
                                 offsetY: imageOffsetY,
                                 rotation: imageRotation,
+                                brightness: imageBrightness,
+                                contrast: imageContrast,
+                                saturation: imageSaturation,
                               ),
                       ),
                     ),
@@ -2715,6 +3043,9 @@ class _TemplateSlotSurface extends StatelessWidget {
                                 offsetX: imageOffsetX,
                                 offsetY: imageOffsetY,
                                 rotation: imageRotation,
+                                brightness: imageBrightness,
+                                contrast: imageContrast,
+                                saturation: imageSaturation,
                               ),
                       ),
                     ),
@@ -2731,6 +3062,7 @@ class _TemplateSlotSurface extends StatelessWidget {
                         useClassicWallV5PerforationStyle:
                             useClassicWallV5PerforationStyle,
                         useClassicWallV6Style: useClassicWallV6Style,
+                        useClassicWallV7Style: useClassicWallV7Style,
                         borderColor: borderColor,
                         borderWidth: borderWidth,
                       )
@@ -2804,6 +3136,7 @@ Widget _buildTemplateFrameClip({
   required bool useRetroPatchworkScallopStyle,
   required bool useClassicWallV5PerforationStyle,
   required bool useClassicWallV6Style,
+  required bool useClassicWallV7Style,
   required Widget child,
 }) {
   switch (frameShape) {
@@ -2811,7 +3144,9 @@ Widget _buildTemplateFrameClip({
       return ClipOval(child: child);
     case StampEditFrameShape.plainRect:
       return ClipRRect(
-        borderRadius: BorderRadius.circular(useClassicWallV6Style ? 6 : 8),
+        borderRadius: BorderRadius.circular(
+          useClassicWallV6Style ? 6 : (useClassicWallV7Style ? 3 : 8),
+        ),
         child: child,
       );
     case StampEditFrameShape.stampScallop:
@@ -2827,6 +3162,7 @@ Widget _buildTemplateFrameClip({
           useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
           useClassicWallV5PerforationStyle: useClassicWallV5PerforationStyle,
           useClassicWallV6Style: useClassicWallV6Style,
+          useClassicWallV7Style: useClassicWallV7Style,
         ),
         child: child,
       );
@@ -2841,6 +3177,7 @@ Path _buildTemplateFramePath({
   required bool useRetroPatchworkScallopStyle,
   required bool useClassicWallV5PerforationStyle,
   required bool useClassicWallV6Style,
+  required bool useClassicWallV7Style,
 }) {
   if (useClassicWallV6Style && frameShape == StampEditFrameShape.plainRect) {
     return Path()
@@ -2848,6 +3185,9 @@ Path _buildTemplateFramePath({
   }
   if (useClassicWallV6Style && frameShape == StampEditFrameShape.stampScallop) {
     return _buildClassicWallV6ScallopPath(rect);
+  }
+  if (useClassicWallV7Style && frameShape == StampEditFrameShape.stampScallop) {
+    return _buildClassicWallV7ScallopPath(rect);
   }
   if (useClassicWallV5PerforationStyle &&
       frameShape == StampEditFrameShape.stampClassic) {
@@ -2928,6 +3268,58 @@ Path _buildClassicWallV6ScallopPath(Rect rect) {
     ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(cornerRadius)));
 
   return Path.combine(PathOperation.intersect, scallopedPath, cornerMask);
+}
+
+Path _buildClassicWallV7ScallopPath(Rect rect) {
+  if (rect.width <= 0 || rect.height <= 0) {
+    return Path()..addRect(rect);
+  }
+
+  final double minEdge = math.min(rect.width, rect.height);
+  final double notchRadius = (minEdge * 0.067).clamp(4.8, 11.2).toDouble();
+  final double cornerRadius = (minEdge * 0.045).clamp(3.0, 9.0).toDouble();
+  final int topCount = math.max(
+    4,
+    math.max(
+      (rect.width / 34).round(),
+      (rect.width / (notchRadius * 4.2)).round(),
+    ),
+  );
+  final int sideCount = math.max(
+    4,
+    math.max(
+      (rect.height / 34).round(),
+      (rect.height / (notchRadius * 3.9)).round(),
+    ),
+  );
+
+  final Path base = Path()
+    ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(cornerRadius)));
+  final Path notches = Path();
+  final double topStep = rect.width / (topCount + 1);
+  final double sideStep = rect.height / (sideCount + 1);
+
+  for (int index = 1; index <= topCount; index += 1) {
+    final double x = rect.left + (topStep * index);
+    notches.addOval(
+      Rect.fromCircle(center: Offset(x, rect.top), radius: notchRadius),
+    );
+    notches.addOval(
+      Rect.fromCircle(center: Offset(x, rect.bottom), radius: notchRadius),
+    );
+  }
+
+  for (int index = 1; index <= sideCount; index += 1) {
+    final double y = rect.top + (sideStep * index);
+    notches.addOval(
+      Rect.fromCircle(center: Offset(rect.left, y), radius: notchRadius),
+    );
+    notches.addOval(
+      Rect.fromCircle(center: Offset(rect.right, y), radius: notchRadius),
+    );
+  }
+
+  return Path.combine(PathOperation.difference, base, notches);
 }
 
 Path _buildDensePerforatedScallopPath(Rect rect) {
@@ -3146,6 +3538,7 @@ class _TemplateSlotFrameClipper extends CustomClipper<Path> {
     required this.useRetroPatchworkScallopStyle,
     required this.useClassicWallV5PerforationStyle,
     required this.useClassicWallV6Style,
+    required this.useClassicWallV7Style,
   });
 
   final StampEditFrameShape frameShape;
@@ -3155,6 +3548,7 @@ class _TemplateSlotFrameClipper extends CustomClipper<Path> {
   final bool useRetroPatchworkScallopStyle;
   final bool useClassicWallV5PerforationStyle;
   final bool useClassicWallV6Style;
+  final bool useClassicWallV7Style;
 
   @override
   Path getClip(Size size) {
@@ -3166,6 +3560,7 @@ class _TemplateSlotFrameClipper extends CustomClipper<Path> {
       useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
       useClassicWallV5PerforationStyle: useClassicWallV5PerforationStyle,
       useClassicWallV6Style: useClassicWallV6Style,
+      useClassicWallV7Style: useClassicWallV7Style,
     );
   }
 
@@ -3179,7 +3574,8 @@ class _TemplateSlotFrameClipper extends CustomClipper<Path> {
             useRetroPatchworkScallopStyle ||
         oldClipper.useClassicWallV5PerforationStyle !=
             useClassicWallV5PerforationStyle ||
-        oldClipper.useClassicWallV6Style != useClassicWallV6Style;
+        oldClipper.useClassicWallV6Style != useClassicWallV6Style ||
+        oldClipper.useClassicWallV7Style != useClassicWallV7Style;
   }
 }
 
@@ -3191,6 +3587,7 @@ class _TemplateSlotBorderPainter extends CustomPainter {
     required this.useRetroPatchworkScallopStyle,
     required this.useClassicWallV5PerforationStyle,
     required this.useClassicWallV6Style,
+    required this.useClassicWallV7Style,
     required this.borderColor,
     required this.borderWidth,
   });
@@ -3201,6 +3598,7 @@ class _TemplateSlotBorderPainter extends CustomPainter {
   final bool useRetroPatchworkScallopStyle;
   final bool useClassicWallV5PerforationStyle;
   final bool useClassicWallV6Style;
+  final bool useClassicWallV7Style;
   final Color borderColor;
   final double borderWidth;
 
@@ -3215,6 +3613,7 @@ class _TemplateSlotBorderPainter extends CustomPainter {
       useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
       useClassicWallV5PerforationStyle: useClassicWallV5PerforationStyle,
       useClassicWallV6Style: useClassicWallV6Style,
+      useClassicWallV7Style: useClassicWallV7Style,
     );
     final bool isClassicStamp = frameShape == StampEditFrameShape.stampClassic;
     final bool isPerforatedScallop =
@@ -3248,6 +3647,7 @@ class _TemplateSlotBorderPainter extends CustomPainter {
         oldDelegate.useClassicWallV5PerforationStyle !=
             useClassicWallV5PerforationStyle ||
         oldDelegate.useClassicWallV6Style != useClassicWallV6Style ||
+        oldDelegate.useClassicWallV7Style != useClassicWallV7Style ||
         oldDelegate.borderColor != borderColor ||
         oldDelegate.borderWidth != borderWidth;
   }
@@ -3276,6 +3676,7 @@ class _TemplateInnerScallopBorderPainter extends CustomPainter {
       useRetroPatchworkScallopStyle: false,
       useClassicWallV5PerforationStyle: false,
       useClassicWallV6Style: useClassicWallV6Style,
+      useClassicWallV7Style: false,
     );
     canvas.drawPath(
       path,
@@ -3397,15 +3798,22 @@ class _TemplateAdjustImageGuideOverlay extends StatelessWidget {
     final double rightEdge = width;
     final double bottomEdge = height;
     const double minTouchTarget = 44;
+    // Keep enough center area for pinch even on slim frames.
+    final double maxEdgeThicknessY = (height * 0.28)
+        .clamp(14.0, 36.0)
+        .toDouble();
+    final double maxEdgeThicknessX = (width * 0.28)
+        .clamp(14.0, 36.0)
+        .toDouble();
     final double edgeHitThicknessY = (minTouchTarget / safeScaleY)
-        .clamp(26.0, 96.0)
+        .clamp(14.0, maxEdgeThicknessY)
         .toDouble();
     final double edgeHitThicknessX = (minTouchTarget / safeScaleX)
-        .clamp(26.0, 96.0)
+        .clamp(14.0, maxEdgeThicknessX)
         .toDouble();
     final double cornerHitSize = math
         .max(minTouchTarget / safeScaleX, minTouchTarget / safeScaleY)
-        .clamp(32.0, 110.0)
+        .clamp(24.0, math.max(24.0, math.min(width, height) * 0.42))
         .toDouble();
     final double edgeWidth = rightEdge - leftEdge;
     final double edgeHeight = bottomEdge - topEdge;
@@ -3699,6 +4107,9 @@ class _TemplateSlotImageViewport extends StatelessWidget {
     required this.offsetX,
     required this.offsetY,
     required this.rotation,
+    required this.brightness,
+    required this.contrast,
+    required this.saturation,
   });
 
   final String imageUrl;
@@ -3708,6 +4119,9 @@ class _TemplateSlotImageViewport extends StatelessWidget {
   final double offsetX;
   final double offsetY;
   final double rotation;
+  final double brightness;
+  final double contrast;
+  final double saturation;
 
   @override
   Widget build(BuildContext context) {
@@ -3727,6 +4141,38 @@ class _TemplateSlotImageViewport extends StatelessWidget {
               .clamp(0.2, 8.0)
               .toDouble();
           final double safeRotation = rotation.isFinite ? rotation : 0;
+          final double safeBrightness =
+              StampverseImageAdjustments.normalizeBrightness(brightness);
+          final double safeContrast =
+              StampverseImageAdjustments.normalizeContrast(contrast);
+          final double safeSaturation =
+              StampverseImageAdjustments.normalizeSaturation(saturation);
+          Widget image = _TemplateSlotImage(imageUrl: imageUrl);
+
+          if (safeSaturation != 1) {
+            image = ColorFiltered(
+              colorFilter: StampverseImageAdjustments.saturationFilter(
+                safeSaturation,
+              ),
+              child: image,
+            );
+          }
+          if (safeContrast != 1) {
+            image = ColorFiltered(
+              colorFilter: StampverseImageAdjustments.contrastFilter(
+                safeContrast,
+              ),
+              child: image,
+            );
+          }
+          if (safeBrightness != 0) {
+            image = ColorFiltered(
+              colorFilter: StampverseImageAdjustments.brightnessFilter(
+                safeBrightness,
+              ),
+              child: image,
+            );
+          }
 
           return Transform.translate(
             offset: panOffset,
@@ -3739,9 +4185,7 @@ class _TemplateSlotImageViewport extends StatelessWidget {
                   effectiveScaleY,
                   1,
                 ),
-                child: SizedBox.expand(
-                  child: _TemplateSlotImage(imageUrl: imageUrl),
-                ),
+                child: SizedBox.expand(child: image),
               ),
             ),
           );

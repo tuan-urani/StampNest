@@ -254,6 +254,14 @@ class LocaleKey {
       StampverseLocaleKey.editTemplateAdjustReset;
   static const String stampverseEditTemplateAdjustHint =
       StampverseLocaleKey.editTemplateAdjustHint;
+  static const String stampverseEditTemplateAdjustTone =
+      StampverseLocaleKey.editTemplateAdjustTone;
+  static const String stampverseEditTemplateAdjustBrightness =
+      StampverseLocaleKey.editTemplateAdjustBrightness;
+  static const String stampverseEditTemplateAdjustContrast =
+      StampverseLocaleKey.editTemplateAdjustContrast;
+  static const String stampverseEditTemplateAdjustSaturation =
+      StampverseLocaleKey.editTemplateAdjustSaturation;
 
   static const String stampverseCameraTitle = StampverseLocaleKey.cameraTitle;
   static const String stampverseCameraCaptureTitle =
@@ -333,4 +341,26 @@ class LocaleKey {
       StampverseLocaleKey.detailsCollectionAssignSuccess;
   static const String stampverseDetailsCollectionAssignFailed =
       StampverseLocaleKey.detailsCollectionAssignFailed;
+
+  static const String stampversePaywallTitle = StampverseLocaleKey.paywallTitle;
+  static const String stampversePaywallSubtitle =
+      StampverseLocaleKey.paywallSubtitle;
+  static const String stampversePaywallBenefitAllFeatures =
+      StampverseLocaleKey.paywallBenefitAllFeatures;
+  static const String stampversePaywallBenefitUnlimitedStamps =
+      StampverseLocaleKey.paywallBenefitUnlimitedStamps;
+  static const String stampversePaywallPlanMonthly =
+      StampverseLocaleKey.paywallPlanMonthly;
+  static const String stampversePaywallPlanMonthlyPrice =
+      StampverseLocaleKey.paywallPlanMonthlyPrice;
+  static const String stampversePaywallPlanYearly =
+      StampverseLocaleKey.paywallPlanYearly;
+  static const String stampversePaywallPlanYearlyPrice =
+      StampverseLocaleKey.paywallPlanYearlyPrice;
+  static const String stampversePaywallPlanYearlyBadge =
+      StampverseLocaleKey.paywallPlanYearlyBadge;
+  static const String stampversePaywallCtaStartTrial =
+      StampverseLocaleKey.paywallCtaStartTrial;
+  static const String stampversePaywallUpgradeSuccess =
+      StampverseLocaleKey.paywallUpgradeSuccess;
 }

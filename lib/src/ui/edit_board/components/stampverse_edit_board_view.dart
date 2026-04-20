@@ -415,33 +415,33 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
                           ),
                     tooltip: LocaleKey.stampverseDetailsShare.tr,
                   ),
-                  const SizedBox(width: 2),
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: LinearGradient(
-                        colors: <Color>[
-                          AppColors.colorF586AA6.withValues(alpha: 0.2),
-                          AppColors.colorF586AA6.withValues(alpha: 0.08),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                  if (!isTemplateBoard) ...<Widget>[
+                    const SizedBox(width: 2),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          colors: <Color>[
+                            AppColors.colorF586AA6.withValues(alpha: 0.2),
+                            AppColors.colorF586AA6.withValues(alpha: 0.08),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        border: Border.all(
+                          color: AppColors.colorF586AA6.withValues(alpha: 0.4),
+                        ),
                       ),
-                      border: Border.all(
-                        color: AppColors.colorF586AA6.withValues(alpha: 0.4),
+                      child: IconButton(
+                        onPressed: _openBackgroundMenu,
+                        icon: const Icon(
+                          Icons.dashboard_customize_rounded,
+                          color: AppColors.colorF586AA6,
+                        ),
+                        tooltip: LocaleKey.stampverseHomeEditBackgroundLabel.tr,
                       ),
                     ),
-                    child: IconButton(
-                      onPressed: _openBackgroundMenu,
-                      icon: const Icon(
-                        Icons.dashboard_customize_rounded,
-                        color: AppColors.colorF586AA6,
-                      ),
-                      tooltip: LocaleKey.stampverseHomeEditBackgroundLabel.tr,
-                    ),
-                  ),
-                  const SizedBox(width: 2),
-                  if (!isTemplateBoard)
+                    const SizedBox(width: 2),
                     IconButton(
                       onPressed: _openImportSheet,
                       icon: const Icon(
@@ -450,6 +450,7 @@ class _StampverseEditBoardViewState extends State<StampverseEditBoardView> {
                       ),
                       tooltip: LocaleKey.stampverseHomeEditImportStamp.tr,
                     ),
+                  ],
                 ],
               ),
             ),

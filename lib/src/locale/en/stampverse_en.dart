@@ -93,7 +93,7 @@ final Map<String, String> stampverseEn = <String, String>{
       'Classic Stamp Wall',
   StampverseLocaleKey.creativeTemplateCategoryBotanicalPostage:
       'Botanical Postage',
-  StampverseLocaleKey.creativeTemplateCategoryCuteAnime: 'Cute Anime',
+  StampverseLocaleKey.creativeTemplateCategoryCuteAnime: 'Cartoon Stamps',
   StampverseLocaleKey.creativeTemplateMoodClassic: 'classic',
   StampverseLocaleKey.creativeTemplateMoodBotanical: 'botanical',
   StampverseLocaleKey.creativeTemplateMoodCuteAnime: 'anime',
@@ -143,6 +143,10 @@ final Map<String, String> stampverseEn = <String, String>{
   StampverseLocaleKey.editTemplateAdjustReset: 'Reset',
   StampverseLocaleKey.editTemplateAdjustHint:
       'Drag, pinch, or rotate to adjust image in frame.',
+  StampverseLocaleKey.editTemplateAdjustTone: 'Adjust tone',
+  StampverseLocaleKey.editTemplateAdjustBrightness: 'Brightness',
+  StampverseLocaleKey.editTemplateAdjustContrast: 'Contrast',
+  StampverseLocaleKey.editTemplateAdjustSaturation: 'Saturation',
   StampverseLocaleKey.cameraTitle: 'Create Stamp',
   StampverseLocaleKey.cameraCaptureTitle: 'Capture',
   StampverseLocaleKey.cameraOpenCamera: 'Open Camera',
@@ -193,4 +197,18 @@ final Map<String, String> stampverseEn = <String, String>{
       'Stamp added to collection.',
   StampverseLocaleKey.detailsCollectionAssignFailed:
       'Unable to add stamp to collection.',
+  StampverseLocaleKey.paywallTitle: 'Stamp Premium',
+  StampverseLocaleKey.paywallSubtitle: 'Unlock full access with Stamp Premium',
+  StampverseLocaleKey.paywallBenefitAllFeatures:
+      'All premium features and themes',
+  StampverseLocaleKey.paywallBenefitUnlimitedStamps:
+      'Save unlimited stamp photos',
+  StampverseLocaleKey.paywallPlanMonthly: 'Monthly',
+  StampverseLocaleKey.paywallPlanMonthlyPrice: '\$3.99 per month',
+  StampverseLocaleKey.paywallPlanYearly: 'Yearly',
+  StampverseLocaleKey.paywallPlanYearlyPrice: '\$39.99 per year',
+  StampverseLocaleKey.paywallPlanYearlyBadge: 'SAVE 80%',
+  StampverseLocaleKey.paywallCtaStartTrial: 'Upgrade now',
+  StampverseLocaleKey.paywallUpgradeSuccess:
+      'Upgrade successful. Premium is now unlocked.',
 };

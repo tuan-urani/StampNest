@@ -121,6 +121,34 @@ void main() {
     },
   );
 
+  test(
+    'classic stamp wall v7 template keeps background and 4 scallop slots',
+    () {
+      final StampEditTemplate template = creativeTemplateCatalog.firstWhere(
+        (StampEditTemplate item) => item.id == 'template_classic_stamp_wall_v7',
+      );
+
+      expect(
+        template.showcaseImageAssetPath,
+        AppAssets.creativeTemplateShowcaseTemplate7Png,
+      );
+      expect(
+        template.editorBackgroundAssetPath,
+        AppAssets.creativeTemplateBackgroundTemplate7Png,
+      );
+      expect(template.sourceWidth, 736);
+      expect(template.sourceHeight, 981);
+      expect(template.slots.length, 4);
+      expect(
+        template.slots.every(
+          (StampEditTemplateSlot slot) =>
+              slot.frameShape == StampEditFrameShape.stampScallop,
+        ),
+        isTrue,
+      );
+    },
+  );
+
   test('night stamp collage template has dark background and 12 slots', () {
     final StampEditTemplate template = creativeTemplateCatalog.firstWhere(
       (StampEditTemplate item) => item.id == 'template_night_stamp_collage_v2',
@@ -270,6 +298,10 @@ void main() {
         (CreativeTemplateSpec item) =>
             item.id == 'template_classic_stamp_wall_v6',
       );
+      final CreativeTemplateSpec classicV7 = creativeTemplateSpecs.firstWhere(
+        (CreativeTemplateSpec item) =>
+            item.id == 'template_classic_stamp_wall_v7',
+      );
 
       expect(classic.sourceWidth, 1024);
       expect(classic.sourceHeight, 1024);
@@ -281,6 +313,8 @@ void main() {
       expect(botanical.sourceHeight, 1308);
       expect(classicV6.sourceWidth, 736);
       expect(classicV6.sourceHeight, 736);
+      expect(classicV7.sourceWidth, 736);
+      expect(classicV7.sourceHeight, 981);
     },
   );
 

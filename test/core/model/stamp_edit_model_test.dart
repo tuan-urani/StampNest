@@ -51,6 +51,9 @@ void main() {
       heightRatio: 0.28,
       isLocked: true,
       frameShape: StampEditFrameShape.stampScallop,
+      contentBrightness: 0.18,
+      contentContrast: 1.24,
+      contentSaturation: 0.86,
     );
     const StampEditBoard source = StampEditBoard(
       id: 'board_template',
@@ -79,5 +82,8 @@ void main() {
     expect(restored.layers.single.heightRatio, closeTo(0.28, 0.00001));
     expect(restored.layers.single.isLocked, isTrue);
     expect(restored.layers.single.frameShape, StampEditFrameShape.stampScallop);
+    expect(restored.layers.single.contentBrightness, closeTo(0.18, 0.00001));
+    expect(restored.layers.single.contentContrast, closeTo(1.24, 0.00001));
+    expect(restored.layers.single.contentSaturation, closeTo(0.86, 0.00001));
   });
 }

@@ -76,6 +76,9 @@ class StampEditLayer extends Equatable {
     this.contentOffsetX = 0,
     this.contentOffsetY = 0,
     this.contentRotation = 0,
+    this.contentBrightness = 0,
+    this.contentContrast = 1,
+    this.contentSaturation = 1,
   });
 
   final String id;
@@ -97,6 +100,9 @@ class StampEditLayer extends Equatable {
   final double contentOffsetX;
   final double contentOffsetY;
   final double contentRotation;
+  final double contentBrightness;
+  final double contentContrast;
+  final double contentSaturation;
 
   StampEditLayer copyWith({
     String? id,
@@ -118,6 +124,9 @@ class StampEditLayer extends Equatable {
     double? contentOffsetX,
     double? contentOffsetY,
     double? contentRotation,
+    double? contentBrightness,
+    double? contentContrast,
+    double? contentSaturation,
   }) {
     return StampEditLayer(
       id: id ?? this.id,
@@ -143,6 +152,9 @@ class StampEditLayer extends Equatable {
       contentOffsetX: contentOffsetX ?? this.contentOffsetX,
       contentOffsetY: contentOffsetY ?? this.contentOffsetY,
       contentRotation: contentRotation ?? this.contentRotation,
+      contentBrightness: contentBrightness ?? this.contentBrightness,
+      contentContrast: contentContrast ?? this.contentContrast,
+      contentSaturation: contentSaturation ?? this.contentSaturation,
     );
   }
 
@@ -193,6 +205,18 @@ class StampEditLayer extends Equatable {
           (json['contentRotation'] as num?)?.toDouble() ??
           (json['content_rotation'] as num?)?.toDouble() ??
           0,
+      contentBrightness:
+          (json['contentBrightness'] as num?)?.toDouble() ??
+          (json['content_brightness'] as num?)?.toDouble() ??
+          0,
+      contentContrast:
+          (json['contentContrast'] as num?)?.toDouble() ??
+          (json['content_contrast'] as num?)?.toDouble() ??
+          1,
+      contentSaturation:
+          (json['contentSaturation'] as num?)?.toDouble() ??
+          (json['content_saturation'] as num?)?.toDouble() ??
+          1,
     );
   }
 
@@ -217,6 +241,9 @@ class StampEditLayer extends Equatable {
       'contentOffsetX': contentOffsetX,
       'contentOffsetY': contentOffsetY,
       'contentRotation': contentRotation,
+      'contentBrightness': contentBrightness,
+      'contentContrast': contentContrast,
+      'contentSaturation': contentSaturation,
     };
   }
 
@@ -241,6 +268,9 @@ class StampEditLayer extends Equatable {
     contentOffsetX,
     contentOffsetY,
     contentRotation,
+    contentBrightness,
+    contentContrast,
+    contentSaturation,
   ];
 }
 

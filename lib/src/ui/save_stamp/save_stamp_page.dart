@@ -106,37 +106,49 @@ class _SaveStampPageState extends State<SaveStampPage> {
               collections: state.collections,
               defaultCollection: '',
               onBack: () => Navigator.of(context).pop(false),
-              onSave: (double rotationRadians) async {
-                final String rawName = _nameController.text.trim().isEmpty
-                    ? LocaleKey.stampverseSaveDefaultName.tr
-                    : _nameController.text.trim();
-                final String rawCollection = _collectionController.text.trim();
-                final String? exportedImageUrl =
-                    await exportSaveStampImageDataUrl(
-                      imageUrl: widget.args.sourceImageUrl,
+              onSave:
+                  (
+                    double rotationRadians,
+                    double previewBaseWidth,
+                    double previewBoundsWidth,
+                    double previewBoundsHeight,
+                  ) async {
+                    final String rawName = _nameController.text.trim().isEmpty
+                        ? LocaleKey.stampverseSaveDefaultName.tr
+                        : _nameController.text.trim();
+                    final String rawCollection = _collectionController.text
+                        .trim();
+                    final String? exportedImageUrl =
+                        await exportSaveStampImageDataUrl(
+                          imageUrl: widget.args.sourceImageUrl,
+                          shapeType: widget.args.shapeType,
+                          baseWidth: previewBaseWidth,
+                          rotationRadians: rotationRadians,
+                        );
+                    if (!context.mounted) return;
+                    if (exportedImageUrl == null || exportedImageUrl.isEmpty) {
+                      _showExportFailedMessage(
+                        LocaleKey.stampverseSaveExportFailed.tr,
+                      );
+                      return;
+                    }
+
+                    final bool saved = await cubit.saveStamp(
+                      stampedImageUrl: exportedImageUrl,
+                      sourceImageUrl: widget.args.sourceImageUrl,
                       shapeType: widget.args.shapeType,
                       rotationRadians: rotationRadians,
+                      previewBaseWidthAtSave: previewBaseWidth,
+                      previewBoundsWidthAtSave: previewBoundsWidth,
+                      previewBoundsHeightAtSave: previewBoundsHeight,
+                      rawName: rawName,
+                      rawCollection: rawCollection,
                     );
-                if (!context.mounted) return;
-                if (exportedImageUrl == null || exportedImageUrl.isEmpty) {
-                  _showExportFailedMessage(
-                    LocaleKey.stampverseSaveExportFailed.tr,
-                  );
-                  return;
-                }
-
-                final bool saved = await cubit.saveStamp(
-                  stampedImageUrl: exportedImageUrl,
-                  sourceImageUrl: widget.args.sourceImageUrl,
-                  shapeType: widget.args.shapeType,
-                  rawName: rawName,
-                  rawCollection: rawCollection,
-                );
-                if (!context.mounted) return;
-                if (saved) {
-                  Navigator.of(context).pop(true);
-                }
-              },
+                    if (!context.mounted) return;
+                    if (saved) {
+                      Navigator.of(context).pop(true);
+                    }
+                  },
             );
           },
         ),

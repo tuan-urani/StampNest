@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:stamp_camera/src/core/model/stamp_data_model.dart';
+import 'package:stamp_camera/src/core/model/stamp_shape_type.dart';
 import 'package:stamp_camera/src/locale/locale_key.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_empty_tab.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_stamp.dart';
@@ -47,7 +48,10 @@ class StampTabContent extends StatelessWidget {
         );
         final double stampTileWidth =
             (contentWidth - ((crossAxisCount - 1) * 14)) / crossAxisCount;
-        final double recentRowHeight = (stampTileWidth / 0.75) + 32;
+        final double recentRowHeight =
+            _resolveRowHeight(recentOpened, stampTileWidth) + 32;
+        final double favoritesRowHeight =
+            _resolveRowHeight(favorites, stampTileWidth) + 32;
 
         return ListView(
           padding: const EdgeInsets.fromLTRB(
@@ -110,7 +114,7 @@ class StampTabContent extends StatelessWidget {
               )
             else
               SizedBox(
-                height: recentRowHeight,
+                height: favoritesRowHeight,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: favorites.length,
@@ -171,6 +175,55 @@ class StampTabContent extends StatelessWidget {
     });
     return items;
   }
+
+  double _resolveRowHeight(List<StampDataModel> items, double stampTileWidth) {
+    if (items.isEmpty) {
+      return _resolveDisplayBoundsHeight(null, stampTileWidth);
+    }
+
+    double maxHeight = 0;
+    for (final StampDataModel item in items) {
+      final double itemHeight = _resolveDisplayBoundsHeight(
+        item,
+        stampTileWidth,
+      );
+      if (itemHeight > maxHeight) {
+        maxHeight = itemHeight;
+      }
+    }
+
+    return maxHeight > 0
+        ? maxHeight
+        : _resolveDisplayBoundsHeight(null, stampTileWidth);
+  }
+
+  double _resolveDisplayBoundsHeight(
+    StampDataModel? item,
+    double stampTileWidth,
+  ) {
+    if (item == null) {
+      return stampTileWidth / 0.75;
+    }
+
+    final double shapeAspectRatio = item.shapeType.aspectRatio > 0
+        ? item.shapeType.aspectRatio
+        : 1;
+    final double fallbackHeight = stampTileWidth / shapeAspectRatio;
+
+    final double savedBaseWidth = item.previewBaseWidthAtSave ?? 0;
+    final double savedBoundsHeight = item.previewBoundsHeightAtSave ?? 0;
+    final bool hasSavedMetrics =
+        savedBaseWidth.isFinite &&
+        savedBaseWidth > 0 &&
+        savedBoundsHeight.isFinite &&
+        savedBoundsHeight > 0;
+    if (!hasSavedMetrics) return fallbackHeight;
+
+    final double scale = stampTileWidth / savedBaseWidth;
+    final double displayHeight = savedBoundsHeight * scale;
+    if (!displayHeight.isFinite || displayHeight <= 0) return fallbackHeight;
+    return displayHeight;
+  }
 }
 
 class _StampSectionHeader extends StatelessWidget {
@@ -219,8 +272,34 @@ class _StampPreviewTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double shapeAspectRatio = item.shapeType.aspectRatio > 0
+        ? item.shapeType.aspectRatio
+        : 1;
+    final double savedBaseWidth = item.previewBaseWidthAtSave ?? 0;
+    final double savedBoundsWidth = item.previewBoundsWidthAtSave ?? 0;
+    final double savedBoundsHeight = item.previewBoundsHeightAtSave ?? 0;
+    final bool hasSavedBounds =
+        savedBaseWidth.isFinite &&
+        savedBaseWidth > 0 &&
+        savedBoundsWidth.isFinite &&
+        savedBoundsWidth > 0 &&
+        savedBoundsHeight.isFinite &&
+        savedBoundsHeight > 0;
+    final double scaleFromSavedBase = hasSavedBounds
+        ? (stampTileWidth / savedBaseWidth)
+        : 1;
+    final double displayBoundsWidth = hasSavedBounds
+        ? (savedBoundsWidth * scaleFromSavedBase)
+        : stampTileWidth;
+    final double displayBoundsHeight = hasSavedBounds
+        ? (savedBoundsHeight * scaleFromSavedBase)
+        : (stampTileWidth / shapeAspectRatio);
+    final double displayAspectRatio = displayBoundsHeight > 0
+        ? displayBoundsWidth / displayBoundsHeight
+        : shapeAspectRatio;
+
     return SizedBox(
-      width: stampTileWidth,
+      width: displayBoundsWidth,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -228,7 +307,8 @@ class _StampPreviewTile extends StatelessWidget {
             imageUrl: item.imageUrl,
             shapeType: item.shapeType,
             applyShapeClip: false,
-            width: stampTileWidth,
+            width: displayBoundsWidth,
+            aspectRatioOverride: displayAspectRatio,
             showShadow: false,
             onTap: onTap,
           ),

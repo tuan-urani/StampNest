@@ -25,6 +25,10 @@ class SaveStampCubit extends Cubit<SaveStampState> {
     required String stampedImageUrl,
     required String sourceImageUrl,
     required StampShapeType shapeType,
+    required double rotationRadians,
+    required double previewBaseWidthAtSave,
+    required double previewBoundsWidthAtSave,
+    required double previewBoundsHeightAtSave,
     required String rawName,
     required String rawCollection,
   }) async {
@@ -35,6 +39,16 @@ class SaveStampCubit extends Cubit<SaveStampState> {
     final String stampName = rawName.trim();
     final String collectionName = rawCollection.trim();
     final String dateIso = DateTime.now().toIso8601String();
+    final double safeRotationRadians = _finiteOrZero(rotationRadians);
+    final double? safePreviewBaseWidth = _finitePositiveOrNull(
+      previewBaseWidthAtSave,
+    );
+    final double? safePreviewBoundsWidth = _finitePositiveOrNull(
+      previewBoundsWidthAtSave,
+    );
+    final double? safePreviewBoundsHeight = _finitePositiveOrNull(
+      previewBoundsHeightAtSave,
+    );
 
     final List<StampDataModel> currentStamps = await _repository.readCache();
     final StampDataModel optimisticStamp = StampDataModel(
@@ -44,6 +58,10 @@ class SaveStampCubit extends Cubit<SaveStampState> {
       sourceImageUrl: sourceImageUrl,
       date: dateIso,
       shapeType: shapeType,
+      rotationRadians: safeRotationRadians,
+      previewBaseWidthAtSave: safePreviewBaseWidth,
+      previewBoundsWidthAtSave: safePreviewBoundsWidth,
+      previewBoundsHeightAtSave: safePreviewBoundsHeight,
       album: collectionName.isEmpty ? null : collectionName,
       lastOpenedAt: dateIso,
     );
@@ -67,5 +85,14 @@ class SaveStampCubit extends Cubit<SaveStampState> {
       ),
     );
     return true;
+  }
+
+  double _finiteOrZero(double value) {
+    return value.isFinite ? value : 0;
+  }
+
+  double? _finitePositiveOrNull(double value) {
+    if (!value.isFinite || value <= 0) return null;
+    return value;
   }
 }

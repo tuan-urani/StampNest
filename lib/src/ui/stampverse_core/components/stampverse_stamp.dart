@@ -17,6 +17,7 @@ class StampverseStamp extends StatelessWidget {
     this.shapeType = StampShapeType.scallop,
     this.applyShapeClip = true,
     this.width,
+    this.aspectRatioOverride,
     this.rotationDegrees = 0,
     this.showShadow = true,
     this.onTap,
@@ -27,12 +28,19 @@ class StampverseStamp extends StatelessWidget {
   final StampShapeType shapeType;
   final bool applyShapeClip;
   final double? width;
+  final double? aspectRatioOverride;
   final double rotationDegrees;
   final bool showShadow;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    double resolvedAspectRatio = shapeType.aspectRatio;
+    final double? override = aspectRatioOverride;
+    if (override != null && override.isFinite && override > 0) {
+      resolvedAspectRatio = override;
+    }
+
     final Widget image = _StampImage(
       imageUrl: imageUrl,
       imageBytes: imageBytes,
@@ -47,7 +55,7 @@ class StampverseStamp extends StatelessWidget {
     Widget content = SizedBox(
       width: width,
       child: AspectRatio(
-        aspectRatio: shapeType.aspectRatio,
+        aspectRatio: resolvedAspectRatio,
         child: DecoratedBox(
           decoration: BoxDecoration(
             boxShadow: showShadow

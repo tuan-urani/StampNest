@@ -122,6 +122,8 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
   final GlobalKey _trashZoneKey = GlobalKey();
   final GlobalKey _canvasBoundaryKey = GlobalKey();
   bool _isTrashHovering = false;
+  bool _hideTemplateAddActionForCapture = false;
+  bool _isCapturingBoardImage = false;
 
   @override
   void initState() {
@@ -227,6 +229,41 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
     } catch (_) {
       return AppColors.white;
     }
+  }
+
+  bool _useLightClassicInnerBorder(StampEditBoard board) {
+    if (!_isTemplateBoard(board)) return false;
+    final String templateId = (board.templateId ?? '').toLowerCase();
+    if (templateId.contains('night')) return true;
+    return _resolveCanvasColor(board).computeLuminance() < 0.2;
+  }
+
+  bool _useScallopedClassicFrameForTemplate(StampEditBoard board) {
+    if (!_isTemplateBoard(board)) return false;
+    final String templateId = (board.templateId ?? '').trim().toLowerCase();
+    return templateId == 'template_night_stamp_collage_v2';
+  }
+
+  bool _usePerforatedScallopStyleForTemplate(StampEditBoard board) {
+    if (!_isTemplateBoard(board)) return false;
+    final String templateId = (board.templateId ?? '').trim().toLowerCase();
+    if (templateId == 'template_botanical_postage_v4') return true;
+    final String bgPath = (board.templateBackgroundAssetPath ?? '')
+        .trim()
+        .toLowerCase();
+    return bgPath ==
+        AppAssets.creativeTemplateBackgroundTemplate4Png.toLowerCase();
+  }
+
+  bool _useRetroPatchworkScallopStyleForTemplate(StampEditBoard board) {
+    if (!_isTemplateBoard(board)) return false;
+    final String templateId = (board.templateId ?? '').trim().toLowerCase();
+    if (templateId == 'template_retro_postage_patchwork_v3') return true;
+    final String bgPath = (board.templateBackgroundAssetPath ?? '')
+        .trim()
+        .toLowerCase();
+    return bgPath ==
+        AppAssets.creativeTemplateBackgroundTemplate3Png.toLowerCase();
   }
 
   Size _resolveCanvasSize({
@@ -638,13 +675,24 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
   }
 
   Future<Uint8List?> _captureBoardImage() async {
-    final BuildContext? boundaryContext = _canvasBoundaryKey.currentContext;
-    if (boundaryContext == null) return null;
-    final RenderObject? renderObject = boundaryContext.findRenderObject();
-    if (renderObject is! RenderRepaintBoundary) return null;
-    final RenderRepaintBoundary boundary = renderObject;
+    if (_isCapturingBoardImage) return null;
+    _isCapturingBoardImage = true;
+
+    if (mounted && !_hideTemplateAddActionForCapture) {
+      setState(() {
+        _hideTemplateAddActionForCapture = true;
+      });
+      await WidgetsBinding.instance.endOfFrame;
+    }
 
     try {
+      final BuildContext? boundaryContext = _canvasBoundaryKey.currentContext;
+      if (boundaryContext == null) return null;
+      if (!boundaryContext.mounted) return null;
+      final RenderObject? renderObject = boundaryContext.findRenderObject();
+      if (renderObject is! RenderRepaintBoundary) return null;
+      final RenderRepaintBoundary boundary = renderObject;
+
       final ui.Image image = await boundary.toImage(pixelRatio: 3);
       final ByteData? byteData = await image.toByteData(
         format: ui.ImageByteFormat.png,
@@ -652,6 +700,13 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
       return byteData?.buffer.asUint8List();
     } catch (_) {
       return null;
+    } finally {
+      _isCapturingBoardImage = false;
+      if (mounted && _hideTemplateAddActionForCapture) {
+        setState(() {
+          _hideTemplateAddActionForCapture = false;
+        });
+      }
     }
   }
 
@@ -965,6 +1020,14 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                 initialOffsetY: selected.contentOffsetY,
                 initialRotation: selected.contentRotation,
                 enableAssetFrameOverlay: widget.enableAssetFrameOverlay,
+                useLightClassicInnerBorder: _useLightClassicInnerBorder(board),
+                useScallopedClassicFrame: _useScallopedClassicFrameForTemplate(
+                  board,
+                ),
+                usePerforatedScallopStyle:
+                    _usePerforatedScallopStyleForTemplate(board),
+                useRetroPatchworkScallopStyle:
+                    _useRetroPatchworkScallopStyleForTemplate(board),
               ),
             );
           },
@@ -1286,6 +1349,10 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
   Widget _buildTemplateSlotLayer({
     required StampEditLayer layer,
     required Size canvasSize,
+    required bool useLightClassicInnerBorder,
+    required bool useScallopedClassicFrame,
+    required bool usePerforatedScallopStyle,
+    required bool useRetroPatchworkScallopStyle,
   }) {
     final double widthRatio = _templateWidthRatio(layer);
     final double heightRatio = _templateHeightRatio(layer);
@@ -1325,7 +1392,8 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                 width: slotWidth,
                 height: slotHeight,
                 imageUrl: layer.imageUrl,
-                showAddAction: !_layerHasImage(layer),
+                showAddAction:
+                    !_hideTemplateAddActionForCapture && !_layerHasImage(layer),
                 isSelected: isSelected,
                 isLocked: layer.isLocked,
                 frameShape: layer.frameShape,
@@ -1336,6 +1404,10 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                 imageOffsetX: layer.contentOffsetX,
                 imageOffsetY: layer.contentOffsetY,
                 imageRotation: layer.contentRotation,
+                useLightClassicInnerBorder: useLightClassicInnerBorder,
+                useScallopedClassicFrame: useScallopedClassicFrame,
+                usePerforatedScallopStyle: usePerforatedScallopStyle,
+                useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
               ),
             ),
           ),
@@ -1363,6 +1435,14 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
     final String templateBackgroundAssetPath =
         board.templateBackgroundAssetPath?.trim() ?? '';
     final Color canvasColor = _resolveCanvasColor(board);
+    final bool useLightClassicInnerBorder = _useLightClassicInnerBorder(board);
+    final bool useScallopedClassicFrame = _useScallopedClassicFrameForTemplate(
+      board,
+    );
+    final bool usePerforatedScallopStyle =
+        _usePerforatedScallopStyleForTemplate(board);
+    final bool useRetroPatchworkScallopStyle =
+        _useRetroPatchworkScallopStyleForTemplate(board);
 
     final EdgeInsets contentPadding = widget.showBoardHeader
         ? const EdgeInsets.fromLTRB(
@@ -1501,6 +1581,14 @@ class _StampverseEditStudioViewState extends State<StampverseEditStudioView> {
                                         return _buildTemplateSlotLayer(
                                           layer: layer,
                                           canvasSize: canvasSize,
+                                          useLightClassicInnerBorder:
+                                              useLightClassicInnerBorder,
+                                          useScallopedClassicFrame:
+                                              useScallopedClassicFrame,
+                                          usePerforatedScallopStyle:
+                                              usePerforatedScallopStyle,
+                                          useRetroPatchworkScallopStyle:
+                                              useRetroPatchworkScallopStyle,
                                         );
                                       }
                                       return _buildFreeformLayer(
@@ -1604,6 +1692,10 @@ class _TemplateImageAdjustSheet extends StatefulWidget {
     required this.initialOffsetY,
     required this.initialRotation,
     required this.enableAssetFrameOverlay,
+    required this.useLightClassicInnerBorder,
+    required this.useScallopedClassicFrame,
+    required this.usePerforatedScallopStyle,
+    required this.useRetroPatchworkScallopStyle,
   });
 
   final String imageUrl;
@@ -1616,6 +1708,10 @@ class _TemplateImageAdjustSheet extends StatefulWidget {
   final double initialOffsetY;
   final double initialRotation;
   final bool enableAssetFrameOverlay;
+  final bool useLightClassicInnerBorder;
+  final bool useScallopedClassicFrame;
+  final bool usePerforatedScallopStyle;
+  final bool useRetroPatchworkScallopStyle;
 
   @override
   State<_TemplateImageAdjustSheet> createState() =>
@@ -2032,6 +2128,14 @@ class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
                                   imageOffsetY: _offsetY,
                                   imageRotation: _rotation,
                                   showLockBadge: false,
+                                  useLightClassicInnerBorder:
+                                      widget.useLightClassicInnerBorder,
+                                  useScallopedClassicFrame:
+                                      widget.useScallopedClassicFrame,
+                                  usePerforatedScallopStyle:
+                                      widget.usePerforatedScallopStyle,
+                                  useRetroPatchworkScallopStyle:
+                                      widget.useRetroPatchworkScallopStyle,
                                 ),
                               ),
                               Positioned(
@@ -2197,6 +2301,10 @@ class _TemplateSlotSurface extends StatelessWidget {
     this.imageOffsetY = 0,
     this.imageRotation = 0,
     this.showLockBadge = true,
+    this.useLightClassicInnerBorder = false,
+    this.useScallopedClassicFrame = false,
+    this.usePerforatedScallopStyle = false,
+    this.useRetroPatchworkScallopStyle = false,
   });
 
   final double width;
@@ -2214,9 +2322,21 @@ class _TemplateSlotSurface extends StatelessWidget {
   final double imageOffsetY;
   final double imageRotation;
   final bool showLockBadge;
+  final bool useLightClassicInnerBorder;
+  final bool useScallopedClassicFrame;
+  final bool usePerforatedScallopStyle;
+  final bool useRetroPatchworkScallopStyle;
 
   String? _frameOverlayAssetPath() {
     if (!enableAssetFrameOverlay) return null;
+    if (usePerforatedScallopStyle &&
+        frameShape == StampEditFrameShape.stampScallop) {
+      return null;
+    }
+    if (useRetroPatchworkScallopStyle &&
+        frameShape == StampEditFrameShape.stampScallop) {
+      return null;
+    }
     switch (frameShape) {
       case StampEditFrameShape.stampScallop:
         return AppAssets.creativeTemplateStampFrameOverlayPng;
@@ -2231,17 +2351,41 @@ class _TemplateSlotSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color slotBackgroundColor = AppColors.stampverseBorderSoft.withValues(
-      alpha: 0.36,
-    );
-    final double borderWidth = isSelected ? 2 : 1.2;
+    final bool usePerforatedScallop =
+        usePerforatedScallopStyle &&
+        frameShape == StampEditFrameShape.stampScallop;
+    final bool useRetroPatchworkScallop =
+        useRetroPatchworkScallopStyle &&
+        frameShape == StampEditFrameShape.stampScallop;
+    final Color slotBackgroundColor = usePerforatedScallop
+        ? AppColors.stampverseBorderSoft.withValues(alpha: 0.55)
+        : useRetroPatchworkScallop
+        ? AppColors.white.withValues(alpha: 0.64)
+        : AppColors.stampverseBorderSoft.withValues(alpha: 0.36);
+    final double borderWidth = isSelected
+        ? 2
+        : (usePerforatedScallop ? 1 : 1.2);
     final Color borderColor = isSelected
         ? AppColors.colorF586AA6
         : frameShape == StampEditFrameShape.stampClassic
-        ? AppColors.stampversePrimaryText
+        ? (useLightClassicInnerBorder
+              ? AppColors.black.withValues(alpha: 0.88)
+              : AppColors.stampversePrimaryText)
+        : usePerforatedScallop
+        ? AppColors.colorF8F1DD.withValues(alpha: 0.96)
+        : useRetroPatchworkScallop
+        ? AppColors.white.withValues(alpha: 0.96)
         : AppColors.white;
     final String? overlayAssetPath = _frameOverlayAssetPath();
     final bool showPainterBorder = overlayAssetPath == null;
+    final Color classicInnerBorderColor = useLightClassicInnerBorder
+        ? AppColors.white.withValues(alpha: isSelected ? 0.92 : 0.82)
+        : AppColors.stampversePrimaryText.withValues(
+            alpha: isSelected ? 0.92 : 0.82,
+          );
+    final double classicInnerBorderWidth = useLightClassicInnerBorder
+        ? (isSelected ? 1.2 : 1)
+        : (isSelected ? 1.5 : 1.15);
 
     return SizedBox(
       width: width,
@@ -2252,23 +2396,62 @@ class _TemplateSlotSurface extends StatelessWidget {
           final Rect frameRect = Offset.zero & size;
           final bool isClassicStamp =
               frameShape == StampEditFrameShape.stampClassic;
-          final double innerInset = (math.min(width, height) * 0.16)
+          final double classicInnerInset = (math.min(width, height) * 0.16)
               .clamp(5.0, 16.0)
               .toDouble();
+          final double perforatedInnerInset = (math.min(width, height) * 0.07)
+              .clamp(4.5, 9.5)
+              .toDouble();
+          final double perforatedInnerRadius = (math.min(width, height) * 0.05)
+              .clamp(2.6, 4.8)
+              .toDouble();
+          final Color perforatedOuterColor = AppColors.colorF8F1DD.withValues(
+            alpha: 0.98,
+          );
+          final Color perforatedInnerBorderColor = AppColors.black.withValues(
+            alpha: isSelected ? 0.32 : 0.26,
+          );
+          final double perforatedInnerBorderWidth = isSelected ? 1.15 : 0.9;
+          final double retroInnerInset = (math.min(width, height) * 0.13)
+              .clamp(5.5, 10.5)
+              .toDouble();
+          final double retroInnerRadius = (math.min(width, height) * 0.012)
+              .clamp(0.8, 2.1)
+              .toDouble();
+          final Color retroOuterColor = AppColors.white.withValues(alpha: 0.97);
+          final Color retroInnerColor = AppColors.white.withValues(alpha: 0.86);
+          final Color retroInnerBorderColor = AppColors.white.withValues(
+            alpha: 0.92,
+          );
+          final double retroInnerBorderWidth = isSelected ? 1.25 : 0.95;
 
           return Stack(
             fit: StackFit.expand,
             children: <Widget>[
-              if (isClassicStamp)
+              if (isClassicStamp ||
+                  usePerforatedScallop ||
+                  useRetroPatchworkScallop)
                 _buildTemplateFrameClip(
                   frameShape: frameShape,
                   clipRect: frameRect,
-                  child: const ColoredBox(color: AppColors.colorF8F1DD),
+                  useScallopedClassicFrame: useScallopedClassicFrame,
+                  usePerforatedScallopStyle: usePerforatedScallopStyle,
+                  useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
+                  child: ColoredBox(
+                    color: isClassicStamp
+                        ? AppColors.colorF8F1DD
+                        : useRetroPatchworkScallop
+                        ? retroOuterColor
+                        : perforatedOuterColor,
+                  ),
                 )
               else
                 _buildTemplateFrameClip(
                   frameShape: frameShape,
                   clipRect: frameRect,
+                  useScallopedClassicFrame: useScallopedClassicFrame,
+                  usePerforatedScallopStyle: usePerforatedScallopStyle,
+                  useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
                   child: ColoredBox(
                     color: slotBackgroundColor,
                     child: imageUrl.trim().isEmpty
@@ -2287,9 +2470,15 @@ class _TemplateSlotSurface extends StatelessWidget {
               if (isClassicStamp)
                 Positioned.fill(
                   child: Padding(
-                    padding: EdgeInsets.all(innerInset),
-                    child: ColoredBox(
-                      color: slotBackgroundColor,
+                    padding: EdgeInsets.all(classicInnerInset),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: slotBackgroundColor,
+                        border: Border.all(
+                          color: classicInnerBorderColor,
+                          width: classicInnerBorderWidth,
+                        ),
+                      ),
                       child: imageUrl.trim().isEmpty
                           ? null
                           : _TemplateSlotImageViewport(
@@ -2304,10 +2493,74 @@ class _TemplateSlotSurface extends StatelessWidget {
                     ),
                   ),
                 ),
+              if (usePerforatedScallop)
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.all(perforatedInnerInset),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(
+                        perforatedInnerRadius,
+                      ),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: slotBackgroundColor,
+                          border: Border.all(
+                            color: perforatedInnerBorderColor,
+                            width: perforatedInnerBorderWidth,
+                          ),
+                        ),
+                        child: imageUrl.trim().isEmpty
+                            ? null
+                            : _TemplateSlotImageViewport(
+                                imageUrl: imageUrl,
+                                scale: imageScale,
+                                scaleX: imageScaleX,
+                                scaleY: imageScaleY,
+                                offsetX: imageOffsetX,
+                                offsetY: imageOffsetY,
+                                rotation: imageRotation,
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
+              if (useRetroPatchworkScallop)
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.all(retroInnerInset),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(retroInnerRadius),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: retroInnerColor,
+                          border: Border.all(
+                            color: retroInnerBorderColor,
+                            width: retroInnerBorderWidth,
+                          ),
+                        ),
+                        child: imageUrl.trim().isEmpty
+                            ? null
+                            : _TemplateSlotImageViewport(
+                                imageUrl: imageUrl,
+                                scale: imageScale,
+                                scaleX: imageScaleX,
+                                scaleY: imageScaleY,
+                                offsetX: imageOffsetX,
+                                offsetY: imageOffsetY,
+                                rotation: imageRotation,
+                              ),
+                      ),
+                    ),
+                  ),
+                ),
               CustomPaint(
                 painter: showPainterBorder
                     ? _TemplateSlotBorderPainter(
                         frameShape: frameShape,
+                        useScallopedClassicFrame: useScallopedClassicFrame,
+                        usePerforatedScallopStyle: usePerforatedScallopStyle,
+                        useRetroPatchworkScallopStyle:
+                            useRetroPatchworkScallopStyle,
                         borderColor: borderColor,
                         borderWidth: borderWidth,
                       )
@@ -2359,6 +2612,9 @@ class _TemplateSlotSurface extends StatelessWidget {
 Widget _buildTemplateFrameClip({
   required StampEditFrameShape frameShape,
   required Rect clipRect,
+  required bool useScallopedClassicFrame,
+  required bool usePerforatedScallopStyle,
+  required bool useRetroPatchworkScallopStyle,
   required Widget child,
 }) {
   switch (frameShape) {
@@ -2374,6 +2630,9 @@ Widget _buildTemplateFrameClip({
         clipper: _TemplateSlotFrameClipper(
           frameShape: frameShape,
           clipRect: clipRect,
+          useScallopedClassicFrame: useScallopedClassicFrame,
+          usePerforatedScallopStyle: usePerforatedScallopStyle,
+          useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
         ),
         child: child,
       );
@@ -2383,39 +2642,234 @@ Widget _buildTemplateFrameClip({
 Path _buildTemplateFramePath({
   required StampEditFrameShape frameShape,
   required Rect rect,
+  required bool useScallopedClassicFrame,
+  required bool usePerforatedScallopStyle,
+  required bool useRetroPatchworkScallopStyle,
 }) {
+  if (useRetroPatchworkScallopStyle &&
+      frameShape == StampEditFrameShape.stampScallop) {
+    return _buildRetroPatchworkScallopPath(rect);
+  }
+  if (usePerforatedScallopStyle &&
+      frameShape == StampEditFrameShape.stampScallop) {
+    return _buildDensePerforatedScallopPath(rect);
+  }
+  if (useScallopedClassicFrame &&
+      frameShape == StampEditFrameShape.stampClassic) {
+    return buildTemplateFramePath(
+      frameShape: StampEditFrameShape.stampSquare,
+      rect: rect,
+    );
+  }
   return buildTemplateFramePath(frameShape: frameShape, rect: rect);
+}
+
+Path _buildDensePerforatedScallopPath(Rect rect) {
+  if (rect.width <= 0 || rect.height <= 0) {
+    return Path()..addRect(rect);
+  }
+
+  final double minEdge = math.min(rect.width, rect.height);
+  final double notchRadius = (minEdge * 0.032).clamp(1.9, 3.9).toDouble();
+  final int topCount = math.max(
+    8,
+    math.max(
+      (rect.width / 10).round(),
+      (rect.width / (notchRadius * 2.8)).round(),
+    ),
+  );
+  final int sideCount = math.max(
+    10,
+    math.max(
+      (rect.height / 10).round(),
+      (rect.height / (notchRadius * 2.8)).round(),
+    ),
+  );
+
+  final Path base = Path()..addRect(rect);
+  final Path notches = Path();
+  final double topStep = rect.width / (topCount + 1);
+  final double sideStep = rect.height / (sideCount + 1);
+
+  for (int index = 1; index <= topCount; index += 1) {
+    final double x = rect.left + (topStep * index);
+    notches.addOval(
+      Rect.fromCircle(center: Offset(x, rect.top), radius: notchRadius),
+    );
+    notches.addOval(
+      Rect.fromCircle(center: Offset(x, rect.bottom), radius: notchRadius),
+    );
+  }
+
+  for (int index = 1; index <= sideCount; index += 1) {
+    final double y = rect.top + (sideStep * index);
+    notches.addOval(
+      Rect.fromCircle(center: Offset(rect.left, y), radius: notchRadius),
+    );
+    notches.addOval(
+      Rect.fromCircle(center: Offset(rect.right, y), radius: notchRadius),
+    );
+  }
+
+  final Path perforatedPath = Path.combine(
+    PathOperation.difference,
+    base,
+    notches,
+  );
+  final double cornerRadius = (notchRadius * 0.82)
+      .clamp(1.2, minEdge / 9)
+      .toDouble();
+  final Path cornerMask = Path()
+    ..addRRect(RRect.fromRectAndRadius(rect, Radius.circular(cornerRadius)));
+  return Path.combine(PathOperation.intersect, perforatedPath, cornerMask);
+}
+
+Path _buildRetroPatchworkScallopPath(Rect rect) {
+  if (rect.width <= 0 || rect.height <= 0) {
+    return Path()..addRect(rect);
+  }
+
+  final double minEdge = math.min(rect.width, rect.height);
+  final double toothDepth = (minEdge * 0.052).clamp(2.2, 4.8).toDouble();
+  final double cornerRadius = (minEdge * 0.075)
+      .clamp(toothDepth * 1.7, minEdge * 0.22)
+      .toDouble();
+  if ((cornerRadius * 2) >= rect.width || (cornerRadius * 2) >= rect.height) {
+    return _buildDensePerforatedScallopPath(rect);
+  }
+
+  final double left = rect.left + cornerRadius;
+  final double right = rect.right - cornerRadius;
+  final double top = rect.top + cornerRadius;
+  final double bottom = rect.bottom - cornerRadius;
+  final double horizontalSpan = right - left;
+  final double verticalSpan = bottom - top;
+
+  final int horizontalTeeth = math.max(
+    4,
+    math.max(
+      (horizontalSpan / 11).round(),
+      (horizontalSpan / (toothDepth * 2.4)).round(),
+    ),
+  );
+  final int verticalTeeth = math.max(
+    6,
+    math.max(
+      (verticalSpan / 11).round(),
+      (verticalSpan / (toothDepth * 2.4)).round(),
+    ),
+  );
+
+  final double topStep = horizontalSpan / horizontalTeeth;
+  final double sideStep = verticalSpan / verticalTeeth;
+  final Path path = Path()..moveTo(left, rect.top);
+
+  for (int index = 0; index < horizontalTeeth; index += 1) {
+    final double segmentStart = left + (topStep * index);
+    final double segmentEnd = segmentStart + topStep;
+    path.lineTo(segmentStart + (topStep / 2), rect.top + toothDepth);
+    path.lineTo(segmentEnd, rect.top);
+  }
+
+  path.arcToPoint(
+    Offset(rect.right, top),
+    radius: Radius.circular(cornerRadius),
+    clockwise: true,
+  );
+
+  for (int index = 0; index < verticalTeeth; index += 1) {
+    final double segmentStart = top + (sideStep * index);
+    final double segmentEnd = segmentStart + sideStep;
+    path.lineTo(rect.right - toothDepth, segmentStart + (sideStep / 2));
+    path.lineTo(rect.right, segmentEnd);
+  }
+
+  path.arcToPoint(
+    Offset(right, rect.bottom),
+    radius: Radius.circular(cornerRadius),
+    clockwise: true,
+  );
+
+  for (int index = 0; index < horizontalTeeth; index += 1) {
+    final double segmentStart = right - (topStep * index);
+    final double segmentEnd = segmentStart - topStep;
+    path.lineTo(segmentStart - (topStep / 2), rect.bottom - toothDepth);
+    path.lineTo(segmentEnd, rect.bottom);
+  }
+
+  path.arcToPoint(
+    Offset(rect.left, bottom),
+    radius: Radius.circular(cornerRadius),
+    clockwise: true,
+  );
+
+  for (int index = 0; index < verticalTeeth; index += 1) {
+    final double segmentStart = bottom - (sideStep * index);
+    final double segmentEnd = segmentStart - sideStep;
+    path.lineTo(rect.left + toothDepth, segmentStart - (sideStep / 2));
+    path.lineTo(rect.left, segmentEnd);
+  }
+
+  path.arcToPoint(
+    Offset(left, rect.top),
+    radius: Radius.circular(cornerRadius),
+    clockwise: true,
+  );
+  path.close();
+  return path;
 }
 
 class _TemplateSlotFrameClipper extends CustomClipper<Path> {
   const _TemplateSlotFrameClipper({
     required this.frameShape,
     required this.clipRect,
+    required this.useScallopedClassicFrame,
+    required this.usePerforatedScallopStyle,
+    required this.useRetroPatchworkScallopStyle,
   });
 
   final StampEditFrameShape frameShape;
   final Rect clipRect;
+  final bool useScallopedClassicFrame;
+  final bool usePerforatedScallopStyle;
+  final bool useRetroPatchworkScallopStyle;
 
   @override
   Path getClip(Size size) {
-    return _buildTemplateFramePath(frameShape: frameShape, rect: clipRect);
+    return _buildTemplateFramePath(
+      frameShape: frameShape,
+      rect: clipRect,
+      useScallopedClassicFrame: useScallopedClassicFrame,
+      usePerforatedScallopStyle: usePerforatedScallopStyle,
+      useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
+    );
   }
 
   @override
   bool shouldReclip(covariant _TemplateSlotFrameClipper oldClipper) {
     return oldClipper.frameShape != frameShape ||
-        oldClipper.clipRect != clipRect;
+        oldClipper.clipRect != clipRect ||
+        oldClipper.useScallopedClassicFrame != useScallopedClassicFrame ||
+        oldClipper.usePerforatedScallopStyle != usePerforatedScallopStyle ||
+        oldClipper.useRetroPatchworkScallopStyle !=
+            useRetroPatchworkScallopStyle;
   }
 }
 
 class _TemplateSlotBorderPainter extends CustomPainter {
   const _TemplateSlotBorderPainter({
     required this.frameShape,
+    required this.useScallopedClassicFrame,
+    required this.usePerforatedScallopStyle,
+    required this.useRetroPatchworkScallopStyle,
     required this.borderColor,
     required this.borderWidth,
   });
 
   final StampEditFrameShape frameShape;
+  final bool useScallopedClassicFrame;
+  final bool usePerforatedScallopStyle;
+  final bool useRetroPatchworkScallopStyle;
   final Color borderColor;
   final double borderWidth;
 
@@ -2425,14 +2879,22 @@ class _TemplateSlotBorderPainter extends CustomPainter {
     final Path borderPath = _buildTemplateFramePath(
       frameShape: frameShape,
       rect: borderRect,
+      useScallopedClassicFrame: useScallopedClassicFrame,
+      usePerforatedScallopStyle: usePerforatedScallopStyle,
+      useRetroPatchworkScallopStyle: useRetroPatchworkScallopStyle,
     );
     final bool isClassicStamp = frameShape == StampEditFrameShape.stampClassic;
+    final bool isPerforatedScallop =
+        usePerforatedScallopStyle &&
+        frameShape == StampEditFrameShape.stampScallop;
     canvas.drawPath(
       borderPath,
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = isClassicStamp
             ? math.max(1.8, borderWidth + 0.5)
+            : isPerforatedScallop
+            ? math.max(0.9, borderWidth - 0.1)
             : borderWidth
         ..color = borderColor,
     );
@@ -2441,6 +2903,10 @@ class _TemplateSlotBorderPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _TemplateSlotBorderPainter oldDelegate) {
     return oldDelegate.frameShape != frameShape ||
+        oldDelegate.useScallopedClassicFrame != useScallopedClassicFrame ||
+        oldDelegate.usePerforatedScallopStyle != usePerforatedScallopStyle ||
+        oldDelegate.useRetroPatchworkScallopStyle !=
+            useRetroPatchworkScallopStyle ||
         oldDelegate.borderColor != borderColor ||
         oldDelegate.borderWidth != borderWidth;
   }
@@ -2917,7 +3383,7 @@ class _TemplateSlotImage extends StatelessWidget {
           final Uint8List bytes = base64Decode(parts.last);
           return Image.memory(
             bytes,
-            fit: BoxFit.cover,
+            fit: BoxFit.contain,
             filterQuality: FilterQuality.high,
             gaplessPlayback: true,
             errorBuilder: (_, _, _) => const SizedBox.shrink(),

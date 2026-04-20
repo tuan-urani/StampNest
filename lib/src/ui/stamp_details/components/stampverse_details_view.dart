@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import 'package:stamp_camera/src/core/model/stamp_data_model.dart';
+import 'package:stamp_camera/src/core/model/stamp_shape_type.dart';
 import 'package:stamp_camera/src/locale/locale_key.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_icon_button.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_primary_button.dart';
@@ -61,6 +63,10 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
   static const Duration _gallerySaveTimeout = Duration(seconds: 20);
   static const double _kSwipeDistanceThreshold = 28;
   static const double _kSwipeVelocityThreshold = 120;
+  static const double _kStampGuideWidthFactor = 0.58;
+  static const double _kStampGuideMaxHeightFactor = 0.46;
+  static const double _kStampHorizontalPadding = 24;
+  static const double _kStampFallbackWidth = 200;
 
   bool _isDownloading = false;
   bool _isSharing = false;
@@ -651,7 +657,71 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
                           (BuildContext context, BoxConstraints constraints) {
                             final bool isCompactHeight =
                                 constraints.maxHeight < 560;
-                            const double stampWidth = 200;
+                            final double aspectRatio =
+                                widget.stamp.shapeType.aspectRatio > 0
+                                ? widget.stamp.shapeType.aspectRatio
+                                : 1;
+                            final double savedBoundsWidth =
+                                widget.stamp.previewBoundsWidthAtSave ?? 0;
+                            final double savedBoundsHeight =
+                                widget.stamp.previewBoundsHeightAtSave ?? 0;
+                            final bool hasSavedBounds =
+                                savedBoundsWidth.isFinite &&
+                                savedBoundsWidth > 0 &&
+                                savedBoundsHeight.isFinite &&
+                                savedBoundsHeight > 0;
+                            final double viewportWidth = math.max(
+                              0,
+                              constraints.maxWidth -
+                                  (_kStampHorizontalPadding * 2),
+                            );
+                            final double viewportHeight = math.max(
+                              0,
+                              constraints.maxHeight,
+                            );
+                            final double dynamicStampWidth = math.min(
+                              viewportWidth * _kStampGuideWidthFactor,
+                              viewportHeight *
+                                  _kStampGuideMaxHeightFactor *
+                                  aspectRatio,
+                            );
+                            final double fallbackStampWidth =
+                                dynamicStampWidth.isFinite &&
+                                    dynamicStampWidth > 0
+                                ? dynamicStampWidth
+                                : _kStampFallbackWidth;
+                            final double fallbackStampHeight =
+                                fallbackStampWidth / aspectRatio;
+
+                            final double stampBoundsWidth = hasSavedBounds
+                                ? savedBoundsWidth
+                                : fallbackStampWidth;
+                            final double stampBoundsHeight = hasSavedBounds
+                                ? savedBoundsHeight
+                                : fallbackStampHeight;
+
+                            final double fitScaleX =
+                                (viewportWidth > 0 &&
+                                    stampBoundsWidth > viewportWidth)
+                                ? viewportWidth / stampBoundsWidth
+                                : 1;
+                            final double fitScaleY =
+                                (viewportHeight > 0 &&
+                                    stampBoundsHeight > viewportHeight)
+                                ? viewportHeight / stampBoundsHeight
+                                : 1;
+                            final double stampScale = math.min(
+                              fitScaleX,
+                              fitScaleY,
+                            );
+                            final double displayBoundsWidth =
+                                stampBoundsWidth * stampScale;
+                            final double displayBoundsHeight =
+                                stampBoundsHeight * stampScale;
+                            final double displayAspectRatio =
+                                displayBoundsHeight > 0
+                                ? displayBoundsWidth / displayBoundsHeight
+                                : aspectRatio;
                             final Widget stampPreview = Stack(
                               alignment: Alignment.center,
                               children: <Widget>[
@@ -659,7 +729,8 @@ class _StampverseDetailsViewState extends State<StampverseDetailsView> {
                                   imageUrl: widget.stamp.imageUrl,
                                   shapeType: widget.stamp.shapeType,
                                   applyShapeClip: false,
-                                  width: stampWidth,
+                                  width: displayBoundsWidth,
+                                  aspectRatioOverride: displayAspectRatio,
                                   showShadow: false,
                                 ),
                                 if (widget.canSwipePrevious)

@@ -11,6 +11,27 @@ import 'package:stamp_camera/src/core/model/stamp_shape_type.dart';
 import 'package:stamp_camera/src/ui/stampverse_core/components/stampverse_stamp_shape.dart';
 
 const double kSaveStampPreviewBaseWidth = 200;
+const double kSaveStampGuideWidthFactor = 0.58;
+const double kSaveStampGuideMaxHeightFactor = 0.46;
+
+double resolveSaveStampPreviewBaseWidth({
+  required Size viewportSize,
+  required StampShapeType shapeType,
+}) {
+  final double aspectRatio = shapeType.aspectRatio > 0
+      ? shapeType.aspectRatio
+      : 1;
+  final double widthFromViewport =
+      viewportSize.width * kSaveStampGuideWidthFactor;
+  final double widthFromHeight =
+      viewportSize.height * kSaveStampGuideMaxHeightFactor * aspectRatio;
+  final double resolvedWidth = math.min(widthFromViewport, widthFromHeight);
+
+  if (!resolvedWidth.isFinite || resolvedWidth <= 0) {
+    return kSaveStampPreviewBaseWidth;
+  }
+  return resolvedWidth;
+}
 
 Size resolveSaveStampPreviewSize({
   required StampShapeType shapeType,
@@ -25,25 +46,25 @@ Size resolveSaveStampPreviewSize({
   return Size(resolvedWidth, resolvedWidth / aspectRatio);
 }
 
-double resolveSaveStampRotationFitScale({
+Size resolveSaveStampRotatedBounds({
   required Size size,
   required double rotationRadians,
 }) {
   final double width = size.width;
   final double height = size.height;
-  if (width <= 0 || height <= 0) return 1;
+  if (!width.isFinite || !height.isFinite || width <= 0 || height <= 0) {
+    final double safeWidth = width.isFinite && width > 0 ? width : 0;
+    final double safeHeight = height.isFinite && height > 0 ? height : 0;
+    return Size(safeWidth, safeHeight);
+  }
 
   final double safeRotation = rotationRadians.isFinite ? rotationRadians : 0;
   final double cosAbs = math.cos(safeRotation).abs();
   final double sinAbs = math.sin(safeRotation).abs();
-
   final double rotatedWidth = (width * cosAbs) + (height * sinAbs);
   final double rotatedHeight = (width * sinAbs) + (height * cosAbs);
-  if (rotatedWidth <= 0 || rotatedHeight <= 0) return 1;
 
-  final double scale = (width / rotatedWidth).clamp(0, 1).toDouble();
-  final double scaleHeight = (height / rotatedHeight).clamp(0, 1).toDouble();
-  return scale < scaleHeight ? scale : scaleHeight;
+  return Size(rotatedWidth, rotatedHeight);
 }
 
 Future<String?> exportSaveStampImageDataUrl({
@@ -101,26 +122,32 @@ Future<String?> exportSaveStampImageDataUrl({
       1,
     ]);
     final Path shapePath = previewShapePath.transform(scaleMatrix);
-    final Rect targetRect = Rect.fromLTWH(
+    final Rect sourceRect = Rect.fromLTWH(
       0,
       0,
       targetWidth.toDouble(),
       targetHeight.toDouble(),
     );
     final double safeRotation = rotationRadians.isFinite ? rotationRadians : 0;
-    final double fitScale = resolveSaveStampRotationFitScale(
-      size: previewShapeSize,
+    final Size rotatedSourceBounds = resolveSaveStampRotatedBounds(
+      size: sourceRect.size,
       rotationRadians: safeRotation,
+    );
+    final int outputWidth = math.max(1, rotatedSourceBounds.width.ceil());
+    final int outputHeight = math.max(1, rotatedSourceBounds.height.ceil());
+    final Rect outputRect = Rect.fromLTWH(
+      0,
+      0,
+      outputWidth.toDouble(),
+      outputHeight.toDouble(),
     );
 
     final ui.PictureRecorder recorder = ui.PictureRecorder();
     final Canvas canvas = Canvas(recorder);
     canvas.save();
-    final Offset center = targetRect.center;
-    canvas.translate(center.dx, center.dy);
-    canvas.scale(fitScale, fitScale);
+    canvas.translate(outputRect.center.dx, outputRect.center.dy);
     canvas.rotate(safeRotation);
-    canvas.translate(-center.dx, -center.dy);
+    canvas.translate(-sourceRect.center.dx, -sourceRect.center.dy);
     canvas.clipPath(shapePath, doAntiAlias: true);
     canvas.drawImageRect(
       sourceImage,
@@ -130,7 +157,7 @@ Future<String?> exportSaveStampImageDataUrl({
         sourceImage.width.toDouble(),
         sourceImage.height.toDouble(),
       ),
-      targetRect,
+      sourceRect,
       Paint()
         ..isAntiAlias = true
         ..filterQuality = FilterQuality.high,
@@ -138,7 +165,7 @@ Future<String?> exportSaveStampImageDataUrl({
     canvas.restore();
 
     final ui.Picture picture = recorder.endRecording();
-    outputImage = await picture.toImage(targetWidth, targetHeight);
+    outputImage = await picture.toImage(outputWidth, outputHeight);
     final ByteData? outputData = await outputImage.toByteData(
       format: ui.ImageByteFormat.png,
     );

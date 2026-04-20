@@ -959,6 +959,8 @@ class _TemplatePreviewFrame extends StatelessWidget {
         final double innerInset = (math.min(size.width, size.height) * 0.16)
             .clamp(3.0, 10.0)
             .toDouble();
+        final Color classicInnerBorderColor = AppColors.stampversePrimaryText
+            .withValues(alpha: 0.8);
         final Color borderColor = frameShape == StampEditFrameShape.stampClassic
             ? AppColors.stampversePrimaryText
             : AppColors.white;
@@ -984,9 +986,15 @@ class _TemplatePreviewFrame extends StatelessWidget {
               Positioned.fill(
                 child: Padding(
                   padding: EdgeInsets.all(innerInset),
-                  child: ColoredBox(
-                    color: AppColors.stampverseBorderSoft.withValues(
-                      alpha: 0.55,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppColors.stampverseBorderSoft.withValues(
+                        alpha: 0.55,
+                      ),
+                      border: Border.all(
+                        color: classicInnerBorderColor,
+                        width: 1,
+                      ),
                     ),
                   ),
                 ),

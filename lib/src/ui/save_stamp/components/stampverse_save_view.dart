@@ -32,7 +32,13 @@ class StampverseSaveView extends StatefulWidget {
   final List<String> collections;
   final String defaultCollection;
   final VoidCallback onBack;
-  final ValueChanged<double> onSave;
+  final void Function(
+    double rotationRadians,
+    double previewBaseWidth,
+    double previewBoundsWidth,
+    double previewBoundsHeight,
+  )
+  onSave;
 
   @override
   State<StampverseSaveView> createState() => _StampverseSaveViewState();
@@ -324,12 +330,39 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
 
   @override
   Widget build(BuildContext context) {
+    const double horizontalPadding = 24;
+    final MediaQueryData mediaQuery = MediaQuery.of(context);
     final List<String> collections = _collectionOptions();
-    final double keyboardInset = MediaQuery.of(context).viewInsets.bottom;
+    final double keyboardInset = mediaQuery.viewInsets.bottom;
     final bool isKeyboardVisible = keyboardInset > 0;
-    final Size previewSize = resolveSaveStampPreviewSize(
+    final double previewViewportWidth = max(
+      0,
+      mediaQuery.size.width - (horizontalPadding * 2),
+    );
+    final double previewViewportHeight = max(
+      0,
+      mediaQuery.size.height - mediaQuery.padding.vertical,
+    );
+    final double previewBaseWidth = resolveSaveStampPreviewBaseWidth(
+      viewportSize: Size(previewViewportWidth, previewViewportHeight),
       shapeType: widget.shapeType,
     );
+    final Size previewBaseSize = resolveSaveStampPreviewSize(
+      shapeType: widget.shapeType,
+      baseWidth: previewBaseWidth,
+    );
+    final Size rotatedPreviewBounds = resolveSaveStampRotatedBounds(
+      size: previewBaseSize,
+      rotationRadians: _previewRotationRadians,
+    );
+    final double previewBoundsWidth =
+        rotatedPreviewBounds.width.isFinite && rotatedPreviewBounds.width > 0
+        ? rotatedPreviewBounds.width
+        : previewBaseSize.width;
+    final double previewBoundsHeight =
+        rotatedPreviewBounds.height.isFinite && rotatedPreviewBounds.height > 0
+        ? rotatedPreviewBounds.height
+        : previewBaseSize.height;
 
     return ColoredBox(
       color: AppColors.stampverseBackground,
@@ -371,7 +404,9 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
                       child: _SaveStampPreview(
                         imageUrl: widget.imageUrl,
                         shapeType: widget.shapeType,
-                        width: previewSize.width,
+                        width: previewBaseSize.width,
+                        boundsWidth: previewBoundsWidth,
+                        boundsHeight: previewBoundsHeight,
                         rotationRadians: _previewRotationRadians,
                       ),
                     ),
@@ -415,7 +450,12 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
                         Expanded(
                           child: _BottomActionButton(
                             label: LocaleKey.stampverseSaveTopAction.tr,
-                            onTap: () => widget.onSave(_previewRotationRadians),
+                            onTap: () => widget.onSave(
+                              _previewRotationRadians,
+                              previewBaseWidth,
+                              previewBoundsWidth,
+                              previewBoundsHeight,
+                            ),
                             isPrimary: true,
                           ),
                         ),
@@ -430,7 +470,12 @@ class _StampverseSaveViewState extends State<StampverseSaveView>
 
             return SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + keyboardInset),
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                16,
+                horizontalPadding,
+                24 + keyboardInset,
+              ),
               child: body,
             );
           },
@@ -445,38 +490,36 @@ class _SaveStampPreview extends StatelessWidget {
     required this.imageUrl,
     required this.shapeType,
     required this.width,
+    required this.boundsWidth,
+    required this.boundsHeight,
     required this.rotationRadians,
   });
 
   final String imageUrl;
   final StampShapeType shapeType;
   final double width;
+  final double boundsWidth;
+  final double boundsHeight;
   final double rotationRadians;
 
   @override
   Widget build(BuildContext context) {
-    final Size previewSize = resolveSaveStampPreviewSize(
-      shapeType: shapeType,
-      baseWidth: width,
-    );
-    final double fitScale = resolveSaveStampRotationFitScale(
-      size: previewSize,
-      rotationRadians: rotationRadians,
-    );
-
     return SizedBox(
-      width: width,
-      child: AspectRatio(
-        aspectRatio: shapeType.aspectRatio,
-        child: Center(
-          child: Transform.scale(
-            scale: fitScale,
-            child: Transform.rotate(
-              angle: rotationRadians,
-              child: StampverseStamp(
-                imageUrl: imageUrl,
-                shapeType: shapeType,
-                showShadow: false,
+      width: boundsWidth,
+      height: boundsHeight,
+      child: Center(
+        child: SizedBox(
+          width: width,
+          child: AspectRatio(
+            aspectRatio: shapeType.aspectRatio,
+            child: Center(
+              child: Transform.rotate(
+                angle: rotationRadians,
+                child: StampverseStamp(
+                  imageUrl: imageUrl,
+                  shapeType: shapeType,
+                  showShadow: false,
+                ),
               ),
             ),
           ),

@@ -9,6 +9,10 @@ class StampDataModel extends Equatable {
     required this.sourceImageUrl,
     required this.date,
     this.shapeType = StampShapeType.scallop,
+    this.rotationRadians,
+    this.previewBaseWidthAtSave,
+    this.previewBoundsWidthAtSave,
+    this.previewBoundsHeightAtSave,
     this.album,
     this.isFavorite = false,
     this.lastOpenedAt,
@@ -20,6 +24,10 @@ class StampDataModel extends Equatable {
   final String sourceImageUrl;
   final String date;
   final StampShapeType shapeType;
+  final double? rotationRadians;
+  final double? previewBaseWidthAtSave;
+  final double? previewBoundsWidthAtSave;
+  final double? previewBoundsHeightAtSave;
   final String? album;
   final bool isFavorite;
   final String? lastOpenedAt;
@@ -38,6 +46,10 @@ class StampDataModel extends Equatable {
     String? sourceImageUrl,
     String? date,
     StampShapeType? shapeType,
+    double? rotationRadians,
+    double? previewBaseWidthAtSave,
+    double? previewBoundsWidthAtSave,
+    double? previewBoundsHeightAtSave,
     String? album,
     bool? isFavorite,
     Object? lastOpenedAt = _sentinel,
@@ -49,6 +61,13 @@ class StampDataModel extends Equatable {
       sourceImageUrl: sourceImageUrl ?? this.sourceImageUrl,
       date: date ?? this.date,
       shapeType: shapeType ?? this.shapeType,
+      rotationRadians: rotationRadians ?? this.rotationRadians,
+      previewBaseWidthAtSave:
+          previewBaseWidthAtSave ?? this.previewBaseWidthAtSave,
+      previewBoundsWidthAtSave:
+          previewBoundsWidthAtSave ?? this.previewBoundsWidthAtSave,
+      previewBoundsHeightAtSave:
+          previewBoundsHeightAtSave ?? this.previewBoundsHeightAtSave,
       album: album ?? this.album,
       isFavorite: isFavorite ?? this.isFavorite,
       lastOpenedAt: lastOpenedAt == _sentinel
@@ -90,6 +109,26 @@ class StampDataModel extends Equatable {
     final StampShapeType shapeType = stampShapeFromRaw(
       _readFirstNonEmpty(json, <String>['shape', 'shape_type', 'frame']),
     );
+    final double? rotationRadians = _readDouble(json, <String>[
+      'rotationRadians',
+      'rotation_radians',
+      'rotation',
+    ]);
+    final double? previewBaseWidthAtSave = _readDouble(json, <String>[
+      'previewBaseWidthAtSave',
+      'preview_base_width_at_save',
+      'preview_base_width',
+    ]);
+    final double? previewBoundsWidthAtSave = _readDouble(json, <String>[
+      'previewBoundsWidthAtSave',
+      'preview_bounds_width_at_save',
+      'preview_bounds_width',
+    ]);
+    final double? previewBoundsHeightAtSave = _readDouble(json, <String>[
+      'previewBoundsHeightAtSave',
+      'preview_bounds_height_at_save',
+      'preview_bounds_height',
+    ]);
     final bool isFavorite = _readBool(json, <String>[
       'isFavorite',
       'is_favorite',
@@ -109,6 +148,10 @@ class StampDataModel extends Equatable {
       sourceImageUrl: sourceImageUrl,
       date: date,
       shapeType: shapeType,
+      rotationRadians: rotationRadians,
+      previewBaseWidthAtSave: previewBaseWidthAtSave,
+      previewBoundsWidthAtSave: previewBoundsWidthAtSave,
+      previewBoundsHeightAtSave: previewBoundsHeightAtSave,
       album: albumName.isEmpty ? null : albumName,
       isFavorite: isFavorite,
       lastOpenedAt: openedAt.isEmpty ? null : openedAt,
@@ -123,6 +166,13 @@ class StampDataModel extends Equatable {
       'sourceImageUrl': sourceImageUrl,
       'date': date,
       'shape': shapeType.raw,
+      if (rotationRadians != null) 'rotationRadians': rotationRadians,
+      if (previewBaseWidthAtSave != null)
+        'previewBaseWidthAtSave': previewBaseWidthAtSave,
+      if (previewBoundsWidthAtSave != null)
+        'previewBoundsWidthAtSave': previewBoundsWidthAtSave,
+      if (previewBoundsHeightAtSave != null)
+        'previewBoundsHeightAtSave': previewBoundsHeightAtSave,
       if (album != null) 'album': album,
       'isFavorite': isFavorite,
       if (lastOpenedAt != null) 'lastOpenedAt': lastOpenedAt,
@@ -180,6 +230,24 @@ class StampDataModel extends Equatable {
     return false;
   }
 
+  static double? _readDouble(Map<String, dynamic> json, List<String> keys) {
+    for (final String key in keys) {
+      final dynamic value = json[key];
+      if (value is num) {
+        final double parsed = value.toDouble();
+        if (parsed.isFinite) return parsed;
+        continue;
+      }
+      if (value is String) {
+        final double? parsed = double.tryParse(value.trim());
+        if (parsed != null && parsed.isFinite) {
+          return parsed;
+        }
+      }
+    }
+    return null;
+  }
+
   @override
   List<Object?> get props => <Object?>[
     id,
@@ -188,6 +256,10 @@ class StampDataModel extends Equatable {
     sourceImageUrl,
     date,
     shapeType,
+    rotationRadians,
+    previewBaseWidthAtSave,
+    previewBoundsWidthAtSave,
+    previewBoundsHeightAtSave,
     album,
     isFavorite,
     lastOpenedAt,

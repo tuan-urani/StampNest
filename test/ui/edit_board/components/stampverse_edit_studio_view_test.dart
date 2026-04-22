@@ -643,16 +643,16 @@ void main() {
     );
     final Offset center = tester.getCenter(gestureSurface);
     final TestGesture firstFinger = await tester.startGesture(
-      center + const Offset(-70, 0),
+      center + const Offset(-90, 0),
       pointer: 1,
     );
     final TestGesture secondFinger = await tester.startGesture(
-      center + const Offset(70, 0),
+      center + const Offset(90, 0),
       pointer: 2,
     );
     await tester.pump();
-    await firstFinger.moveTo(center + const Offset(-22, 0));
-    await secondFinger.moveTo(center + const Offset(22, 0));
+    await firstFinger.moveTo(center + const Offset(-8, 0));
+    await secondFinger.moveTo(center + const Offset(8, 0));
     await tester.pumpAndSettle();
     await firstFinger.up();
     await secondFinger.up();
@@ -665,7 +665,7 @@ void main() {
     final StampEditLayer updatedLayer = latestSaved!.layers.firstWhere(
       (StampEditLayer layer) => layer.id == 'layer_template_1',
     );
-    expect(updatedLayer.contentScale, lessThan(1));
+    expect(updatedLayer.contentScale, lessThan(0.5));
   });
 
   testWidgets('template import from stamp library uses sourceImageUrl', (

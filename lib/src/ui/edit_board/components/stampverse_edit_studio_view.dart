@@ -1805,7 +1805,8 @@ class _TemplateImageAdjustSheet extends StatefulWidget {
 }
 
 class _TemplateImageAdjustSheetState extends State<_TemplateImageAdjustSheet> {
-  static const double _kMinScale = 0.5;
+  // Allow deeper zoom-out for slim slots (e.g. very wide/short templates).
+  static const double _kMinScale = 0.1;
   static const double _kMaxScale = 6;
   static const double _kMinAxisScale = 0.4;
   static const double _kMaxAxisScale = 4;
@@ -3789,8 +3790,8 @@ class _TemplateAdjustImageGuideOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double safeScaleX = scaleX.isFinite ? scaleX.clamp(0.2, 8) : 1;
-    final double safeScaleY = scaleY.isFinite ? scaleY.clamp(0.2, 8) : 1;
+    final double safeScaleX = scaleX.isFinite ? scaleX.clamp(0.1, 8) : 1;
+    final double safeScaleY = scaleY.isFinite ? scaleY.clamp(0.1, 8) : 1;
     final double safeRotation = rotation.isFinite ? rotation : 0;
     final Offset panOffset = Offset(width * offsetX, height * offsetY);
     const double topEdge = 0;
@@ -4131,14 +4132,14 @@ class _TemplateSlotImageViewport extends StatelessWidget {
           final double width = constraints.maxWidth;
           final double height = constraints.maxHeight;
           final Offset panOffset = Offset(width * offsetX, height * offsetY);
-          final double safeScale = scale.isFinite ? scale.clamp(0.2, 8) : 1;
-          final double safeScaleX = scaleX.isFinite ? scaleX.clamp(0.2, 8) : 1;
-          final double safeScaleY = scaleY.isFinite ? scaleY.clamp(0.2, 8) : 1;
+          final double safeScale = scale.isFinite ? scale.clamp(0.1, 8) : 1;
+          final double safeScaleX = scaleX.isFinite ? scaleX.clamp(0.1, 8) : 1;
+          final double safeScaleY = scaleY.isFinite ? scaleY.clamp(0.1, 8) : 1;
           final double effectiveScaleX = (safeScale * safeScaleX)
-              .clamp(0.2, 8.0)
+              .clamp(0.1, 8.0)
               .toDouble();
           final double effectiveScaleY = (safeScale * safeScaleY)
-              .clamp(0.2, 8.0)
+              .clamp(0.1, 8.0)
               .toDouble();
           final double safeRotation = rotation.isFinite ? rotation : 0;
           final double safeBrightness =
